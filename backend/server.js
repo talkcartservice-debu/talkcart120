@@ -918,21 +918,42 @@ const initializeApp = async () => {
     }
 
     // Initialize cache service
-    const cacheService = require('./services/cacheService');
-    await cacheService.initialize();
+    console.log('🔧 Initializing cache service...');
+    try {
+      const cacheService = require('./services/cacheService');
+      await cacheService.initialize();
+      console.log('✅ Cache service initialized');
+    } catch (cacheError) {
+      console.warn('⚠️ Cache service initialization failed:', cacheError.message);
+    }
 
     // Start vendor payout job
-    const vendorPayoutJob = require('./jobs/vendorPayoutJob');
-    vendorPayoutJob.start();
+    console.log('🔧 Starting vendor payout job...');
+    try {
+      const vendorPayoutJob = require('./jobs/vendorPayoutJob');
+      vendorPayoutJob.start();
+      console.log('✅ Vendor payout job started');
+    } catch (jobError) {
+      console.warn('⚠️ Vendor payout job failed to start:', jobError.message);
+    }
 
     // Start server
-    server.listen(PORT, HOST, () => {
+    console.log(`🔧 Attempting to start server on ${HOST}:${PORT}...`);
+    const serverInstance = server.listen(PORT, HOST, () => {
       console.log(`🚀 TalkCart Backend Started on http://${HOST}:${PORT}`);
       console.log(`📊 Environment: ${config.server.env}`);
       if (!dbConnection) {
         console.warn('⚠️ Warning: Application running without database connection');
       }
     });
+    
+    // Add error handler for server
+    serverInstance.on('error', (err) => {
+      console.error('❌ Server failed to start:', err);
+    });
+    
+    // Log that we've reached this point
+    console.log('🔧 Server initialization completed');
   } catch (error) {
     console.error('❌ Failed to initialize application:', error);
     console.error('💡 Please ensure MongoDB is running and accessible');
@@ -945,18 +966,26 @@ const initializeApp = async () => {
     } else {
       console.warn('⚠️ Continuing in production with limited functionality...');
       // Start server even without DB connection in production
-      server.listen(PORT, HOST, () => {
+      console.log('🔧 Attempting to start server without database connection...');
+      const serverInstance = server.listen(PORT, HOST, () => {
         console.log(`🚀 TalkCart Backend Started on http://${HOST}:${PORT}`);
         console.log(`📊 Environment: ${config.server.env}`);
         console.warn('⚠️ Warning: Application running without database connection');
       });
+      
+      // Add error handler for server
+      serverInstance.on('error', (err) => {
+        console.error('❌ Server failed to start in production mode:', err);
+      });
       // Don't exit the process - let the server run
-      return;
+      console.log('🔧 Server start process initiated in production mode');
     }
   }
 };
 
 // Initialize the application
+console.log('🔧 Initializing application...');
 initializeApp();
+console.log('🔧 Application initialization started');
 
 module.exports = app;
