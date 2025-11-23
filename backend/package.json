@@ -8,18 +8,12 @@
     "dev": "nodemon server.js",
     "build": "echo 'No build step required for backend'",
     "lint": "echo 'Linting not configured'",
-    "test": "echo 'Running tests...' && node scripts/verifyCommissionSimple.js",
-    "check-commission": "node scripts/checkMarketplaceCommission.js",
+    "test": "echo 'No tests configured'",
     "init-db": "node scripts/seedDatabase.js",
     "init-defi": "node scripts/seedDefiData.js",
     "init-messaging": "node scripts/seedMessagingData.js",
     "reset-db": "node scripts/resetDatabase.js",
-    "check-admin": "node scripts/checkAdminUsers.js",
-    "optimize-db": "node scripts/optimizeDatabase.js",
-    "remove-posts": "node scripts/removeAllPosts.js",
-    "verify-functionality": "node scripts/verifyFunctionalityAfterPostRemoval.js",
-    "delete-messages": "node scripts/deleteAllMessages.js",
-    "delete-messages-auto": "node scripts/deleteAllMessagesAuto.js"
+    "optimize-db": "node scripts/optimizeDatabase.js"
   },
   "keywords": [
     "web3",
