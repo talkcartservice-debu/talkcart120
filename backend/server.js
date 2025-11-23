@@ -8,8 +8,14 @@ const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 // Load dotenv with explicit path to backend directory
-const dotenv = require('dotenv');
-const dotenvResult = dotenv.config({ path: path.resolve(__dirname, '.env') });
+// Only load .env file in development, not in production (to avoid overriding Render env vars)
+if (process.env.NODE_ENV !== 'production') {
+  const dotenv = require('dotenv');
+  const dotenvResult = dotenv.config({ path: path.resolve(__dirname, '.env') });
+} else {
+  // In production, rely on environment variables set by Render
+  console.log('🔧 Running in production mode, skipping .env file load');
+}
 
 const connectDB = require('./config/database');
 const config = require('./config/config');
@@ -108,8 +114,12 @@ io.use(async (socket, next) => {
   }
 });
 // Use the PORT Render provides (default 10000) and bind to 0.0.0.0
+// In production, these should come from Render environment variables
 const PORT = process.env.PORT || config.server.port || 10000;
 const HOST = process.env.HOST || config.server.host || '0.0.0.0';
+
+// Log actual port and host being used
+console.log(`🔧 Using PORT: ${PORT}, HOST: ${HOST}`);
 
 // Comprehensive security middleware
 const { 
@@ -869,10 +879,31 @@ const initializeApp = async () => {
     // Log environment summary
     const envSummary = config.getSummary();
     console.log('🔧 Environment Configuration:', JSON.stringify(envSummary, null, 2));
+    
+    // Warn in production if using localhost for MongoDB
+    if (config.server.isProduction) {
+      const mongoose = require('mongoose');
+      const dbUri = process.env.MONGODB_URI || config.database.uri;
+      if (dbUri && (dbUri.includes('localhost') || dbUri.includes('127.0.0.1'))) {
+        console.warn('⚠️ WARNING: Using localhost MongoDB URI in production! This will not work on Render.');
+        console.warn('⚠️ Please set MONGODB_URI environment variable to a cloud MongoDB connection string.');
+      }
+    }
 
-    // Connect to MongoDB first, then start the server
-    const dbConnection = await connectDB();
-    console.log('✅ MongoDB connected successfully');
+    // Attempt to connect to MongoDB first, but don't fail immediately in production
+    let dbConnection;
+    try {
+      dbConnection = await connectDB();
+      console.log('✅ MongoDB connected successfully');
+    } catch (dbError) {
+      console.warn('⚠️ MongoDB connection failed:', dbError.message);
+      if (config.server.isProduction) {
+        console.warn('⚠️ Running in production without MongoDB - some features will be limited');
+      } else {
+        // In development, we still want to exit on DB failure
+        throw dbError;
+      }
+    }
 
     // Initialize cache service
     const cacheService = require('./services/cacheService');
@@ -886,13 +917,27 @@ const initializeApp = async () => {
     server.listen(PORT, HOST, () => {
       console.log(`🚀 TalkCart Backend Started on http://${HOST}:${PORT}`);
       console.log(`📊 Environment: ${config.server.env}`);
+      if (!dbConnection) {
+        console.warn('⚠️ Warning: Application running without database connection');
+      }
     });
   } catch (error) {
     console.error('❌ Failed to initialize application:', error);
     console.error('💡 Please ensure MongoDB is running and accessible');
     
-    // Exit so Render marks it as failed — avoids running in a bad state
-    process.exit(1);
+    // In development, exit so we don't run in a bad state
+    // In production, we might want to continue with limited functionality
+    if (!config.server.isProduction) {
+      process.exit(1);
+    } else {
+      console.warn('⚠️ Continuing in production with limited functionality...');
+      // Start server even without DB connection in production
+      server.listen(PORT, HOST, () => {
+        console.log(`🚀 TalkCart Backend Started on http://${HOST}:${PORT}`);
+        console.log(`📊 Environment: ${config.server.env}`);
+        console.warn('⚠️ Warning: Application running without database connection');
+      });
+    }
   }
 };
 

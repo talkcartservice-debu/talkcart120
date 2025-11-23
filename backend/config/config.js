@@ -1,5 +1,11 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+// Only load .env file in development, not in production (to avoid overriding Render env vars)
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+} else {
+  // In production, rely on environment variables set by Render
+  console.log('🔧 Config: Running in production mode, skipping .env file load');
+}
 
 /**
  * Application Configuration
@@ -224,7 +230,7 @@ class Config {
     return {
       environment: this.server.env,
       port: this.server.port,
-      database: this.database.uri ? 'configured' : 'using default (mongodb://localhost:27017/talkcart)',
+      database: this.database.uri ? (this.server.isProduction && this.database.uri.includes('localhost') ? 'WARNING: using localhost in production' : 'configured') : 'using default (mongodb://localhost:27017/talkcart)',
       jwt: this.jwt.secret ? 'configured' : 'missing',
       cloudinary: this.cloudinary.enabled ? 'enabled' : 'disabled',
       payments: {

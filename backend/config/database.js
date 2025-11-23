@@ -63,8 +63,8 @@ const connectDB = async () => {
     console.error('Please ensure MongoDB is running and accessible');
     console.error('Check your MONGODB_URI in the .env file');
     
-    // Exit so Render marks it as failed — avoids running in a bad state
-    process.exit(1);
+    // Throw error instead of exiting so it can be handled by calling function
+    throw error;
   }
 };
 
