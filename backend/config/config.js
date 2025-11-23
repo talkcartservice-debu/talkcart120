@@ -1,11 +1,20 @@
 const path = require('path');
-// Only load .env file in development, not in production (to avoid overriding Render env vars)
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+// Load .env file but don't override existing environment variables
+// This allows Render environment variables to take precedence
+const dotenv = require('dotenv');
+const envPath = path.resolve(__dirname, '../.env');
+dotenv.config({ path: envPath, override: false });
+
+// Log if we're in production mode
+if (process.env.NODE_ENV === 'production') {
+  console.log('🔧 Config: Running in production mode');
 } else {
-  // In production, rely on environment variables set by Render
-  console.log('🔧 Config: Running in production mode, skipping .env file load');
+  console.log('🔧 Config: Running in development mode');
 }
+
+// Log environment variables for debugging
+console.log('🔧 Config NODE_ENV:', process.env.NODE_ENV);
+console.log('🔧 Config MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
 
 /**
  * Application Configuration

@@ -8,13 +8,20 @@ const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 // Load dotenv with explicit path to backend directory
-// Only load .env file in development, not in production (to avoid overriding Render env vars)
-if (process.env.NODE_ENV !== 'production') {
-  const dotenv = require('dotenv');
-  const dotenvResult = dotenv.config({ path: path.resolve(__dirname, '.env') });
+// Load environment variables first, then check NODE_ENV
+const dotenv = require('dotenv');
+const path = require('path');
+
+// Load .env file but don't override existing environment variables
+// This allows Render environment variables to take precedence
+const envPath = path.resolve(__dirname, '.env');
+const envConfig = dotenv.config({ path: envPath, override: false });
+
+// Log if we're in production mode
+if (process.env.NODE_ENV === 'production') {
+  console.log('🔧 Running in production mode');
 } else {
-  // In production, rely on environment variables set by Render
-  console.log('🔧 Running in production mode, skipping .env file load');
+  console.log('🔧 Running in development mode');
 }
 
 const connectDB = require('./config/database');
@@ -880,8 +887,14 @@ const initializeApp = async () => {
     const envSummary = config.getSummary();
     console.log('🔧 Environment Configuration:', JSON.stringify(envSummary, null, 2));
     
+    // Log actual environment variables for debugging
+    console.log('🔧 NODE_ENV:', process.env.NODE_ENV);
+    console.log('🔧 MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
+    console.log('🔧 PORT:', process.env.PORT);
+    console.log('🔧 HOST:', process.env.HOST);
+    
     // Warn in production if using localhost for MongoDB
-    if (config.server.isProduction) {
+    if (process.env.NODE_ENV === 'production') {
       const mongoose = require('mongoose');
       const dbUri = process.env.MONGODB_URI || config.database.uri;
       if (dbUri && (dbUri.includes('localhost') || dbUri.includes('127.0.0.1'))) {
@@ -897,7 +910,7 @@ const initializeApp = async () => {
       console.log('✅ MongoDB connected successfully');
     } catch (dbError) {
       console.warn('⚠️ MongoDB connection failed:', dbError.message);
-      if (config.server.isProduction) {
+      if (process.env.NODE_ENV === 'production') {
         console.warn('⚠️ Running in production without MongoDB - some features will be limited');
       } else {
         // In development, we still want to exit on DB failure
@@ -927,7 +940,8 @@ const initializeApp = async () => {
     
     // In development, exit so we don't run in a bad state
     // In production, we might want to continue with limited functionality
-    if (!config.server.isProduction) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🔧 Exiting in development mode due to MongoDB connection failure');
       process.exit(1);
     } else {
       console.warn('⚠️ Continuing in production with limited functionality...');
@@ -937,6 +951,8 @@ const initializeApp = async () => {
         console.log(`📊 Environment: ${config.server.env}`);
         console.warn('⚠️ Warning: Application running without database connection');
       });
+      // Don't exit the process - let the server run
+      return;
     }
   }
 };

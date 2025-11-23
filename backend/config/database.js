@@ -6,6 +6,9 @@ const connectDB = async () => {
     // Ensure you read your Mongo URI from env vars
     const MONGODB_URI = process.env.MONGODB_URI || config.database.uri || 'mongodb://localhost:27017/talkcart';
     
+    // Log the actual URI being used (without credentials)
+    console.log('🔧 Database: Using MONGODB_URI:', MONGODB_URI.replace(/\/\/.*@/, '//****:****@'));
+    
     // Improved mongoose options for Render deployment
     const mongooseOptions = {
       maxPoolSize: 10,
