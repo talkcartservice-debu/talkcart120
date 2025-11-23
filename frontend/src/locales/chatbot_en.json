@@ -1,0 +1,33 @@
+{
+  "chatbot": {
+    "adminSupport": "Admin Support",
+    "typeMessage": "Type your message...",
+    "send": "Send",
+    "refresh": "Refresh",
+    "close": "Close",
+    "searchMessages": "Search messages...",
+    "chatHistory": "Chat History",
+    "noChatHistory": "No chat history yet",
+    "welcomeMessage": "Welcome to Admin Support Chat",
+    "sendMessageToGetHelp": "Send a message to get help with your vendor account",
+    "startConversation": "Start Conversation",
+    "exportChat": "Export Chat",
+    "notificationsOn": "Disable notifications",
+    "notificationsOff": "Enable notifications",
+    "search": "Search Messages",
+    "history": "Chat History",
+    "admin": "Admin",
+    "you": "You",
+    "isTyping": "is typing",
+    "exportJson": "Export as JSON",
+    "exportCsv": "Export as CSV",
+    "messages": "Messages",
+    "messageInput": "Message input",
+    "attachFile": "Attach file",
+    "messageStatus": {
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read"
+    }
+  }
+}

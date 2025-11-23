@@ -1,0 +1,16 @@
+{
+    "name": "TalkCart Super Admin",
+    "short_name": "TalkCart Admin",
+    "description": "TalkCart Super Admin Dashboard - Manage your marketplace with ease",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#6366f1",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "any",
+            "type": "image/x-icon"
+        }
+    ]
+}

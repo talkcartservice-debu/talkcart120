@@ -1,0 +1,31 @@
+{
+    "name": "TalkCart - Web3 Super Application",
+    "short_name": "TalkCart",
+    "description": "The future of Web3 social commerce platform",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#667eea",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "/favicon.svg",
+            "sizes": "16x16",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "/favicon.svg",
+            "sizes": "32x32",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "/favicon.svg",
+            "sizes": "180x180",
+            "type": "image/svg+xml"
+        }
+    ]
+}

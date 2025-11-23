@@ -1,0 +1,33 @@
+{
+  "chatbot": {
+    "adminSupport": "Soporte Administrativo",
+    "typeMessage": "Escribe tu mensaje...",
+    "send": "Enviar",
+    "refresh": "Actualizar",
+    "close": "Cerrar",
+    "searchMessages": "Buscar mensajes...",
+    "chatHistory": "Historial de Chat",
+    "noChatHistory": "Aún no hay historial de chat",
+    "welcomeMessage": "Bienvenido al Chat de Soporte Administrativo",
+    "sendMessageToGetHelp": "Envía un mensaje para obtener ayuda con tu cuenta de vendedor",
+    "startConversation": "Iniciar Conversación",
+    "exportChat": "Exportar Chat",
+    "notificationsOn": "Deshabilitar notificaciones",
+    "notificationsOff": "Habilitar notificaciones",
+    "search": "Buscar Mensajes",
+    "history": "Historial de Chat",
+    "admin": "Administrador",
+    "you": "Tú",
+    "isTyping": "está escribiendo",
+    "exportJson": "Exportar como JSON",
+    "exportCsv": "Exportar como CSV",
+    "messages": "Mensajes",
+    "messageInput": "Entrada de mensaje",
+    "attachFile": "Adjuntar archivo",
+    "messageStatus": {
+      "sent": "Enviado",
+      "delivered": "Entregado",
+      "read": "Leído"
+    }
+  }
+}
