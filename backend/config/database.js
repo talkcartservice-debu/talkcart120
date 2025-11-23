@@ -3,11 +3,33 @@ const config = require('./config');
 
 const connectDB = async () => {
   try {
-    // Ensure you read your Mongo URI from env vars
+    console.log('🔧 Database connection attempt starting...');
+    console.log('🔧 Process env MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
+    console.log('🔧 Process env MONGODB_URI length:', process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0);
+    console.log('🔧 Process env NODE_ENV:', process.env.NODE_ENV);
+    console.log('🔧 Process env keys (first 10):', Object.keys(process.env).slice(0, 10).join(', '));
     const MONGODB_URI = process.env.MONGODB_URI || config.database.uri || 'mongodb://localhost:27017/talkcart';
     
     // Log the actual URI being used (without credentials)
     console.log('🔧 Database: Using MONGODB_URI:', MONGODB_URI.replace(/\/\/.*@/, '//****:****@'));
+    console.log('🔧 Database: Full MONGODB_URI length:', MONGODB_URI.length);
+    console.log('🔧 Database: MONGODB_URI starts with:', MONGODB_URI.substring(0, Math.min(50, MONGODB_URI.length)) + (MONGODB_URI.length > 50 ? '...' : ''));
+    
+    // Debug the URI components
+    if (MONGODB_URI) {
+      console.log('🔧 Database: URI contains mongodb://', MONGODB_URI.includes('mongodb://'));
+      console.log('🔧 Database: URI contains mongodb+srv://', MONGODB_URI.includes('mongodb+srv://'));
+      console.log('🔧 Database: URI contains cluster0.oguqwli.mongodb.net', MONGODB_URI.includes('cluster0.oguqwli.mongodb.net'));
+      console.log('🔧 Database: URI contains talkcartservice', MONGODB_URI.includes('talkcartservice'));
+      
+      // Check for special characters
+      console.log('🔧 Database: URI contains quotes:', MONGODB_URI.includes('"') || MONGODB_URI.includes("'"));
+      console.log('🔧 Database: URI contains encoded quotes:', MONGODB_URI.includes('%22'));
+      
+      // Show first and last characters
+      console.log('🔧 Database: First 10 chars:', MONGODB_URI.substring(0, 10));
+      console.log('🔧 Database: Last 10 chars:', MONGODB_URI.substring(MONGODB_URI.length - 10));
+    }
     
     // Validate MongoDB URI format
     if (MONGODB_URI && !MONGODB_URI.startsWith('mongodb://') && !MONGODB_URI.startsWith('mongodb+srv://')) {
@@ -32,6 +54,8 @@ const connectDB = async () => {
       retryWrites: true
     };
     
+    console.log('🔧 Mongoose options:', JSON.stringify(mongooseOptions, null, 2));
+    
     console.log('Attempting to connect to MongoDB with URI:', MONGODB_URI.replace(/\/\/.*@/, '//****:****@')); // Hide credentials
     
     // Log additional connection details
@@ -43,7 +67,9 @@ const connectDB = async () => {
       uriLength: MONGODB_URI.length
     });
     
+    console.log('🔧 Attempting mongoose connection...');
     const conn = await mongoose.connect(MONGODB_URI, mongooseOptions);
+    console.log('🔧 Mongoose connection successful');
     
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
 
@@ -86,6 +112,8 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     console.error('MongoDB connection failed:', error.message);
+    console.error('MongoDB connection error code:', error.code);
+    console.error('MongoDB connection error name:', error.name);
     console.error('Please ensure MongoDB is running and accessible');
     
     // Provide specific guidance based on environment

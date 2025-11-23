@@ -893,6 +893,13 @@ const initializeApp = async () => {
     console.log('🔧 MONGODB_URI length:', process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0);
     console.log('🔧 PORT:', process.env.PORT);
     console.log('🔧 HOST:', process.env.HOST);
+    console.log('🔧 Process env keys count:', Object.keys(process.env).length);
+    
+    // Show some environment variables (without sensitive data)
+    const safeEnvVars = Object.keys(process.env)
+      .filter(key => !key.includes('SECRET') && !key.includes('PASS') && !key.includes('KEY'))
+      .slice(0, 10);
+    console.log('🔧 Safe env vars (first 10):', safeEnvVars.join(', '));
     
     // Warn in production if using localhost for MongoDB
     if (process.env.NODE_ENV === 'production') {
@@ -920,10 +927,12 @@ const initializeApp = async () => {
     // Attempt to connect to MongoDB first, but don't fail immediately in production
     let dbConnection;
     try {
+      console.log('🔧 Attempting to connect to MongoDB...');
       dbConnection = await connectDB();
       console.log('✅ MongoDB connected successfully');
     } catch (dbError) {
       console.warn('⚠️ MongoDB connection failed:', dbError.message);
+      console.warn('🔧 MongoDB connection error stack:', dbError.stack);
       if (process.env.NODE_ENV === 'production') {
         console.warn('⚠️ Running in production without MongoDB - some features will be limited');
       } else {
