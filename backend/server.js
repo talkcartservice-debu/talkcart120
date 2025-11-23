@@ -109,7 +109,7 @@ io.use(async (socket, next) => {
 });
 // Use the PORT Render provides (default 10000) and bind to 0.0.0.0
 const PORT = process.env.PORT || config.server.port || 10000;
-const HOST = process.env.HOST || '0.0.0.0';
+const HOST = process.env.HOST || config.server.host || '0.0.0.0';
 
 // Comprehensive security middleware
 const { 
@@ -667,7 +667,7 @@ const updateAndEmitTrendingHashtags = async () => {
     
     // Add timeout protection for the aggregation
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Trending hashtags aggregation timeout')), 30000); // 30 second timeout
+      setTimeout(() => reject(new Error('Trending hashtags aggregation timeout')), 60000); // 60 second timeout
     });
     
     const aggregationPromise = Post.aggregate([

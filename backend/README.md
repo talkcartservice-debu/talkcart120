@@ -303,3 +303,25 @@ docker run -p 8000:8000 talkcart-backend
 - Horizontal scaling support
 - Load balancer configuration
 - Database connection pooling
+
+## Render Deployment
+
+To deploy this application on Render, you need to set the following environment variables:
+
+1. `NODE_ENV` = production
+2. `PORT` = 10000 (or let Render set it automatically)
+3. `HOST` = 0.0.0.0
+4. `MONGODB_URI` = your MongoDB connection string (from MongoDB Atlas or Render MongoDB service)
+
+### Example Environment Variables for Render:
+
+```
+NODE_ENV=production
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/talkcart?retryWrites=true&w=majority
+PORT=10000
+HOST=0.0.0.0
+JWT_SECRET=your_secure_jwt_secret
+REFRESH_TOKEN_SECRET=your_secure_refresh_token_secret
+```
+
+Note: Make sure to replace the MongoDB URI with your actual MongoDB connection string.

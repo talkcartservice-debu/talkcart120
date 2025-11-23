@@ -6,15 +6,22 @@ const connectDB = async () => {
     // Ensure you read your Mongo URI from env vars
     const MONGODB_URI = process.env.MONGODB_URI || config.database.uri || 'mongodb://localhost:27017/talkcart';
     
-    // Optional: mongoose options
+    // Improved mongoose options for Render deployment
     const mongooseOptions = {
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 0, // No timeout for server selection
-      socketTimeoutMS: 0, // No timeout for socket operations
-      // any other options you need
+      serverSelectionTimeoutMS: 30000, // 30 seconds timeout for server selection
+      socketTimeoutMS: 45000, // 45 seconds timeout for socket operations
+      connectTimeoutMS: 30000, // 30 seconds connection timeout
+      retryWrites: true,
+      useNewUrlParser: true,
+      useUnifiedTopology: true
     };
     
+    console.log('Attempting to connect to MongoDB with URI:', MONGODB_URI.replace(/\/\/.*@/, '//****:****@')); // Hide credentials
+    
     const conn = await mongoose.connect(MONGODB_URI, mongooseOptions);
+    
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
 
     // Handle connection events
     mongoose.connection.on('error', (err) => {
@@ -33,6 +40,7 @@ const connectDB = async () => {
     process.on('SIGINT', async () => {
       try {
         await mongoose.connection.close();
+        console.log('MongoDB connection closed through SIGINT');
         process.exit(0);
       } catch (err) {
         console.error('Error during MongoDB shutdown:', err);
@@ -43,6 +51,7 @@ const connectDB = async () => {
     process.on('SIGTERM', async () => {
       try {
         await mongoose.connection.close();
+        console.log('MongoDB connection closed through SIGTERM');
         process.exit(0);
       } catch (err) {
         console.error('Error during MongoDB shutdown:', err);

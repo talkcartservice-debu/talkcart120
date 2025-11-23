@@ -36,6 +36,7 @@ class Config {
     return {
       env: process.env.NODE_ENV || 'development',
       port: parseInt(process.env.PORT) || 8000,
+      host: process.env.HOST || '0.0.0.0',
       isDevelopment: process.env.NODE_ENV === 'development',
       isProduction: process.env.NODE_ENV === 'production',
       isTest: process.env.NODE_ENV === 'test'
@@ -48,8 +49,8 @@ class Config {
       uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/talkcart',
       options: {
         maxPoolSize: 10,
-        serverSelectionTimeoutMS: 0, // No timeout for server selection
-        socketTimeoutMS: 0 // No timeout for socket operations
+        serverSelectionTimeoutMS: 30000, // 30 seconds timeout for server selection
+        socketTimeoutMS: 45000 // 45 seconds timeout for socket operations
       }
     };
   }
