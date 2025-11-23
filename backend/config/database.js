@@ -9,6 +9,20 @@ const connectDB = async () => {
     // Log the actual URI being used (without credentials)
     console.log('🔧 Database: Using MONGODB_URI:', MONGODB_URI.replace(/\/\/.*@/, '//****:****@'));
     
+    // Validate MongoDB URI format
+    if (MONGODB_URI && !MONGODB_URI.startsWith('mongodb://') && !MONGODB_URI.startsWith('mongodb+srv://')) {
+      console.warn('⚠️ WARNING: MONGODB_URI does not appear to be a valid MongoDB connection string');
+      console.warn('⚠️ Expected format: mongodb:// or mongodb+srv://');
+    }
+    
+    // Validate that we have a proper MongoDB URI
+    if (!MONGODB_URI || MONGODB_URI === 'mongodb://localhost:27017/talkcart') {
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('⚠️ WARNING: Using default localhost MongoDB URI in production! This will not work on Render.');
+        console.warn('⚠️ Please set MONGODB_URI environment variable to a cloud MongoDB connection string.');
+      }
+    }
+    
     // Improved mongoose options for Render deployment
     const mongooseOptions = {
       maxPoolSize: 10,
@@ -19,6 +33,15 @@ const connectDB = async () => {
     };
     
     console.log('Attempting to connect to MongoDB with URI:', MONGODB_URI.replace(/\/\/.*@/, '//****:****@')); // Hide credentials
+    
+    // Log additional connection details
+    console.log('🔧 Database connection details:', {
+      hasEnvURI: !!process.env.MONGODB_URI,
+      configURI: config.database.uri ? 'SET' : 'NOT SET',
+      usingDefault: MONGODB_URI === 'mongodb://localhost:27017/talkcart',
+      environment: process.env.NODE_ENV,
+      uriLength: MONGODB_URI.length
+    });
     
     const conn = await mongoose.connect(MONGODB_URI, mongooseOptions);
     
@@ -64,7 +87,17 @@ const connectDB = async () => {
   } catch (error) {
     console.error('MongoDB connection failed:', error.message);
     console.error('Please ensure MongoDB is running and accessible');
-    console.error('Check your MONGODB_URI in the .env file');
+    
+    // Provide specific guidance based on environment
+    if (process.env.NODE_ENV === 'production') {
+      console.error('🔧 PRODUCTION DEPLOYMENT:');
+      console.error('   1. Make sure MONGODB_URI is set in Render environment variables');
+      console.error('   2. Ensure the MongoDB URI points to a cloud service (not localhost)');
+      console.error('   3. Verify MongoDB credentials are correct');
+      console.error('   4. Check that your MongoDB service is accessible from Render');
+    } else {
+      console.error('Check your MONGODB_URI in the .env file');
+    }
     
     // Throw error instead of exiting so it can be handled by calling function
     throw error;

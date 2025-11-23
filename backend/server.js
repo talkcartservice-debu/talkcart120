@@ -889,6 +889,8 @@ const initializeApp = async () => {
     // Log actual environment variables for debugging
     console.log('🔧 NODE_ENV:', process.env.NODE_ENV);
     console.log('🔧 MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
+    console.log('🔧 MONGODB_URI value:', process.env.MONGODB_URI || 'NOT SET');
+    console.log('🔧 MONGODB_URI length:', process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0);
     console.log('🔧 PORT:', process.env.PORT);
     console.log('🔧 HOST:', process.env.HOST);
     
@@ -896,6 +898,19 @@ const initializeApp = async () => {
     if (process.env.NODE_ENV === 'production') {
       const mongoose = require('mongoose');
       const dbUri = process.env.MONGODB_URI || config.database.uri;
+      console.log('🔧 Production DB URI check:', {
+        dbUriSet: !!dbUri,
+        isLocalhost: dbUri && (dbUri.includes('localhost') || dbUri.includes('127.0.0.1')),
+        isAtlas: dbUri && dbUri.includes('mongodb.net'),
+        isValidFormat: dbUri && (dbUri.startsWith('mongodb://') || dbUri.startsWith('mongodb+srv://'))
+      });
+      
+      // Validate MongoDB URI format
+      if (dbUri && !dbUri.startsWith('mongodb://') && !dbUri.startsWith('mongodb+srv://')) {
+        console.warn('⚠️ WARNING: MONGODB_URI does not appear to be a valid MongoDB connection string');
+        console.warn('⚠️ Expected format: mongodb:// or mongodb+srv://');
+      }
+      
       if (dbUri && (dbUri.includes('localhost') || dbUri.includes('127.0.0.1'))) {
         console.warn('⚠️ WARNING: Using localhost MongoDB URI in production! This will not work on Render.');
         console.warn('⚠️ Please set MONGODB_URI environment variable to a cloud MongoDB connection string.');
