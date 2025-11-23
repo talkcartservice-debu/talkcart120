@@ -10,7 +10,6 @@ const { Server } = require('socket.io');
 // Load dotenv with explicit path to backend directory
 // Load environment variables first, then check NODE_ENV
 const dotenv = require('dotenv');
-const path = require('path');
 
 // Load .env file but don't override existing environment variables
 // This allows Render environment variables to take precedence
