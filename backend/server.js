@@ -665,6 +665,13 @@ const updateAndEmitTrendingHashtags = async () => {
   try {
     const Post = require('./models/Post');
     
+    // Skip trending hashtags update if MongoDB is not connected
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      console.log('⚠️ MongoDB not connected, skipping trending hashtags update');
+      return;
+    }
+    
     // Add timeout protection for the aggregation
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('Trending hashtags aggregation timeout')), 60000); // 60 second timeout

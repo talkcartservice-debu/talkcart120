@@ -306,22 +306,47 @@ docker run -p 8000:8000 talkcart-backend
 
 ## Render Deployment
 
-To deploy this application on Render, you need to set the following environment variables:
+To deploy this application on Render, you have two options:
+
+### Option 1: Using render.yaml (Recommended)
+
+This repository includes a `render.yaml` file that defines the service configuration. Simply connect your GitHub repository to Render and it will automatically detect and configure the service.
+
+### Option 2: Manual Configuration
+
+If you prefer to configure manually, you need to set the following environment variables in your Render dashboard:
 
 1. `NODE_ENV` = production
 2. `PORT` = 10000 (or let Render set it automatically)
 3. `HOST` = 0.0.0.0
 4. `MONGODB_URI` = your MongoDB connection string (from MongoDB Atlas or Render MongoDB service)
 
-### Example Environment Variables for Render:
+### Critical Environment Variables
+
+These environment variables MUST be set in your Render dashboard:
 
 ```
-NODE_ENV=production
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/talkcart?retryWrites=true&w=majority
-PORT=10000
-HOST=0.0.0.0
-JWT_SECRET=your_secure_jwt_secret
-REFRESH_TOKEN_SECRET=your_secure_refresh_token_secret
+JWT_SECRET=your_secure_jwt_secret_here_please_use_a_strong_one
+REFRESH_TOKEN_SECRET=your_secure_refresh_token_secret_here_please_use_a_strong_one
 ```
 
-Note: Make sure to replace the MongoDB URI with your actual MongoDB connection string.
+Note: 
+- Replace the MongoDB URI with your actual MongoDB connection string
+- JWT_SECRET and REFRESH_TOKEN_SECRET should be long, random strings (at least 32 characters)
+- Never commit these secrets to version control
+
+### MongoDB Configuration
+
+The most common issue is MongoDB connectivity. You MUST use a MongoDB service that's accessible from the internet, such as:
+- MongoDB Atlas (recommended)
+- Render's MongoDB service
+- Any cloud MongoDB provider
+
+DO NOT use localhost or 127.0.0.1 as these will not work on Render.
+
+### Example MongoDB Atlas URI:
+```
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/talkcart?retryWrites=true&w=majority
+```
+

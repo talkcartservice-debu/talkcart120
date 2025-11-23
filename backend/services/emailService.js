@@ -93,7 +93,7 @@ class EmailService {
       // Set a timeout for the verification
       const verifyPromise = this.transporter.verify();
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Verification timeout')), 15000)
+        setTimeout(() => reject(new Error('Verification timeout')), 30000)
       );
 
       await Promise.race([verifyPromise, timeoutPromise]);

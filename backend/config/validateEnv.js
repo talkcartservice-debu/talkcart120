@@ -71,6 +71,8 @@ class EnvValidator {
       if (!process.env.MONGODB_URI.startsWith('mongodb://') && !process.env.MONGODB_URI.startsWith('mongodb+srv://')) {
         this.errors.push('MONGODB_URI must be a valid MongoDB connection string');
       }
+    } else if (process.env.NODE_ENV === 'production') {
+      this.errors.push('MONGODB_URI is required in production environment');
     }
   }
 

@@ -12,9 +12,7 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 30000, // 30 seconds timeout for server selection
       socketTimeoutMS: 45000, // 45 seconds timeout for socket operations
       connectTimeoutMS: 30000, // 30 seconds connection timeout
-      retryWrites: true,
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+      retryWrites: true
     };
     
     console.log('Attempting to connect to MongoDB with URI:', MONGODB_URI.replace(/\/\/.*@/, '//****:****@')); // Hide credentials
