@@ -1823,11 +1823,3 @@ export default function SettingsPage() {
     </>
   );
 }
-
-// Add getStaticPaths to fix prerendering errors
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: 'blocking'
-  };
-}
