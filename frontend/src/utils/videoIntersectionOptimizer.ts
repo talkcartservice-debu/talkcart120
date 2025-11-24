@@ -227,8 +227,7 @@ class VideoIntersectionOptimizer {
     const visibleVideos = this.getVisibleVideos();
     if (visibleVideos.length === 0) return null;
 
-    // Sort by performance score and distance from center
-    const sortedVideos = visibleVideos.sort((a, b) => {
+    const sortedVideos: VideoIntersectionData[] = visibleVideos.sort((a, b) => {
       // Primary sort by performance score
       if (Math.abs(a.performanceScore - b.performanceScore) > 0.1) {
         return b.performanceScore - a.performanceScore;
@@ -238,7 +237,9 @@ class VideoIntersectionOptimizer {
       return a.distanceFromCenter - b.distanceFromCenter;
     });
 
-    return sortedVideos.length > 0 ? sortedVideos[0] : null;
+    // Use find to get the first element, which returns VideoIntersectionData | undefined
+    const firstVideo = sortedVideos.find((_, index) => index === 0) ?? null;
+    return firstVideo;
   }
 
   public setOptimalVideoChangeCallback(callback: IntersectionCallback): void {
