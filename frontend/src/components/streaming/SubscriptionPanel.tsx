@@ -341,10 +341,10 @@ const SubscriptionPanel: React.FC<SubscriptionPanelProps> = ({
         <DialogTitle>Confirm Subscription</DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
-            You're about to subscribe to {streamerName} with the {selectedTierData?.name} plan.
+            You&#39;re about to subscribe to {streamerName} with the {selectedTierData?.name} plan.
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            You'll be charged ${selectedTierData?.price} monthly. You can cancel anytime.
+            You&#39;ll be charged ${selectedTierData?.price} monthly. You can cancel anytime.
           </Typography>
         </DialogContent>
         <DialogActions>

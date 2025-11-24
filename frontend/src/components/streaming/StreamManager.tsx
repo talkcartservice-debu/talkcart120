@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { streamingApi } from '@/services/streamingApi';
 import { STREAMING_CAPABILITIES } from '@/config';
@@ -368,6 +368,20 @@ const StreamManager: React.FC<StreamManagerProps> = ({
 
   // No mock data - only use real data from backend
 
+  const getStreamHealth = useCallback((): 'excellent' | 'good' | 'poor' | 'critical' => {
+    const { droppedFrames, cpuUsage, networkSpeed } = streamStats;
+    
+    if (droppedFrames > 100 || cpuUsage > 90 || networkSpeed < 20) {
+      return 'critical';
+    } else if (droppedFrames > 50 || cpuUsage > 70 || networkSpeed < 40) {
+      return 'poor';
+    } else if (droppedFrames > 20 || cpuUsage > 50 || networkSpeed < 60) {
+      return 'good';
+    } else {
+      return 'excellent';
+    }
+  }, [streamStats]);
+
   // Real-time stats updates
   useEffect(() => {
     if (isStreaming) {
@@ -419,21 +433,7 @@ const StreamManager: React.FC<StreamManagerProps> = ({
       setStreamStats(prev => ({ ...prev, duration: '00:00:00' }));
     }
     return undefined; // Explicitly return undefined to satisfy TypeScript
-  }, [isStreaming]);
-
-  const getStreamHealth = (): 'excellent' | 'good' | 'poor' | 'critical' => {
-    const { droppedFrames, cpuUsage, networkSpeed } = streamStats;
-    
-    if (droppedFrames > 100 || cpuUsage > 90 || networkSpeed < 20) {
-      return 'critical';
-    } else if (droppedFrames > 50 || cpuUsage > 70 || networkSpeed < 40) {
-      return 'poor';
-    } else if (droppedFrames > 20 || cpuUsage > 50 || networkSpeed < 60) {
-      return 'good';
-    } else {
-      return 'excellent';
-    }
-  };
+  }, [isStreaming, getStreamHealth]);
 
   const addAlert = (type: 'info' | 'warning' | 'error', message: string) => {
     const alert = {
