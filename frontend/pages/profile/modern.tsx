@@ -783,10 +783,3 @@ const ModernProfilePage: React.FC = () => {
 
 export default ModernProfilePage;
 
-// Add getStaticPaths to fix prerendering errors
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: 'blocking'
-  };
-}
