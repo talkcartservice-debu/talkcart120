@@ -473,10 +473,3 @@ const TrendingPage: React.FC = () => {
 
 export default TrendingPage;
 
-// Add getStaticPaths to fix prerendering errors
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: 'blocking'
-  };
-}
