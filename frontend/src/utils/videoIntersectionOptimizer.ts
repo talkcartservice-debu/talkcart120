@@ -238,7 +238,7 @@ class VideoIntersectionOptimizer {
       return a.distanceFromCenter - b.distanceFromCenter;
     });
 
-    return sortedVideos[0];
+    return sortedVideos.length > 0 ? sortedVideos[0] : null;
   }
 
   public setOptimalVideoChangeCallback(callback: IntersectionCallback): void {
