@@ -401,10 +401,3 @@ const SearchPage = () => {
 
 export default SearchPage;
 
-// Add getStaticPaths to fix prerendering errors
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: 'blocking'
-  };
-}
