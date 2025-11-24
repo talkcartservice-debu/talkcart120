@@ -536,10 +536,3 @@ export default function EnhancedWalletPage() {
   );
 }
 
-// Add getStaticPaths to fix prerendering errors
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: 'blocking'
-  };
-}
