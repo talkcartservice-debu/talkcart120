@@ -378,7 +378,7 @@ const SearchPage = () => {
         ) : searchQuery ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No results found for "{searchQuery}"
+              No results found for &quot;{searchQuery}&quot;
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Try different keywords or check your spelling

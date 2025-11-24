@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLazyLoading } from './useLazyLoading';
 
 export interface PerformanceMetrics {
   renderTime: number;
@@ -122,45 +123,7 @@ export function usePerformanceOptimization() {
   }, []);
 
   // Lazy loading utility
-  const useLazyLoading = useCallback((threshold = 0.1) => {
-    const [isVisible, setIsVisible] = useState(false);
-    const [hasLoaded, setHasLoaded] = useState(false);
-    const elementRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      const element = elementRef.current;
-      if (!element || !settings.enableLazyLoading) {
-        setIsVisible(true);
-        return;
-      }
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry && entry.isIntersecting && !hasLoaded) {
-            setIsVisible(true);
-            setHasLoaded(true);
-            observer.unobserve(element);
-          }
-        },
-        {
-          threshold,
-          rootMargin: '50px',
-        }
-      );
-
-      observer.observe(element);
-
-      return () => {
-        observer.unobserve(element);
-      };
-    }, [threshold, hasLoaded, settings.enableLazyLoading]);
-
-    return {
-      ref: elementRef,
-      isVisible: settings.enableLazyLoading ? isVisible : true,
-      hasLoaded,
-    };
-  }, [settings.enableLazyLoading]);
+  const lazyLoading = useLazyLoading(0.1, { enableLazyLoading: settings.enableLazyLoading });
 
   // Image optimization
   const optimizeImage = useCallback((src: string, width?: number, height?: number) => {
@@ -324,7 +287,7 @@ export function usePerformanceOptimization() {
   return {
     metrics,
     settings,
-    useLazyLoading,
+    useLazyLoading: () => lazyLoading,
     optimizeImage,
     preloadResource,
     measureNetworkLatency,

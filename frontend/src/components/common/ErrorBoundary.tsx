@@ -64,7 +64,7 @@ export class ErrorBoundary extends Component<Props, State> {
                       No result found
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      We couldn't find what you're looking for. Try adjusting your search or browse other content.
+                      We couldn&apos;t find what you&apos;re looking for. Try adjusting your search or browse other content.
                     </Typography>
                   </Box>
 

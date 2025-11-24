@@ -91,13 +91,7 @@ const VendorStorePage: React.FC = () => {
   const [isStoreOwner, setIsStoreOwner] = useState(false);
   const [hasVendorStore, setHasVendorStore] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      fetchVendorStore();
-    }
-  }, [id]);
-
-  const fetchVendorStore = async () => {
+  const fetchVendorStore = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -140,7 +134,13 @@ const VendorStorePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, isAuthenticated, user]);
+
+  useEffect(() => {
+    if (id) {
+      fetchVendorStore();
+    }
+  }, [id, fetchVendorStore]);
 
   const handleViewProducts = () => {
     // Prevent multiple rapid clicks

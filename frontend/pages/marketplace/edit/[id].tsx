@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import {
   Box,
   Container,
@@ -718,12 +719,12 @@ const EditProductPage: React.FC = () => {
                     {imagePreview.map((preview, index) => (
                       <Grid item key={index}>
                         <Box sx={{ position: 'relative' }}>
-                          <img
+                          <Image
                             src={preview}
                             alt={`Preview ${index}`}
+                            width={100}
+                            height={100}
                             style={{
-                              width: 100,
-                              height: 100,
                               objectFit: 'cover',
                               borderRadius: 4,
                             }}

@@ -87,7 +87,7 @@ const CallTransferRequestDialog: React.FC<CallTransferRequestDialogProps> = ({
                 </Typography>
 
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                    You're receiving a transferred {callType} call
+                    You&apos;re receiving a transferred {callType} call
                 </Typography>
 
                 {/* Transfer Flow Visualization */}

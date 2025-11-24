@@ -135,7 +135,7 @@ export default function ForgotPasswordPage() {
                 <CardContent sx={{ p: 4 }}>
                   <Stack spacing={3}>
                     <Typography variant="body1" color="text.secondary" textAlign="center">
-                      We've sent a password reset link to{' '}
+                      We&apos;ve sent a password reset link to{' '}
                       <Typography component="span" fontWeight={600} color="primary">
                         {email}
                       </Typography>
@@ -155,7 +155,7 @@ export default function ForgotPasswordPage() {
 
                     <Alert severity="warning" icon={<Security />} sx={{ borderRadius: 2 }}>
                       <Typography variant="body2">
-                        Don't see the email? Check your spam folder or{' '}
+                        Don&apos;t see the email? Check your spam folder or{' '}
                         <Typography
                           component="span"
                           color="primary"
@@ -370,7 +370,7 @@ export default function ForgotPasswordPage() {
 
                       <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="body2" color="text.secondary">
-                          Don't have an account?{' '}
+                          Don&apos;t have an account?{' '}
                           <Link href="/auth/register" style={{ textDecoration: 'none' }}>
                             <Typography
                               component="span"
@@ -423,7 +423,7 @@ export default function ForgotPasswordPage() {
               Security First
             </Typography>
             <Typography variant="h6" sx={{ mb: 4, opacity: 0.9, lineHeight: 1.6 }}>
-              We take your account security seriously. Here's how we protect you.
+              We take your account security seriously. Here&apos;s how we protect you.
             </Typography>
 
             <Stack spacing={3}>
@@ -488,7 +488,7 @@ export default function ForgotPasswordPage() {
                     Instant Notifications
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    You'll be notified immediately of any password reset attempts
+                    You&apos;ll be notified immediately of any password reset attempts
                   </Typography>
                 </Box>
               </Box>

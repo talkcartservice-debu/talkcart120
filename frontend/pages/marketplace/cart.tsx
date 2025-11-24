@@ -141,7 +141,7 @@ const CartPage: React.FC = () => {
   const steps = ['Cart', 'Shipping', 'Payment', 'Confirmation'];
 
   // Fetch vendor payment preferences
-  const fetchVendorPaymentPreferences = async (vendorIds: string[]) => {
+  const fetchVendorPaymentPreferences = React.useCallback(async (vendorIds: string[]) => {
     try {
       const preferences: Record<string, any> = {};
       const methodsAvailability: Record<string, boolean> = {
@@ -186,7 +186,7 @@ const CartPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching vendor payment preferences:', error);
     }
-  };
+  }, []);
 
   // Load comparison list from localStorage
   useEffect(() => {
@@ -226,7 +226,7 @@ const CartPage: React.FC = () => {
     if (user) {
       fetchCart();
     }
-  }, [user]);
+  }, [user, fetchCart]);
 
   // Fetch vendor payment preferences when cart items change
   useEffect(() => {
@@ -235,7 +235,7 @@ const CartPage: React.FC = () => {
       const vendorIds = [...new Set(cart.items.map(item => item.vendorId))];
       fetchVendorPaymentPreferences(vendorIds);
     }
-  }, [cart?.items]);
+  }, [cart?.items, fetchVendorPaymentPreferences]);
 
   // Initialize shipping address with user info
   useEffect(() => {
@@ -251,7 +251,7 @@ const CartPage: React.FC = () => {
         phone: (user as any).phoneNumber || (user as any).phoneNum || '', // Safely access phone number if available
       });
     }
-  }, [user]);
+  }, [user, shippingAddress.name]);
 
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
     if (newQuantity < 1) {

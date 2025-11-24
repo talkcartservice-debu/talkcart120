@@ -226,7 +226,7 @@ const OrdersPage: NextPage = () => {
               No orders found
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
-              You haven't placed any orders yet.
+              You haven&apos;t placed any orders yet.
             </Typography>
             <Button
               component={Link}

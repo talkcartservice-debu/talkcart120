@@ -553,7 +553,7 @@ const MessagesPage: React.FC = () => {
   }, [authLoading, isAuthenticated]);
 
   // Handle user search with debouncing
-  const searchUsers = useCallback(
+  const searchUsers = useMemo(() => 
     debounce(async (query: string) => {
       if (!query.trim() || query.trim().length < 2) {
         setSearchedUsers([]);

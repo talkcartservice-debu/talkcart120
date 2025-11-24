@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -276,17 +276,7 @@ const VendorDashboard: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // Fetch vendor products
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      router.push('/login');
-      return;
-    }
-
-    fetchProducts();
-  }, [user, isAuthenticated, page, searchTerm, categoryFilter, statusFilter, sortBy, sortOrder]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       const params: any = {
@@ -318,7 +308,17 @@ const VendorDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, limit, searchTerm, categoryFilter, statusFilter, sortBy, sortOrder]);
+
+  // Fetch vendor products
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+      return;
+    }
+
+    fetchProducts();
+  }, [user, isAuthenticated, fetchProducts, router]);
 
   const handleDeleteProduct = async (productId: string) => {
     try {

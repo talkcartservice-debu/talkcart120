@@ -62,7 +62,7 @@ const Custom404: NextPage = () => {
               </Typography>
               
               <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                Sorry, the page you're looking for doesn't exist or has been moved.
+                Sorry, the page you&apos;re looking for doesn&apos;t exist or has been moved.
               </Typography>
             </Box>
 

@@ -158,7 +158,7 @@ const MissedCallsDialog: React.FC<MissedCallsDialogProps> = ({
                             No Missed Calls
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            You're all caught up!
+                            You&apos;re all caught up!
                         </Typography>
                     </Box>
                 ) : (

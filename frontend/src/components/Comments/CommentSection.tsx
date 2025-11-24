@@ -878,7 +878,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           </DialogTitle>
           <DialogContent sx={{ py: 1, px: 1.5 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.75rem' }}>
-              Help us understand what's wrong with this comment.
+              Help us understand what&apos;s wrong with this comment.
             </Typography>
             <FormControl fullWidth sx={{ mb: 1 }}>
               <InputLabel sx={{ fontSize: '0.75rem' }}>Reason</InputLabel>
@@ -904,7 +904,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               label="Additional Details (Optional)"
               value={reportDescription}
               onChange={(e) => setReportDescription(e.target.value)}
-              placeholder="Please provide more details about why you're reporting this comment..."
+              placeholder="Please provide more details about why you&apos;re reporting this comment..."
               size="small"
               sx={{ '& .MuiInputBase-root': { fontSize: '0.75rem' } }}
             />

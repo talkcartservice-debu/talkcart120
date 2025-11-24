@@ -600,6 +600,8 @@ const EnhancedLiveChat: React.FC<EnhancedLiveChatProps> = ({
       </MotionBox>
     );
   });
+  
+  MessageComponent.displayName = 'MessageComponent';
 
   // Emoji picker component
   const EmojiPicker = () => (

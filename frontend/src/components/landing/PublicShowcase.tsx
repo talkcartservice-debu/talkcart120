@@ -173,7 +173,7 @@ export const PublicShowcase: React.FC<PublicShowcaseProps> = ({
           <Box display="flex" alignItems="center" gap={2} mb={2}>
             <Globe size={24} color={theme.palette.primary.main} />
             <Typography variant="h4" fontWeight={600}>
-              What's Happening
+              What&apos;s Happening
             </Typography>
             <Chip 
               label="Live Feed" 

@@ -40,7 +40,7 @@ const VendorMessagingDashboard: React.FC = () => {
     setSearchQuery('');
   };
 
-  const handleSearch = async (query: string = searchQuery) => {
+  const handleSearch = React.useCallback(async (query: string = searchQuery) => {
     setLoading(true);
     setError(null);
     
@@ -72,7 +72,7 @@ const VendorMessagingDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, page, searchQuery, searchVendors, searchCustomers]);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -80,7 +80,7 @@ const VendorMessagingDashboard: React.FC = () => {
 
   useEffect(() => {
     handleSearch();
-  }, [activeTab, page]);
+  }, [activeTab, page, handleSearch]);
 
   const handleVendorClick = (vendorId: string) => {
     // Navigate to vendor profile or start conversation

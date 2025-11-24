@@ -6,8 +6,8 @@ class I18nService {
   async loadTranslations(language: string) {
     try {
       // Dynamically import the translation file
-      const module = await import(`../locales/chatbot_${language}.json`);
-      this.translations = module.default || module;
+      const translationModule = await import(`../locales/chatbot_${language}.json`);
+      this.translations = translationModule.default || translationModule;
       this.currentLanguage = language;
       console.log(`Loaded translations for language: ${language}`);
     } catch (error) {

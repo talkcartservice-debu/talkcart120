@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -162,7 +162,7 @@ const NewMessagesPage: React.FC = () => {
   };
 
   // Handle user search with debouncing
-  const searchUsers = useCallback(
+  const searchUsers = useMemo(() =>
     debounce(async (query: string) => {
       if (!query.trim() || query.trim().length < 2) {
         setSearchedUsers([]);

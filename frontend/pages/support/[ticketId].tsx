@@ -101,7 +101,7 @@ const TicketDetailsPage: NextPage = () => {
     }
   }, [ticketId, user]);
 
-  const fetchTicketDetails = async () => {
+  const fetchTicketDetails = React.useCallback(async () => {
     try {
       setLoading(true);
       setErrorMessage('');
@@ -128,7 +128,7 @@ const TicketDetailsPage: NextPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [ticketId]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) {

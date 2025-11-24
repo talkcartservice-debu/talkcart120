@@ -461,7 +461,7 @@ const MarketplaceDashboard: React.FC = () => {
                     No orders yet
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    You haven't placed any orders. Start shopping now!
+                    You haven&apos;t placed any orders. Start shopping now!
                   </Typography>
                   <Button
                     variant="contained"

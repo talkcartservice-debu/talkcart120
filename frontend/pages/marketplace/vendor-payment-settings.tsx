@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -156,14 +156,7 @@ const VendorPaymentSettings: React.FC = () => {
   }, [isAuthenticated, router]);
 
   // Fetch current payment preferences
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchPaymentPreferences();
-      fetchPayoutHistory();
-    }
-  }, [isAuthenticated, user]);
-
-  const fetchPaymentPreferences = async () => {
+  const fetchPaymentPreferences = useCallback(async () => {
     try {
       setLoading(true);
       const response: any = await api.marketplace.getMyPaymentPreferences();
@@ -181,9 +174,9 @@ const VendorPaymentSettings: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [preferences]);
 
-  const fetchPayoutHistory = async () => {
+  const fetchPayoutHistory = useCallback(async () => {
     try {
       setHistoryLoading(true);
       const response: any = await api.marketplace.getMyPayoutHistory({ limit: 20 });
@@ -195,7 +188,14 @@ const VendorPaymentSettings: React.FC = () => {
     } finally {
       setHistoryLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchPaymentPreferences();
+      fetchPayoutHistory();
+    }
+  }, [isAuthenticated, user, fetchPaymentPreferences, fetchPayoutHistory]);
 
   const handleSave = async () => {
     try {

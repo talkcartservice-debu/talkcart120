@@ -87,6 +87,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [convertedPrice, setConvertedPrice] = useState<number | null>(null);
   const [isConverting, setIsConverting] = useState(false);
   const [detectedCurrency, setDetectedCurrency] = useState<string>('USD');
+  
+  // Get cart functions - Moved to top to avoid conditional hook calls
+  const { addToCart } = useCart();
+
+  // Handle add to cart with useCallback to prevent unnecessary re-renders
+  // Moved to top to avoid conditional hook calls
+  const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Only add to cart if product exists
+    if (!product?.id) return;
+    
+    try {
+      const success = await addToCart(product.id, 1);
+      if (success) {
+        toast.success(`${product.name || 'Product'} added to cart!`);
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart');
+    }
+  }, [product?.id, addToCart]);
 
   // Detect user's currency when component mounts
   useEffect(() => {
@@ -200,36 +221,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
     convertPrice();
   }, [product, effectiveUserCurrency, onCurrencyConverted]);
 
-  // Loading skeleton
-  if (loading || !product) {
-    return (
-      <Card
-        sx={{
-          height: 320,
-          display: 'flex',
-          flexDirection: 'column',
-          borderRadius: 2,
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-          position: 'relative',
-          overflow: 'hidden',
-          transition: 'all 0.3s ease',
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-          },
-        }}
-      >
-        <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 0 }} />
-        <CardContent sx={{ flexGrow: 1, p: 1.5 }}>
-          <Skeleton variant="text" width="80%" height={20} sx={{ mb: 0.5 }} />
-          <Skeleton variant="text" width="60%" height={18} sx={{ mb: 1.5 }} />
-          <Skeleton variant="rectangular" width="100%" height={32} />
-        </CardContent>
-      </Card>
-    );
-  }
-
   const getImageSrc = () => {
     // Add safety check for product
     if (!product?.images || product.images.length === 0) {
@@ -262,24 +253,35 @@ const ProductCard: React.FC<ProductCardProps> = ({
     e.stopPropagation();
   };
 
-  const { addToCart } = useCart();
-
-  // Handle add to cart with useCallback to prevent unnecessary re-renders
-  const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Only add to cart if product exists
-    if (!product?.id) return;
-    
-    try {
-      const success = await addToCart(product.id, 1);
-      if (success) {
-        toast.success(`${product.name || 'Product'} added to cart!`);
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error('Failed to add item to cart');
-    }
-  }, [product?.id, addToCart]);
+  // Loading skeleton
+  if (loading || !product) {
+    return (
+      <Card
+        sx={{
+          height: 320,
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: 2,
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+          position: 'relative',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          },
+        }}
+      >
+        <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 0 }} />
+        <CardContent sx={{ flexGrow: 1, p: 1.5 }}>
+          <Skeleton variant="text" width="80%" height={20} sx={{ mb: 0.5 }} />
+          <Skeleton variant="text" width="60%" height={18} sx={{ mb: 1.5 }} />
+          <Skeleton variant="rectangular" width="100%" height={32} />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card

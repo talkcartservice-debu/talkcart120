@@ -298,7 +298,7 @@ const HelpPage: NextPage = () => {
                 ) : tickets.length === 0 ? (
                   <Box sx={{ textAlign: 'center', py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
-                      You don't have any support tickets yet.
+                      You don&apos;t have any support tickets yet.
                     </Typography>
                     <Button 
                       variant="outlined" 
@@ -373,7 +373,7 @@ const HelpPage: NextPage = () => {
                   Contact Us
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  For immediate assistance, you can create a support ticket using the "New Ticket" button.
+                  For immediate assistance, you can create a support ticket using the &quot;New Ticket&quot; button.
                 </Typography>
               </Box>
             )}

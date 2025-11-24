@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import {
   Box,
   Container,
@@ -135,7 +136,7 @@ const CreateProductPage: React.FC = () => {
     if (!isAuthenticated && !authLoading) {
       router.push('/auth/login?next=' + encodeURIComponent('/marketplace/create'));
     }
-  }, [isAuthenticated, authLoading, router.isReady]);
+  }, [isAuthenticated, authLoading, router.isReady, router]);
 
   const handleInputChange = (field: keyof ProductForm) => (event: any) => {
     const value = event.target.value;
@@ -648,12 +649,12 @@ const CreateProductPage: React.FC = () => {
                     <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                       {imagePreview.map((preview, index) => (
                         <Box key={index} sx={{ position: 'relative' }}>
-                          <img
+                          <Image
                             src={preview}
                             alt={`Preview ${index + 1}`}
+                            width={100}
+                            height={100}
                             style={{
-                              width: 100,
-                              height: 100,
                               objectFit: 'cover',
                               borderRadius: 4,
                               border: '1px solid #ddd'

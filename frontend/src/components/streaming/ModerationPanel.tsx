@@ -307,7 +307,7 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({
       }
     }
     return Array.from(reasons).sort().slice(0, 12); // limit to a dozen chips
-  }, [bannedUsers]);
+  }, [bannedUsersData]);
 
   const banReasonCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -318,7 +318,7 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({
       for (const r of list) counts[r] = (counts[r] || 0) + 1;
     }
     return counts;
-  }, [bannedUsers]);
+  }, [bannedUsersData]);
 
   const bansTotalPages = Math.max(1, Math.ceil(activeBansAll.length / pageSize));
   const activeBans = activeBansAll.slice((bansPage - 1) * pageSize, bansPage * pageSize);
@@ -345,7 +345,7 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({
       }
     }
     return Array.from(reasons).sort().slice(0, 12);
-  }, [timeouts]);
+  }, [moderationData]);
 
   const timeoutReasonCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -356,7 +356,7 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({
       for (const r of list) counts[r] = (counts[r] || 0) + 1;
     }
     return counts;
-  }, [timeouts]);
+  }, [moderationData]);
 
   const timeoutsTotalPages = Math.max(1, Math.ceil(activeTimeoutsAll.length / pageSize));
   const recentTimeouts = activeTimeoutsAll.slice((timeoutsPage - 1) * pageSize, timeoutsPage * pageSize);
@@ -640,7 +640,7 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({
       <Card>
         <CardContent>
           <Alert severity="warning">
-            You don't have permission to access moderation tools.
+            You don&apos;t have permission to access moderation tools.
           </Alert>
         </CardContent>
       </Card>

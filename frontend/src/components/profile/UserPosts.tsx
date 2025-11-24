@@ -222,8 +222,8 @@ const UserPosts: React.FC<UserPostsProps> = ({ username, isOwnProfile }) => {
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {isOwnProfile 
-              ? "You haven't posted anything yet. Share something with the community!" 
-              : "This user hasn't posted anything yet."}
+              ? "You haven&apos;t posted anything yet. Share something with the community!" 
+              : "This user hasn&apos;t posted anything yet."}
           </Typography>
         </Box>
       </Box>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Box, 
   Typography, 
@@ -267,6 +267,93 @@ const PersistentChatContainer: React.FC<PersistentChatContainerProps> = ({ isOpe
     severity: 'info'
   });
 
+  // useCallback functions
+  const showBrowserNotification = useCallback((message: ChatbotMessage) => {
+    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
+      return;
+    }
+
+    // Don't show notification for own messages
+    if (message.senderId === user?.id) {
+      return;
+    }
+
+    const title = 'New Chat Message';
+    const options = {
+      body: message.content || 'You received a new message',
+      icon: '/favicon.ico',
+      tag: `chat-${conversation?._id}`,
+      renotify: true,
+    };
+
+    new Notification(title, options);
+  }, [user, conversation?._id]);
+
+  const updateChatHistory = useCallback((conv: ChatbotConversation, msgs: ChatbotMessage[]) => {
+    if (!user) return;
+    
+    const lastMessage = msgs.length > 0 ? msgs[msgs.length - 1] : null;
+    const historyItem: ChatHistoryItem = {
+      id: conv._id,
+      conversationId: conv._id,
+      title: conv.productName || 'Vendor Support',
+      lastMessage: lastMessage ? lastMessage.content : 'No messages yet',
+      timestamp: conv.lastActivity,
+      unreadCount: 0 // In a real implementation, this would be tracked
+    };
+    
+    // Update or add to chat history
+    setChatHistory(prev => {
+      const existingIndex = prev.findIndex(item => item.conversationId === conv._id);
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = historyItem;
+        return updated;
+      } else {
+        return [historyItem, ...prev];
+      }
+    });
+  }, [user]);
+
+  const fetchOrCreateConversation = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Try to find existing conversation between vendor and admin
+      const response = await chatbotApiModule.getConversations({ 
+        limit: 1 
+      });
+      
+      if (response?.data?.conversations?.length > 0) {
+        const conversation = response.data.conversations[0] || null;
+        setConversation(conversation);
+        
+        // Fetch messages for this conversation
+        if (conversation) {
+          const messagesResponse = await chatbotApiModule.getMessages(conversation._id, { limit: 50 });
+          if (messagesResponse?.data?.messages) {
+            setMessages(messagesResponse.data.messages);
+            
+            // Update chat history
+            updateChatHistory(conversation, messagesResponse.data.messages);
+          }
+        }
+      } else {
+        // No existing conversation found
+        setConversation(null);
+        setMessages([]);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch conversation:', err);
+      setError('Failed to load conversation');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, updateChatHistory]);
+
   // Load chat history from localStorage on component mount
   useEffect(() => {
     const loadChatHistory = () => {
@@ -385,7 +472,7 @@ const PersistentChatContainer: React.FC<PersistentChatContainerProps> = ({ isOpe
     if (isOpen && user) {
       fetchOrCreateConversation();
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, fetchOrCreateConversation]);
 
   // Join/leave chatbot conversation room when conversation changes
   useEffect(() => {
@@ -478,92 +565,6 @@ const PersistentChatContainer: React.FC<PersistentChatContainerProps> = ({ isOpe
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const showBrowserNotification = (message: ChatbotMessage) => {
-    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
-      return;
-    }
-
-    // Don't show notification for own messages
-    if (message.senderId === user?.id) {
-      return;
-    }
-
-    const title = 'New Chat Message';
-    const options = {
-      body: message.content || 'You received a new message',
-      icon: '/favicon.ico',
-      tag: `chat-${conversation?._id}`,
-      renotify: true,
-    };
-
-    new Notification(title, options);
-  };
-
-  const fetchOrCreateConversation = async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Try to find existing conversation between vendor and admin
-      const response = await chatbotApiModule.getConversations({ 
-        limit: 1 
-      });
-      
-      if (response?.data?.conversations?.length > 0) {
-        const conversation = response.data.conversations[0] || null;
-        setConversation(conversation);
-        
-        // Fetch messages for this conversation
-        if (conversation) {
-          const messagesResponse = await chatbotApiModule.getMessages(conversation._id, { limit: 50 });
-          if (messagesResponse?.data?.messages) {
-            setMessages(messagesResponse.data.messages);
-            
-            // Update chat history
-            updateChatHistory(conversation, messagesResponse.data.messages);
-          }
-        }
-      } else {
-        // No existing conversation found
-        setConversation(null);
-        setMessages([]);
-      }
-    } catch (err: any) {
-      console.error('Failed to fetch conversation:', err);
-      setError('Failed to load conversation');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateChatHistory = (conv: ChatbotConversation, msgs: ChatbotMessage[]) => {
-    if (!user) return;
-    
-    const lastMessage = msgs.length > 0 ? msgs[msgs.length - 1] : null;
-    const historyItem: ChatHistoryItem = {
-      id: conv._id,
-      conversationId: conv._id,
-      title: conv.productName || 'Vendor Support',
-      lastMessage: lastMessage ? lastMessage.content : 'No messages yet',
-      timestamp: conv.lastActivity,
-      unreadCount: 0 // In a real implementation, this would be tracked
-    };
-    
-    // Update or add to chat history
-    setChatHistory(prev => {
-      const existingIndex = prev.findIndex(item => item.conversationId === conv._id);
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = historyItem;
-        return updated;
-      } else {
-        return [historyItem, ...prev];
-      }
-    });
   };
 
   const createConversation = async () => {

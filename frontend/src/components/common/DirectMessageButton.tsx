@@ -32,11 +32,6 @@ export const DirectMessageButton: React.FC<DirectMessageButtonProps> = ({
   const router = useRouter();
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
 
-  // Don't show button for own profile
-  if (user?.id === targetUserId) {
-    return null;
-  }
-
   // Create conversation mutation
   const createConversationMutation = useMutation({
     mutationFn: async () => {
@@ -69,6 +64,11 @@ export const DirectMessageButton: React.FC<DirectMessageButtonProps> = ({
       }
     }
   });
+
+  // Don't show button for own profile
+  if (user?.id === targetUserId) {
+    return null;
+  }
 
   const handleDirectMessage = () => {
     if (!targetAllowsDirectMessages) {

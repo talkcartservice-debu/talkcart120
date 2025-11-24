@@ -36,11 +36,6 @@ export const GroupInviteButton: React.FC<GroupInviteButtonProps> = ({
   const { privacySettings } = usePrivacy();
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
 
-  // Don't show button for own profile
-  if (user?.id === targetUserId) {
-    return null;
-  }
-
   // Create group conversation mutation
   const createGroupMutation = useMutation({
     mutationFn: async () => {
@@ -93,6 +88,11 @@ export const GroupInviteButton: React.FC<GroupInviteButtonProps> = ({
       }
     }
   });
+
+  // Don't show button for own profile
+  if (user?.id === targetUserId) {
+    return null;
+  }
 
   const handleGroupInvite = () => {
     if (!targetAllowsGroupInvites) {

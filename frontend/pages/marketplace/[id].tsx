@@ -322,7 +322,7 @@ const ProductPage: React.FC<ProductPageProps> = () => {
             Product Not Found
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            The product you're looking for doesn't exist or has been removed.
+            The product you&apos;re looking for doesn&apos;t exist or has been removed.
           </Typography>
           <Button
             component={Link}

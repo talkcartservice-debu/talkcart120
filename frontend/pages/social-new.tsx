@@ -173,7 +173,7 @@ const SocialNewPage: React.FC = () => {
   useEffect(() => {
     if (!user?.id) return;
     handleRefresh();
-  }, [user?.id]);
+  }, [user?.id, handleRefresh]);
   
   // Add real-time post creation listener
   useEffect(() => {
@@ -193,7 +193,7 @@ const SocialNewPage: React.FC = () => {
         window.removeEventListener('posts:new', onLocalNewPost as EventListener);
       }
     };
-  }, [activeTab]);
+  }, [activeTab, fetchPosts, getFeedType]);
   
   // Navigation handlers with error handling
   const handleNavigation = (path: string) => {

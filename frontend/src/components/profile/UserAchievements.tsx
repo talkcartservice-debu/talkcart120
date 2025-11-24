@@ -198,8 +198,8 @@ const UserAchievements: React.FC<UserAchievementsProps> = ({ username, isOwnProf
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {isOwnProfile 
-              ? "You haven't shared any achievements yet. Create your first achievement!" 
-              : "This user hasn't shared any achievements yet."}
+              ? "You haven&apos;t shared any achievements yet. Create your first achievement!" 
+              : "This user hasn&apos;t shared any achievements yet."}
           </Typography>
         </Box>
       </Box>

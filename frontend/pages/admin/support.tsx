@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { 
@@ -120,14 +120,7 @@ const SupportAdminPage: NextPage = () => {
     { value: 'assigned', label: 'Assigned to Me' }
   ];
 
-  useEffect(() => {
-    if (user) {
-      fetchTicketStats();
-      fetchAdminTickets();
-    }
-  }, [user, page, filters]);
-
-  const fetchTicketStats = async () => {
+  const fetchTicketStats = useCallback(async () => {
     try {
       setStatsLoading(true);
       setError(null);
@@ -153,9 +146,9 @@ const SupportAdminPage: NextPage = () => {
     } finally {
       setStatsLoading(false);
     }
-  };
+  }, []);
 
-  const fetchAdminTickets = async () => {
+  const fetchAdminTickets = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -191,7 +184,14 @@ const SupportAdminPage: NextPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, filters, user?.id]);
+
+  useEffect(() => {
+    if (user) {
+      fetchTicketStats();
+      fetchAdminTickets();
+    }
+  }, [user, page, filters, fetchTicketStats, fetchAdminTickets]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);

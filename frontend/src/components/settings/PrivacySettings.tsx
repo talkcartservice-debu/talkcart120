@@ -207,7 +207,7 @@ export const PrivacySettings: React.FC = () => {
           </ListItemIcon>
           <ListItemText
             primary="Show Online Status"
-            secondary="Show when you're active on the platform"
+            secondary="Show when you&apos;re active on the platform"
           />
           <Switch
             checked={privacySettings.showOnlineStatus}

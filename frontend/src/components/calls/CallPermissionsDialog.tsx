@@ -217,13 +217,13 @@ const CallPermissionsDialog: React.FC<CallPermissionsDialogProps> = ({
 
                 {allPermissionsGranted && (
                     <Alert severity="success" sx={{ mb: 2 }}>
-                        All permissions granted! You'll receive notifications, ringtones, and vibrations for incoming calls.
+                        All permissions granted! You&apos;ll receive notifications, ringtones, and vibrations for incoming calls.
                     </Alert>
                 )}
 
                 {!allPermissionsGranted && hasRequiredSupport && (
                     <Alert severity="info" sx={{ mb: 2 }}>
-                        Click "Grant Permissions" to enable call notifications and sounds.
+                        Click &quot;Grant Permissions&quot; to enable call notifications and sounds.
                     </Alert>
                 )}
 

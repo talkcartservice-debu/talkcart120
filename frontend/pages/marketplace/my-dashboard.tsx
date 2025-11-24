@@ -137,37 +137,7 @@ const MyDashboard: React.FC = () => {
   const [chatbotMessageText, setChatbotMessageText] = useState('');
   const chatbotMessagesEndRef = React.useRef<HTMLDivElement>(null);
 
-  // Handle authentication and data fetching
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-    
-    if (user) {
-      fetchOrders();
-      fetchWishlist();
-      fetchConversations();
-      fetchChatbotConversations();
-      fetchVendors();
-    }
-  }, [isAuthenticated, user, router]);
-
-  // Scroll to bottom of messages
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
-
-  // Scroll to bottom of chatbot messages
-  useEffect(() => {
-    if (chatbotMessagesEndRef.current) {
-      chatbotMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatbotMessages]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = React.useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, orders: true }));
       const response: any = await api.orders.getAll({ page: 1, limit: 10 });
@@ -186,9 +156,9 @@ const MyDashboard: React.FC = () => {
     } finally {
       setLoading(prev => ({ ...prev, orders: false }));
     }
-  };
+  }, []);
 
-  const fetchWishlist = async () => {
+  const fetchWishlist = React.useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, wishlist: true }));
       const response: any = await api.marketplace.getWishlist();
@@ -220,9 +190,9 @@ const MyDashboard: React.FC = () => {
     } finally {
       setLoading(prev => ({ ...prev, wishlist: false }));
     }
-  };
+  }, []);
 
-  const fetchVendors = async () => {
+  const fetchVendors = React.useCallback(async () => {
     try {
       const response: any = await api.marketplace.getVendors({ limit: 100 });
       if (response.success) {
@@ -234,7 +204,37 @@ const MyDashboard: React.FC = () => {
         console.error('Error fetching vendors:', err);
       }
     }
-  };
+  }, []);
+
+  // Handle authentication and data fetching
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    
+    if (user) {
+      fetchOrders();
+      fetchWishlist();
+      fetchConversations();
+      fetchChatbotConversations();
+      fetchVendors();
+    }
+  }, [isAuthenticated, user, router, fetchOrders, fetchWishlist, fetchVendors, fetchConversations, fetchChatbotConversations]);
+
+  // Scroll to bottom of messages
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // Scroll to bottom of chatbot messages
+  useEffect(() => {
+    if (chatbotMessagesEndRef.current) {
+      chatbotMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatbotMessages]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -547,7 +547,7 @@ const MyDashboard: React.FC = () => {
           <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden' }}>
             <CardHeader
               title="My Wishlist"
-              subheader="Products you've saved for later"
+              subheader="Products you&apos;ve saved for later"
             />
             <CardContent>
               {loading.wishlist ? (
@@ -672,7 +672,7 @@ const MyDashboard: React.FC = () => {
           <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden' }}>
             <CardHeader
               title="Vendor Chat"
-              subheader="Chat with vendors you've purchased from"
+              subheader="Chat with vendors you&apos;ve purchased from"
               action={
                 <Button
                   variant="outlined"
@@ -845,6 +845,7 @@ const MyDashboard: React.FC = () => {
                           const vendor = conversation.participants.find(p => p.id !== user?.id);
                           return (
                             <ButtonBase 
+                              key={conversation.id}
                               onClick={() => {
                                 setActiveConversation(conversation);
                               }}
@@ -858,7 +859,6 @@ const MyDashboard: React.FC = () => {
                               }}
                             >
                             <ListItem 
-                              key={conversation.id}
                               sx={{
                                 width: '100%',
                                 borderRadius: 2,
@@ -1063,6 +1063,7 @@ const MyDashboard: React.FC = () => {
                       <List>
                         {chatbotConversations.map((conversation) => (
                           <ButtonBase 
+                            key={conversation._id}
                             onClick={() => {
                               setActiveChatbotConversation(conversation);
                             }}
@@ -1076,7 +1077,6 @@ const MyDashboard: React.FC = () => {
                             }}
                           >
                             <ListItem 
-                              key={conversation._id}
                               sx={{
                                 width: '100%',
                                 borderRadius: 2,

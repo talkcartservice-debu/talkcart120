@@ -225,7 +225,7 @@ export default function RegisterPage() {
     return () => {
       checkUsernameAvailability.cancel();
     };
-  }, [formData.username]);
+  }, [formData.username, checkUsernameAvailability]);
 
   const validateForm = () => {
     const errors: Record<string, string[]> = {};

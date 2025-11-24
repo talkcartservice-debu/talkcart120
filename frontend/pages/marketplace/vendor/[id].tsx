@@ -59,14 +59,7 @@ const VendorProfilePage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    if (id) {
-      fetchVendorInfo();
-      fetchVendorProducts(1);
-    }
-  }, [id]);
-
-  const fetchVendorInfo = async () => {
+  const fetchVendorInfo = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -84,9 +77,9 @@ const VendorProfilePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const fetchVendorProducts = async (pageNum: number = 1) => {
+  const fetchVendorProducts = React.useCallback(async (pageNum: number = 1) => {
     try {
       setProductsLoading(true);
       setProductsError(null);
@@ -105,7 +98,14 @@ const VendorProfilePage: React.FC = () => {
     } finally {
       setProductsLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchVendorInfo();
+      fetchVendorProducts(1);
+    }
+  }, [id, fetchVendorInfo, fetchVendorProducts]);
 
   const handleViewProducts = () => {
     // Scroll to products section
@@ -360,7 +360,7 @@ const VendorProfilePage: React.FC = () => {
                   No products found
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  This vendor hasn't listed any products yet.
+                  This vendor hasn&apos;t listed any products yet.
                 </Typography>
               </CardContent>
             </Card>

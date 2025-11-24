@@ -27,7 +27,7 @@ const AdminRefundsPage: NextPage = () => {
     return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 16);
   };
 
-  const fetchRecent = async () => {
+  const fetchRecent = React.useCallback(async () => {
     try {
       const params = new URLSearchParams();
       params.set('limit', String(limit));
@@ -44,7 +44,7 @@ const AdminRefundsPage: NextPage = () => {
     } catch (e) {
       // ignore
     }
-  };
+  }, [limit, page, since, until, status, currency, paymentIntentId, userId]);
 
   useEffect(() => {
     if (user?.role !== 'admin') return;
@@ -67,7 +67,7 @@ const AdminRefundsPage: NextPage = () => {
       offSubmitted?.();
       offFailed?.();
     };
-  }, [user?.role, isConnected, joined]);
+  }, [user?.role, isConnected, joined, fetchRecent, ws]);
 
   if (user?.role !== 'admin') {
     return (

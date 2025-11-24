@@ -278,7 +278,7 @@ Timestamp: ${Date.now()}`;
                 <Typography variant="h6">Sign Message</Typography>
                 <Typography variant="body2" color="text.secondary" textAlign="center">
                   Please sign the message in your wallet to verify ownership. 
-                  This is free and doesn't require any gas fees.
+                  This is free and doesn&apos;t require any gas fees.
                 </Typography>
               </Box>
             </motion.div>

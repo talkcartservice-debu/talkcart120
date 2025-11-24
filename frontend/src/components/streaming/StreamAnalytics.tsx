@@ -210,6 +210,36 @@ const StreamAnalytics: React.FC<StreamAnalyticsProps> = ({
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [activeTab, setActiveTab] = useState(0);
 
+  // Export analytics mutation - Moved to top to avoid conditional hook calls
+  const exportAnalyticsMutation = useMutation({
+    mutationFn: ({ format, timeRange }: { format: string; timeRange: string }) =>
+      streamingApi.exportAnalytics(streamId, format as 'json' | 'csv', timeRange),
+    onSuccess: (data: any) => {
+      // Create download link
+      const blob = new Blob([JSON.stringify(data)], {
+        type: exportFormat === 'csv' ? 'text/csv' :
+              exportFormat === 'pdf' ? 'application/pdf' :
+              'application/json'
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `stream-analytics-${streamId}-${selectedTimeRange}.${exportFormat}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      setSnackbarMessage('Analytics exported successfully!');
+      setSnackbarOpen(true);
+      setShowExportDialog(false);
+    },
+    onError: () => {
+      setSnackbarMessage('Failed to export analytics');
+      setSnackbarOpen(true);
+    },
+  });
+
   // No mock data - only use real data from backend
 
   // Fetch analytics data
@@ -271,36 +301,6 @@ const StreamAnalytics: React.FC<StreamAnalyticsProps> = ({
         topChatters: rawMetrics.topChatters ?? [],
       }
     : undefined;
-
-  // Export analytics mutation
-  const exportAnalyticsMutation = useMutation({
-    mutationFn: ({ format, timeRange }: { format: string; timeRange: string }) =>
-      streamingApi.exportAnalytics(streamId, format as 'json' | 'csv', timeRange),
-    onSuccess: (data: any) => {
-      // Create download link
-      const blob = new Blob([JSON.stringify(data)], {
-        type: exportFormat === 'csv' ? 'text/csv' :
-              exportFormat === 'pdf' ? 'application/pdf' :
-              'application/json'
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `stream-analytics-${streamId}-${selectedTimeRange}.${exportFormat}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      setSnackbarMessage('Analytics exported successfully!');
-      setSnackbarOpen(true);
-      setShowExportDialog(false);
-    },
-    onError: () => {
-      setSnackbarMessage('Failed to export analytics');
-      setSnackbarOpen(true);
-    },
-  });
 
   const handleTimeRangeChange = (newRange: '1h' | '24h' | '7d' | '30d') => {
     setSelectedTimeRange(newRange);

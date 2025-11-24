@@ -1692,7 +1692,7 @@ export default function SettingsPage() {
             </List>
 
             <Typography variant="body2" sx={{ mt: 2 }}>
-              To confirm, please type "DELETE" in the field below:
+              To confirm, please type &quot;DELETE&quot; in the field below:
             </Typography>
 
             <TextField
@@ -1751,7 +1751,7 @@ export default function SettingsPage() {
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 1 }}>
             <Typography variant="body1">
-              We'll prepare a download with all your account data, including:
+              We&apos;ll prepare a download with all your account data, including:
             </Typography>
 
             <List dense>
@@ -1771,7 +1771,7 @@ export default function SettingsPage() {
                 <ListItemIcon>
                   <Check size={18} color={muiTheme.palette.primary.main} />
                 </ListItemIcon>
-                <ListItemText primary="Content you've created" />
+                <ListItemText primary="Content you&apos;ve created" />
               </ListItem>
               <ListItem>
                 <ListItemIcon>

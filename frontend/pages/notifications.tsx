@@ -596,7 +596,7 @@ const NotificationsPage: React.FC = () => {
                       No notifications yet
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      When you receive notifications, they'll appear here
+                      When you receive notifications, they&apos;ll appear here
                     </Typography>
                   </Box>
                 ) : (
