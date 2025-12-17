@@ -1338,7 +1338,7 @@ const MessagesPage: React.FC = () => {
                 />
               )}
               loading={searchingUsers}
-              noOptionsText={userSearchQuery ? "No users found" : "Type to search for users"}
+              noOptionsText={userSearchQuery ? 'No users found' : 'Type to search for users'}
             />
           </Box>
           <Box sx={{ mt: 2 }}>
