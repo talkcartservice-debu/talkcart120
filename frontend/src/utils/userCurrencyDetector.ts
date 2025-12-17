@@ -103,8 +103,10 @@ if (typeof window !== 'undefined') {
   console.log('To clear currency cache, run: clearCurrencyCache() in browser console');
 }
 
-export default {
+const userCurrencyDetector = {
   detectCurrencyByLocation,
   detectCurrencyByLocale,
   getUserCurrency
 };
+
+export default userCurrencyDetector;

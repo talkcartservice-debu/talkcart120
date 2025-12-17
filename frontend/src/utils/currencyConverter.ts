@@ -116,7 +116,7 @@ export const fetchLocationBasedCurrency = async (): Promise<string> => {
   }
 };
 
-export default {
+const currencyConverter = {
   getExchangeRate,
   convertUsdToCurrency,
   convertCurrencyToUsd,
@@ -125,3 +125,5 @@ export default {
   fetchLocationBasedCurrency,
   getUserCurrency
 };
+
+export default currencyConverter;

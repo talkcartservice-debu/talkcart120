@@ -1335,7 +1335,7 @@ const PersistentChatContainer: React.FC<PersistentChatContainerProps> = ({ isOpe
               <List>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">
-                    {t('chatbot.searchResults')} "{searchQuery}"
+                    {t('chatbot.searchResults')} &quot;{searchQuery}&quot;
                   </Typography>
                   <IconButton size="small" onClick={clearSearch}>
                     <CloseIcon />

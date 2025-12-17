@@ -20,7 +20,7 @@ export function LazyComponent({
   skeletonVariant = 'rectangular',
 }: LazyComponentProps) {
   const { useLazyLoading } = usePerformanceOptimization();
-  const { ref, isVisible } = useLazyLoading(threshold);
+  const { ref, isVisible } = useLazyLoading();
 
   const defaultFallback = (
     <Box sx={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

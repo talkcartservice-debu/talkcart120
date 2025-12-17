@@ -354,10 +354,12 @@ export const isLikelyImageUrl = (url: string): boolean => {
   return imageExtensions.some(ext => url.toLowerCase().includes(ext));
 };
 
-export default {
+const mediaUtils = {
   isValidUrl,
   normalizeMediaUrl,
   isKnownMissingFile,
   isLikelyVideoUrl,
   isLikelyImageUrl
 };
+
+export default mediaUtils;
