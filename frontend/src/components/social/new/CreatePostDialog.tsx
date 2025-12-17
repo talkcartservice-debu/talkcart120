@@ -453,7 +453,7 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
           fullWidth
           multiline
           rows={4}
-          placeholder="What's happening?"
+          placeholder="What&apos;s happening?"
           value={content}
           onChange={(e) => handleContentChange(e.target.value)}
           variant="outlined"

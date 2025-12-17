@@ -81,13 +81,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   console.log('ProductCard received product:', product);
   console.log('ProductCard loading state:', loading);
   
-  const router = useRouter();
-  const theme = useTheme();
-  const [imageError, setImageError] = useState(false);
-  const [convertedPrice, setConvertedPrice] = useState<number | null>(null);
-  const [isConverting, setIsConverting] = useState(false);
-  const [detectedCurrency, setDetectedCurrency] = useState<string>('USD');
-  
   // Get cart functions - Moved to top to avoid conditional hook calls
   const { addToCart } = useCart();
 
@@ -107,7 +100,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
       console.error('Error adding to cart:', error);
       toast.error('Failed to add item to cart');
     }
-  }, [product?.id, addToCart]);
+  }, [product?.name, product?.id, addToCart]);
+
+  const router = useRouter();
+  const theme = useTheme();
+  const [imageError, setImageError] = useState(false);
+  const [convertedPrice, setConvertedPrice] = useState<number | null>(null);
+  const [isConverting, setIsConverting] = useState(false);
+  const [detectedCurrency, setDetectedCurrency] = useState<string>('USD');
 
   // Detect user's currency when component mounts
   useEffect(() => {
