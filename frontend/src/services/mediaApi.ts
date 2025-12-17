@@ -3,13 +3,13 @@ import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Create axios instance with default config
-const mediaApi = axios.create({
+const apiClient = axios.create({
     baseURL: `${API_BASE_URL}/api/media`,
     timeout: 0, // No timeout for file uploads
 });
 
 // Add auth token to requests
-mediaApi.interceptors.request.use((config) => {
+apiClient.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -51,7 +51,7 @@ export const uploadFile = async (
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await mediaApi.post<UploadResponse>('/upload', formData, {
+        const response = await apiClient.post<UploadResponse>('/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -110,7 +110,7 @@ export const uploadMultipleFiles = async (
  */
 export const deleteFile = async (publicId: string): Promise<{ success: boolean; message: string }> => {
     try {
-        const response = await mediaApi.delete(`/delete/${publicId}`);
+        const response = await apiClient.delete(`/delete/${publicId}`);
         return response.data;
     } catch (error: any) {
         console.error('File deletion error:', error);
@@ -237,7 +237,7 @@ export const getFileType = (mimeType: string): 'image' | 'video' | 'audio' | 'do
     return 'document';
 };
 
-export default {
+const mediaApi = {
     uploadFile,
     uploadMultipleFiles,
     deleteFile,
@@ -247,3 +247,5 @@ export default {
     formatFileSize,
     getFileType,
 };
+
+export default mediaApi;

@@ -52,8 +52,10 @@ export const isCurrencyCacheValid = (): boolean => {
   return false;
 };
 
-export default {
+const currencyCacheUtils = {
   clearCurrencyCache,
   getCachedCurrency,
   isCurrencyCacheValid
 };
+
+export default currencyCacheUtils;

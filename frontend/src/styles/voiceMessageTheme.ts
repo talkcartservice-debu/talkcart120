@@ -321,7 +321,7 @@ export const useVoiceMessageTheme = (themeName: keyof typeof voiceMessageThemePr
     };
 };
 
-export default {
+const voiceMessageTheme = {
     defaultVoiceMessageTheme,
     darkVoiceMessageTheme,
     minimalVoiceMessageTheme,
@@ -331,3 +331,5 @@ export default {
     applyVoiceMessageTheme,
     useVoiceMessageTheme
 };
+
+export default voiceMessageTheme;

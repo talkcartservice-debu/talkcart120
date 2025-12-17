@@ -271,7 +271,7 @@ const MessagesPage: React.FC = () => {
         participantNames.includes(searchQuery.toLowerCase())
       );
     });
-  }, [conversations, searchQuery]);
+  }, [conversations, searchQuery, getConversationName]);
 
   // Handle conversation selection
   const handleSelectConversation = (conversation: any) => {

@@ -32,7 +32,9 @@ export const enhancedDarkTheme = createTheme({
     },
 });
 
-export default {
+const voiceMessageTheme = {
     light: enhancedLightTheme,
     dark: enhancedDarkTheme,
 };
+
+export default voiceMessageTheme;

@@ -72,7 +72,7 @@ const VendorMessagingDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeTab, page, searchQuery, searchVendors, searchCustomers]);
+  }, [activeTab, page, searchQuery]);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);

@@ -73,7 +73,7 @@ export const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'vide
 // Social media sharing
 export const SHARE_URL = process.env.NEXT_PUBLIC_SHARE_URL || 'https://talkcart.io';
 
-export default {
+const config = {
   API_URL,
   SOCKET_URL,
   AUTH_TOKEN_KEY,
@@ -88,3 +88,5 @@ export default {
   ALLOWED_FILE_TYPES,
   SHARE_URL
 };
+
+export default config;

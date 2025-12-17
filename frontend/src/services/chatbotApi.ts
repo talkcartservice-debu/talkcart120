@@ -3,13 +3,13 @@ import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Create axios instance with default config
-const chatbotApi = axios.create({
+const apiClient = axios.create({
     baseURL: `${API_BASE_URL}/api/chatbot`,
     timeout: 0, // No timeout
 });
 
 // Add auth token to requests with enhanced debugging and error handling
-chatbotApi.interceptors.request.use((config) => {
+apiClient.interceptors.request.use((config) => {
     console.log('Chatbot API Request:', {
         url: config.url,
         method: config.method,
@@ -35,7 +35,7 @@ chatbotApi.interceptors.request.use((config) => {
 });
 
 // Add response interceptor for debugging
-chatbotApi.interceptors.response.use(
+apiClient.interceptors.response.use(
     (response) => {
         console.log('Chatbot API Success Response:', {
             status: response.status,
@@ -291,7 +291,7 @@ export const getConversations = async (options: {
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await chatbotApi.get(`/conversations?${params.toString()}`);
+        const response = await apiClient.get(`/conversations?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Get chatbot conversations error:', error);
@@ -313,7 +313,7 @@ export const searchVendors = async (options: {
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await chatbotApi.get(`/search/vendors?${params.toString()}`);
+        const response = await apiClient.get(`/search/vendors?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search vendors error:', error);
@@ -335,7 +335,7 @@ export const searchCustomers = async (options: {
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await chatbotApi.get(`/search/customers?${params.toString()}`);
+        const response = await apiClient.get(`/search/customers?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search customers error:', error);
@@ -350,7 +350,7 @@ export const createConversation = async (
     data: CreateConversationRequest
 ): Promise<CreateConversationResponse> => {
     try {
-        const response = await chatbotApi.post('/conversations', data);
+        const response = await apiClient.post('/conversations', data);
         return response.data;
     } catch (error: any) {
         console.error('Create chatbot conversation error:', error);
@@ -368,7 +368,7 @@ export const getConversation = async (conversationId: string): Promise<{ success
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await chatbotApi.get(`/conversations/${conversationId}`);
+        const response = await apiClient.get(`/conversations/${conversationId}`);
         return response.data;
     } catch (error: any) {
         console.error('Get chatbot conversation error:', error);
@@ -406,7 +406,7 @@ export const getMessages = async (conversationId: string, options: {
         if (options.page) params.append('page', options.page.toString());
         if (options.before) params.append('before', options.before);
 
-        const response = await chatbotApi.get(`/conversations/${conversationId}/messages?${params.toString()}`);
+        const response = await apiClient.get(`/conversations/${conversationId}/messages?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Get chatbot messages error:', error);
@@ -430,7 +430,7 @@ export const uploadFile = async (
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await chatbotApi.post(`/conversations/${conversationId}/messages/upload`, formData, {
+        const response = await apiClient.post(`/conversations/${conversationId}/messages/upload`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -456,7 +456,7 @@ export const sendMessage = async (
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await chatbotApi.post(`/conversations/${conversationId}/messages`, data);
+        const response = await apiClient.post(`/conversations/${conversationId}/messages`, data);
         return response.data;
     } catch (error: any) {
         console.error('Send chatbot message error:', error);
@@ -478,7 +478,7 @@ export const editMessage = async (
             throw { success: false, error: 'Invalid conversation or message ID' };
         }
         
-        const response = await chatbotApi.put(`/conversations/${conversationId}/messages/${messageId}`, data);
+        const response = await apiClient.put(`/conversations/${conversationId}/messages/${messageId}`, data);
         return response.data;
     } catch (error: any) {
         console.error('Edit chatbot message error:', error);
@@ -499,7 +499,7 @@ export const deleteMessage = async (
             throw { success: false, error: 'Invalid conversation or message ID' };
         }
         
-        const response = await chatbotApi.delete(`/conversations/${conversationId}/messages/${messageId}`);
+        const response = await apiClient.delete(`/conversations/${conversationId}/messages/${messageId}`);
         return response.data;
     } catch (error: any) {
         console.error('Delete chatbot message error:', error);
@@ -521,7 +521,7 @@ export const replyToMessage = async (
             throw { success: false, error: 'Invalid conversation or message ID' };
         }
         
-        const response = await chatbotApi.post(`/conversations/${conversationId}/messages/${messageId}/reply`, data);
+        const response = await apiClient.post(`/conversations/${conversationId}/messages/${messageId}/reply`, data);
         return response.data;
     } catch (error: any) {
         console.error('Reply to chatbot message error:', error);
@@ -556,7 +556,7 @@ export const searchMessages = async (
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await chatbotApi.get(`/conversations/${conversationId}/search?${params.toString()}`);
+        const response = await apiClient.get(`/conversations/${conversationId}/search?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search chatbot messages error:', error);
@@ -577,7 +577,7 @@ export const exportConversation = async (
             throw { success: false, error: 'Invalid conversation ID' };
         }
 
-        const response = await chatbotApi.get(`/conversations/${conversationId}/export?format=${format}`, {
+        const response = await apiClient.get(`/conversations/${conversationId}/export?format=${format}`, {
             responseType: format === 'json' ? 'json' : 'blob'
         });
         
@@ -598,7 +598,7 @@ export const resolveConversation = async (conversationId: string): Promise<{ suc
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await chatbotApi.put(`/conversations/${conversationId}/resolve`);
+        const response = await apiClient.put(`/conversations/${conversationId}/resolve`);
         return response.data;
     } catch (error: any) {
         console.error('Resolve chatbot conversation error:', error);
@@ -616,7 +616,7 @@ export const closeConversation = async (conversationId: string): Promise<{ succe
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await chatbotApi.delete(`/conversations/${conversationId}`);
+        const response = await apiClient.delete(`/conversations/${conversationId}`);
         return response.data;
     } catch (error: any) {
         console.error('Close chatbot conversation error:', error);
@@ -639,7 +639,7 @@ export const getVendorAdminConversation = async (): Promise<GetVendorAdminConver
             };
         }
         
-        const response = await chatbotApi.get('/conversations/vendor-admin');
+        const response = await apiClient.get('/conversations/vendor-admin');
         return response.data;
     } catch (error: any) {
         console.error('Get vendor-admin conversation error:', error);
@@ -699,7 +699,7 @@ export const createVendorAdminConversation = async (): Promise<CreateVendorAdmin
             };
         }
         
-        const response = await chatbotApi.post('/conversations/vendor-admin');
+        const response = await apiClient.post('/conversations/vendor-admin');
         return response.data;
     } catch (error: any) {
         console.error('Create vendor-admin conversation error:', error);
@@ -757,7 +757,7 @@ export const addReaction = async (
             throw { success: false, error: 'Invalid message ID' };
         }
 
-        const response = await chatbotApi.post(`/messages/${messageId}/reactions`, { emoji });
+        const response = await apiClient.post(`/messages/${messageId}/reactions`, { emoji });
         return response.data;
     } catch (error: any) {
         console.error('Add reaction error:', error);
@@ -778,7 +778,7 @@ export const pinConversation = async (
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await chatbotApi.put(`/conversations/${conversationId}/pin`, { isPinned });
+        const response = await apiClient.put(`/conversations/${conversationId}/pin`, { isPinned });
         return response.data;
     } catch (error: any) {
         console.error('Pin conversation error:', error);
@@ -799,7 +799,7 @@ export const muteConversation = async (
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await chatbotApi.put(`/conversations/${conversationId}/mute`, { isMuted });
+        const response = await apiClient.put(`/conversations/${conversationId}/mute`, { isMuted });
         return response.data;
     } catch (error: any) {
         console.error('Mute conversation error:', error);
@@ -807,7 +807,7 @@ export const muteConversation = async (
     }
 };
 
-export default {
+const chatbotApi = {
     getConversations,
     searchVendors,
     searchCustomers,
@@ -829,6 +829,8 @@ export default {
     pinConversation,
     muteConversation,
 };
+
+export default chatbotApi;
 
 
 

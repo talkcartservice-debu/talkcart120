@@ -374,7 +374,7 @@ export const sendTypingIndicator = async (
     }
 };
 
-export default {
+const messagesApi = {
     getMessages,
     sendMessage,
     editMessage,
@@ -390,3 +390,5 @@ export default {
     updateConversation,
     sendTypingIndicator
 };
+
+export default messagesApi;

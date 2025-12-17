@@ -822,4 +822,6 @@ class CallService {
   }
 }
 
-export default new CallService();
+const callService = new CallService();
+
+export default callService;

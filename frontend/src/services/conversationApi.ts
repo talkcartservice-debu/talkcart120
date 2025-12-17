@@ -9,16 +9,16 @@ const SERVER_BASE = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000
 console.log('Conversation API timeout configuration:', TIMEOUTS.API_REQUEST);
 
 // Create axios instance with default config
-const conversationApi = axios.create({
+const apiClient = axios.create({
     baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
     timeout: TIMEOUTS.API_REQUEST, // Use config timeout instead of fallback to 0
 });
 
 // Log the actual axios instance configuration
-console.log('Conversation API axios instance timeout:', conversationApi.defaults.timeout);
+console.log('Conversation API axios instance timeout:', apiClient.defaults.timeout);
 
 // Add auth token to requests
-conversationApi.interceptors.request.use((config) => {
+apiClient.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -27,7 +27,7 @@ conversationApi.interceptors.request.use((config) => {
 });
 
 // Add response interceptor for better error handling
-conversationApi.interceptors.response.use(
+apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         // Handle network timeout errors specifically
@@ -93,7 +93,7 @@ export const getConversations = async (options: {
     while (attempt <= maxRetries) {
         try {
             console.log(`Attempting to fetch conversations (attempt ${attempt + 1}/${maxRetries + 1})`);
-            const response = await conversationApi.get(url);
+            const response = await apiClient.get(url);
             
             // Check if response is valid
             if (!response || !response.data) {
@@ -138,7 +138,7 @@ export const getConversation = async (id: string): Promise<GetConversationRespon
     while (attempt <= maxRetries) {
         try {
             console.log(`Attempting to fetch conversation ${id} (attempt ${attempt + 1}/${maxRetries + 1})`);
-            const response = await conversationApi.get(`/conversations/${id}`);
+            const response = await apiClient.get(`/conversations/${id}`);
             
             // Check if response is valid
             if (!response || !response.data) {
@@ -174,7 +174,9 @@ export const getConversation = async (id: string): Promise<GetConversationRespon
     };
 };
 
-export default {
+const conversationApi = {
     getConversations,
     getConversation,
 };
+
+export default conversationApi;

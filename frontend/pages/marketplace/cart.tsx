@@ -186,7 +186,7 @@ const CartPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching vendor payment preferences:', error);
     }
-  }, []);
+  }, [selectedPaymentMethod]);
 
   // Load comparison list from localStorage
   useEffect(() => {

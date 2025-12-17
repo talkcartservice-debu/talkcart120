@@ -26,7 +26,7 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
-import chatbotApiModule from '@/services/chatbotApi';
+import chatbotApi from '@/services/chatbotApi';
 import { ChatbotMessage, GetVendorAdminConversationResponse, CreateVendorAdminConversationResponse } from '@/services/chatbotApi';
 
 interface ChatConversation {
@@ -108,7 +108,7 @@ const VendorAdminChatPage = () => {
         console.log('Attempting to fetch vendor-admin conversation with token:', token.substring(0, 10) + '...');
         
         // Try to find existing vendor-admin conversation
-        const response: GetVendorAdminConversationResponse = await chatbotApiModule.getVendorAdminConversation();
+        const response: GetVendorAdminConversationResponse = await chatbotApi.getVendorAdminConversation();
         console.log('Vendor-admin conversation response:', response);
         
         if (response.success && response.data.conversation) {
@@ -131,7 +131,7 @@ const VendorAdminChatPage = () => {
       
           // Fetch messages for this conversation
           try {
-            const messagesResponse = await chatbotApiModule.getMessages(conversation._id, { limit: 50 });
+            const messagesResponse = await chatbotApi.getMessages(conversation._id, { limit: 50 });
             if (messagesResponse?.success && messagesResponse.data?.messages) {
               setMessages(messagesResponse.data.messages);
             }
@@ -143,7 +143,7 @@ const VendorAdminChatPage = () => {
         } else if (response.success) {
           // No existing conversation found, create a new one
           console.log('No existing conversation found, creating new one...');
-          const createResponse: CreateVendorAdminConversationResponse = await chatbotApiModule.createVendorAdminConversation();
+          const createResponse: CreateVendorAdminConversationResponse = await chatbotApi.createVendorAdminConversation();
           console.log('Create conversation response:', createResponse);
           
           if (createResponse?.success && createResponse.data?.conversation) {
@@ -166,7 +166,7 @@ const VendorAdminChatPage = () => {
             
             // Fetch messages for this new conversation
             try {
-              const messagesResponse = await chatbotApiModule.getMessages(newConversation._id, { limit: 50 });
+              const messagesResponse = await chatbotApi.getMessages(newConversation._id, { limit: 50 });
               if (messagesResponse?.success && messagesResponse.data?.messages) {
                 setMessages(messagesResponse.data.messages);
               }
@@ -275,7 +275,7 @@ const VendorAdminChatPage = () => {
         // Don't throw error, just log warning for vendor-admin conversations
       }
       
-      const response = await chatbotApiModule.sendMessage(conversation._id, {
+      const response = await chatbotApi.sendMessage(conversation._id, {
         content: newMessage
       });
       
@@ -339,7 +339,7 @@ const VendorAdminChatPage = () => {
         // Don't throw error, just log warning for vendor-admin conversations
       }
       
-      const response = await chatbotApiModule.getMessages(conversation._id, { limit: 50 });
+      const response = await chatbotApi.getMessages(conversation._id, { limit: 50 });
       if (response?.success && response.data?.messages) {
         setMessages(response.data.messages);
       } else {
