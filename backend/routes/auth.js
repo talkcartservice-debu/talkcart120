@@ -1548,14 +1548,15 @@ router.get('/settings', authenticateToken, async (req, res) => {
 // @access  Private
 router.put('/settings', authenticateToken, validateSettings, async (req, res) => {
   try {
-    // Handle both possible request body structures
+    // Handle both possible request body structures for backward compatibility
     const settingType = req.body.settingType || req.body.type;
-    const settings = req.body.settings || req.body.data;
-
-    if (!settingType || !settings) {
+    const settings = req.body.settings || req.body.data || req.body;
+    
+    // Validate settingType is provided
+    if (!settingType) {
       return res.status(400).json({
         success: false,
-        message: 'Setting type and settings data are required',
+        message: 'Setting type is required',
       });
     }
 
@@ -1594,10 +1595,25 @@ router.put('/settings', authenticateToken, validateSettings, async (req, res) =>
         updateData = { 'settings.security': settings };
         break;
       default:
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid setting type. Supported types: privacy, notifications, interaction, theme, wallet, security',
-        });
+        // Handle case where settingType is not specified but we have settings object
+        // Try to infer the setting type from the data structure
+        if (settings.privacy) {
+          updateData = { 'settings.privacy': settings.privacy };
+        } else if (settings.notifications) {
+          updateData = { 'settings.notifications': settings.notifications };
+        } else if (settings.interaction) {
+          updateData = { 'settings.interaction': settings.interaction };
+        } else if (settings.theme) {
+          updateData = { 'settings.theme': settings.theme };
+        } else if (settings.wallet) {
+          updateData = { 'settings.wallet': settings.wallet };
+        } else if (settings.security) {
+          updateData = { 'settings.security': settings.security };
+        } else {
+          // If we can't infer the type, update the whole settings object
+          updateData = { settings: settings };
+        }
+        break;
     }
 
     const user = await User.findByIdAndUpdate(

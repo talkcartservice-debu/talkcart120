@@ -233,10 +233,11 @@ router.post('/upload/single', authenticateToken, (req, res) => {
           });
         }
 
+        // Return a more user-friendly error message
         return res.status(500).json({
           success: false,
           error: 'File upload failed',
-          details: err.message,
+          details: err.message || 'An unexpected error occurred during file upload',
           code: err.code
         });
       }
@@ -249,6 +250,7 @@ router.post('/upload/single', authenticateToken, (req, res) => {
         return res.status(400).json({
           success: false,
           error: 'No file uploaded',
+          details: 'Please select a file to upload'
         });
       }
 
@@ -330,6 +332,7 @@ router.post('/upload/single', authenticateToken, (req, res) => {
         return res.status(400).json({
           success: false,
           error: 'No file uploaded',
+          details: 'Please select a file to upload'
         });
       }
 
@@ -337,14 +340,15 @@ router.post('/upload/single', authenticateToken, (req, res) => {
       // Send the file data in the expected API response structure
       res.status(200).json({
         success: true,
-        data: fileData
+        data: fileData,
+        message: 'File uploaded successfully'
       });
     } catch (error) {
       console.error('Single file upload error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to upload file',
-        details: error.message,
+        details: error.message || 'An unexpected error occurred during file upload',
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       });
     }
