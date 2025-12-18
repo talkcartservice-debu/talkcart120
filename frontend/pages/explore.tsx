@@ -245,7 +245,7 @@ const RecentPostsSection: React.FC<{ query?: string }> = ({ query }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const loadPosts = async () => {
       try {
         setLoading(true);
         setError(null);
@@ -311,7 +311,7 @@ const RecentPostsSection: React.FC<{ query?: string }> = ({ query }) => {
       }
     };
 
-    fetchPosts();
+    loadPosts();
   }, [query]);
 
   if (loading) {

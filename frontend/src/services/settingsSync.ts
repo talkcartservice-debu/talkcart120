@@ -38,7 +38,8 @@ export const syncSettings = {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to sync theme settings: ${response.statusText}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to sync theme settings: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       return await response.json();
@@ -67,7 +68,8 @@ export const syncSettings = {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to sync privacy settings: ${response.statusText}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to sync privacy settings: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       return await response.json();
@@ -96,7 +98,8 @@ export const syncSettings = {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to sync interaction settings: ${response.statusText}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to sync interaction settings: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       return await response.json();
@@ -125,7 +128,8 @@ export const syncSettings = {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to sync language settings: ${response.statusText}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to sync language settings: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       return await response.json();
@@ -154,7 +158,8 @@ export const syncSettings = {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to sync wallet settings: ${response.statusText}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to sync wallet settings: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       return await response.json();
@@ -183,7 +188,8 @@ export const syncSettings = {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to sync security settings: ${response.statusText}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to sync security settings: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       return await response.json();
@@ -212,7 +218,8 @@ export const syncSettings = {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to sync appearance settings: ${response.statusText}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to sync appearance settings: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       return await response.json();

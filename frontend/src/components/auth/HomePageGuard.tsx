@@ -22,7 +22,7 @@ export const HomePageGuard: React.FC<HomePageGuardProps> = ({ children }) => {
     // If user is authenticated, redirect to social feed
     if (isAuthenticated) {
       console.log('HomePageGuard: Redirecting authenticated user to social feed');
-      router.push('/social-new');
+      router.push('/social');
     }
   }, [isAuthenticated, isLoading, router]);
 

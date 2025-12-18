@@ -172,7 +172,7 @@ export default function RegisterPage() {
         return;
       }
       (window as any).lastRegisterRedirectClick = now;
-      router.push('/social-new').catch((error) => {
+      router.push('/social').catch((error) => {
         // Handle navigation errors gracefully
         console.error('Navigation to social failed:', error);
       });
@@ -334,7 +334,7 @@ export default function RegisterPage() {
           return;
         }
         (window as any).lastRegisterSocialRedirectClick = now;
-        router.push('/social-new').catch((error) => {
+        router.push('/social').catch((error) => {
           // Handle navigation errors gracefully
           console.error('Navigation to social failed:', error);
         });
@@ -891,7 +891,7 @@ export default function RegisterPage() {
                                   if (res?.success) {
                                     setAuthTokens(res.accessToken, res.refreshToken);
                                     toast.success('Signed in with Google');
-                                    router.push('/social-new');
+                                    router.push('/social');
                                   } else {
                                     throw new Error(res?.message || 'Google sign-in failed');
                                   }
@@ -954,7 +954,7 @@ export default function RegisterPage() {
                             if (res?.success) {
                               setAuthTokens(res.accessToken, res.refreshToken);
                               toast.success('Signed in with Apple');
-                              router.push('/social-new');
+                              router.push('/social');
                             } else {
                               throw new Error(res?.message || 'Apple sign-in failed');
                             }

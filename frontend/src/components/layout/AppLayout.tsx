@@ -83,7 +83,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         sx={{
           flexGrow: 1,
           bgcolor: 'background.default',
-          minHeight: '100vh',
+          minHeight: '120vh',
           marginLeft: 0,
           marginTop: shouldShowTopBar ? '64px' : 0,
           transition: theme.transitions.create(['margin'], {
@@ -91,14 +91,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             duration: theme.transitions.duration.leavingScreen,
           }),
           // Special handling for social page to allow full height scrolling
-          ...((router.pathname === '/social-new' || router.pathname === '/social-fixed') && {
+          ...(router.pathname === '/social' && {
             py: 0,
             px: 0,
-            minHeight: '100vh',
+            minHeight: '120vh',
           })
         }}
       >
-        {(router.pathname === '/social-new' || router.pathname === '/social-fixed') ? (
+        {router.pathname === '/social' ? (
           // For social page, render children directly without Container
           children
         ) : (

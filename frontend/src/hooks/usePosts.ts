@@ -376,21 +376,88 @@ export const usePosts = (options: UsePostsOptions = {}): UsePostsReturn => {
     setLoading(false);
   }, [limit, loading]);
 
-  // Simple post interaction functions (these would typically update the UI optimistically)
-  const likePost = useCallback((postId: string) => {
+  // Post interaction functions with real API calls
+  const likePost = useCallback(async (postId: string) => {
     console.log(`Like post: ${postId}`);
-    // In a real implementation, this would make an API call and update the UI
-    setPosts(prev => prev.map(post => 
-      post.id === postId ? { ...post, isLiked: !post.isLiked, likeCount: post.isLiked ? post.likeCount! - 1 : post.likeCount! + 1 } : post
-    ));
+    try {
+      // Optimistically update the UI
+      setPosts(prev => prev.map(post => 
+        post.id === postId ? { ...post, isLiked: !post.isLiked, likeCount: post.isLiked ? post.likeCount! - 1 : post.likeCount! + 1 } : post
+      ));
+      
+      // Make API call to like/unlike the post
+      const response: any = await api.posts.like(postId);
+      
+      if (response && response.success) {
+        // Update with server response to ensure consistency
+        setPosts(prev => prev.map(post => 
+          post.id === postId ? { 
+            ...post, 
+            isLiked: response.data?.isLiked,
+            likeCount: response.data?.likeCount || post.likeCount
+          } : post
+        ));
+      } else {
+        // Rollback optimistic update on error
+        setPosts(prev => prev.map(post => 
+          post.id === postId ? { ...post, isLiked: !post.isLiked, likeCount: post.isLiked ? post.likeCount! - 1 : post.likeCount! + 1 } : post
+        ));
+        throw new Error(response?.message || 'Failed to like post');
+      }
+    } catch (error: any) {
+      console.error('Error liking post:', error);
+      // Rollback optimistic update on error
+      setPosts(prev => prev.map(post => 
+        post.id === postId ? { ...post, isLiked: !post.isLiked, likeCount: post.isLiked ? post.likeCount! - 1 : post.likeCount! + 1 } : post
+      ));
+      
+      // Show error message
+      if (typeof window !== 'undefined') {
+        const toast = (await import('react-hot-toast')).default;
+        toast.error(error.message || 'Failed to like post. Please try again.');
+      }
+    }
   }, []);
   
-  const bookmarkPost = useCallback((postId: string) => {
+  const bookmarkPost = useCallback(async (postId: string) => {
     console.log(`Bookmark post: ${postId}`);
-    // In a real implementation, this would make an API call and update the UI
-    setPosts(prev => prev.map(post => 
-      post.id === postId ? { ...post, isBookmarked: !post.isBookmarked } : post
-    ));
+    try {
+      // Optimistically update the UI
+      setPosts(prev => prev.map(post => 
+        post.id === postId ? { ...post, isBookmarked: !post.isBookmarked } : post
+      ));
+      
+      // Make API call to bookmark/unbookmark the post
+      const response: any = await api.posts.bookmark(postId);
+      
+      if (response && response.success) {
+        // Update with server response to ensure consistency
+        setPosts(prev => prev.map(post => 
+          post.id === postId ? { 
+            ...post, 
+            isBookmarked: response.data?.isBookmarked
+          } : post
+        ));
+      } else {
+        // Rollback optimistic update on error
+        setPosts(prev => prev.map(post => 
+          post.id === postId ? { ...post, isBookmarked: !post.isBookmarked } : post
+        ));
+        throw new Error(response?.message || 'Failed to bookmark post');
+      }
+    } catch (error: any) {
+      console.error('Error bookmarking post:', error);
+      // Rollback optimistic update on error
+      setPosts(prev => prev.map(post => 
+        post.id === postId ? { ...post, isBookmarked: !post.isBookmarked } : post
+      ));
+      
+      // Show error message
+      if (typeof window !== 'undefined') {
+        const toast = (await import('react-hot-toast')).default;
+        toast.error(error.message || 'Failed to bookmark post. Please try again.');
+      }
+    }
   }, []);
   
   const sharePost = useCallback(async (postId: string) => {

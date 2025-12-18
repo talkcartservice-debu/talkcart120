@@ -296,7 +296,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(user);
         setIsAuthenticated(true);
         if (router.isReady) {
-          router.push('/social-new');
+          router.push('/social');
         }
         return true;
       }

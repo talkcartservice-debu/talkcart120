@@ -77,7 +77,7 @@ export default function LoginPage() {
         return;
       }
       (window as any).lastLoginRedirectClick = now;
-      router.push('/social-new').catch((error) => {
+      router.push('/social').catch((error) => {
         // Handle navigation errors gracefully
         console.error('Navigation to social failed:', error);
       });
@@ -158,7 +158,7 @@ export default function LoginPage() {
             return;
           }
           (window as any).lastLoginSocialRedirectClick = now;
-          router.push('/social-new').catch((error) => {
+          router.push('/social').catch((error) => {
             // Handle navigation errors gracefully
             console.error('Navigation to social failed:', error);
           });
@@ -218,7 +218,7 @@ export default function LoginPage() {
           return;
         }
         (window as any).lastBiometricLoginRedirectClick = now;
-        router.push('/social-new').catch((error) => {
+        router.push('/social').catch((error) => {
           // Handle navigation errors gracefully
           console.error('Navigation to social failed:', error);
         });
@@ -711,7 +711,7 @@ export default function LoginPage() {
                                     if (res?.success) {
                                       setAuthTokens(res.accessToken, res.refreshToken);
                                       toast.success('Signed in with Google');
-                                      router.push('/social-new');
+                                      router.push('/social');
                                     } else {
                                       throw new Error(res?.message || 'Google sign-in failed');
                                     }
@@ -774,7 +774,7 @@ export default function LoginPage() {
                               if (res?.success) {
                                 setAuthTokens(res.accessToken, res.refreshToken);
                                 toast.success('Signed in with Apple');
-                                router.push('/social-new');
+                                router.push('/social');
                               } else {
                                 throw new Error(res?.message || 'Apple sign-in failed');
                               }

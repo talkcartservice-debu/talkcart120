@@ -70,7 +70,7 @@ const PostGrid: React.FC<PostGridProps> = ({
 
     // Fetch posts
     useEffect(() => {
-        const fetchPosts = async () => {
+        const loadPosts = async () => {
             try {
                 setLoading(true);
                 setError(null);
@@ -136,7 +136,7 @@ const PostGrid: React.FC<PostGridProps> = ({
             }
         };
 
-        fetchPosts();
+        loadPosts();
     }, [userId, filter, showPrivate, page]);
 
     // Handle like/unlike

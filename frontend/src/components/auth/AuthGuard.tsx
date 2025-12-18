@@ -41,7 +41,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
       if (publicPages.includes(currentPath)) {
         console.log('AuthGuard: Redirecting authenticated user to social feed');
         setIsRedirecting(true);
-        router.replace('/social-new'); // Use replace instead of push to avoid back button issues
+        router.replace('/social'); // Use replace instead of push to avoid back button issues
         return;
       }
       

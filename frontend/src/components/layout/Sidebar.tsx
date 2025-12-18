@@ -609,7 +609,7 @@ export const SidebarComponent: React.FC<SidebarProps> = ({
           onPostCreated={() => {
             setCreatePostOpen(false);
             // Optionally refresh the feed if we're on the social page
-            if (router.pathname === '/social-new') {
+            if (router.pathname === '/social') {
               window.dispatchEvent(new CustomEvent('posts:refresh'));
             }
           }}
