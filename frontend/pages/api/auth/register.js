@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
     
     console.log('Proxying register request to backend:', `${backendUrl}/api/auth/register`);
     console.log('Request body:', req.body);
