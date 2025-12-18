@@ -91,14 +91,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             duration: theme.transitions.duration.leavingScreen,
           }),
           // Special handling for social page to allow full height scrolling
-          ...(router.pathname === '/social-new' && {
+          ...((router.pathname === '/social-new' || router.pathname === '/social-fixed') && {
             py: 0,
             px: 0,
             minHeight: '100vh',
           })
         }}
       >
-        {router.pathname === '/social-new' ? (
+        {(router.pathname === '/social-new' || router.pathname === '/social-fixed') ? (
           // For social page, render children directly without Container
           children
         ) : (

@@ -6,7 +6,7 @@ import { GetServerSideProps } from 'next';
 export const getServerSideProps: GetServerSideProps = async () => {
   return {
     redirect: {
-      destination: '/social-new',
+      destination: '/social-fixed',
       permanent: false,
     },
   };
@@ -18,7 +18,7 @@ export default function SocialRedirect() {
   
   // Client-side fallback in case SSR redirect fails
   useEffect(() => {
-    router.replace('/social-new');
+    router.replace('/social-fixed');
   }, [router]);
   
   return null;
