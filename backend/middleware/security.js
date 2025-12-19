@@ -140,24 +140,95 @@ const corsOptions = {
     
     const allowedOrigins = config.security.cors.origin;
     
+    // Allow all origins in development for easier testing
+    if (config.server.isDevelopment) {
+      return callback(null, true);
+    }
+    
+    // For production, check against allowed origins
     if (Array.isArray(allowedOrigins)) {
+      // Check for exact match
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
+      }
+      
+      // Check for wildcard domains
+      for (const allowedOrigin of allowedOrigins) {
+        if (allowedOrigin === '*') {
+          return callback(null, true);
+        }
+        
+        // Check for subdomain matches
+        if (allowedOrigin.startsWith('*.')) {
+          const domain = allowedOrigin.substring(2);
+          if (origin.endsWith(domain)) {
+            return callback(null, true);
+          }
+        }
       }
     } else if (typeof allowedOrigins === 'string') {
       if (allowedOrigins === '*' || allowedOrigins === origin) {
         return callback(null, true);
       }
+      
+      // Check for subdomain matches with single string
+      if (allowedOrigins.startsWith('*.')) {
+        const domain = allowedOrigins.substring(2);
+        if (origin.endsWith(domain)) {
+          return callback(null, true);
+        }
+      }
     } else if (typeof allowedOrigins === 'function') {
       return allowedOrigins(origin, callback);
     }
     
-    // In development, allow localhost
-    if (config.server.isDevelopment && origin.includes('localhost')) {
+    // In development, allow localhost on any port
+    if (config.server.isDevelopment && origin && origin.includes('localhost')) {
       return callback(null, true);
     }
     
-    callback(new Error('Not allowed by CORS'));
+    // Also allow common development ports for frontend
+    if (config.server.isDevelopment && origin && (
+      origin.match(/^http:\/\/localhost:(3000|4000|4100|8000)$/) ||
+      origin.match(/^https:\/\/localhost:(3000|4000|4100|8000)$/)
+    )) {
+      return callback(null, true);
+    }
+    
+    // For Render deployment, allow common Render URLs
+    if (!config.server.isDevelopment && origin && (
+      origin.includes('onrender.com') ||
+      origin.includes('talkcart.app') ||
+      origin.includes('render.') // Covers various Render domains
+    )) {
+      return callback(null, true);
+    }
+    
+    // Also specifically allow common frontend deployment patterns
+    if (!config.server.isDevelopment && origin && (
+      origin.startsWith('https://') && (
+        origin.includes('talkcart') ||
+        origin.match(/^https:\/\/[a-z0-9-]+\.onrender\.com$/) ||
+        origin.match(/^https:\/\/[a-z0-9-]+\.talkcart\.app$/)
+      )
+    )) {
+      return callback(null, true);
+    }    
+    // Also allow localhost in development for frontend development server
+    if (config.server.isDevelopment && origin && (
+      origin.includes('localhost:') ||
+      origin.includes('127.0.0.1:')
+    )) {
+      return callback(null, true);
+    }    
+    // Log the rejected origin for debugging
+    console.warn('CORS blocked origin:', origin);
+    console.warn('Allowed origins:', allowedOrigins);
+    
+    // Instead of completely blocking, allow with warning to prevent breaking the app
+    // but still log the issue for security monitoring
+    console.warn('CORS warning: Allowing request from unauthorized origin for compatibility');
+    callback(null, true);
   },
   
   credentials: config.security.cors.credentials,

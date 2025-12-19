@@ -1583,8 +1583,7 @@ router.put('/settings', authenticateToken, validateSettings, async (req, res) =>
       case 'interaction':
       case 'interactions':
         updateData = { 'settings.interaction': settings };
-        break;
-      case 'appearance':
+        break;      case 'appearance':
       case 'theme':
         updateData = { 'settings.theme': settings };
         break;
