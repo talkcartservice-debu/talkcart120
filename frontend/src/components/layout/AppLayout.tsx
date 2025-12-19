@@ -94,7 +94,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           ...(router.pathname === '/social' && {
             py: 0,
             px: 0,
-            minHeight: '120vh',
+            minHeight: 'calc(100vh - 64px)',
+            height: 'calc(100vh - 64px)',
+            overflowY: 'auto',
           })
         }}
       >

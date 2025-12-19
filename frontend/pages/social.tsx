@@ -386,6 +386,8 @@ const SocialPage: React.FC = () => {
                 p: 2, 
                 borderRadius: 3, 
                 mb: 2,
+                position: 'sticky',
+                top: 20,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                 border: '1px solid rgba(0, 0, 0, 0.05)'
               }}
@@ -453,11 +455,32 @@ const SocialPage: React.FC = () => {
               </Box>
             </Paper>
             
-            <TrendingProducts />
+            <Paper 
+              sx={{ 
+                p: 2, 
+                borderRadius: 3, 
+                position: 'sticky',
+                top: 150,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                border: '1px solid rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              <TrendingProducts />
+            </Paper>
             
-            <Box sx={{ mt: 2 }}>
+            <Paper 
+              sx={{ 
+                mt: 2,
+                p: 2, 
+                borderRadius: 3, 
+                position: 'sticky',
+                top: 250,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                border: '1px solid rgba(0, 0, 0, 0.05)'
+              }}
+            >
               <WhoToFollow />
-            </Box>
+            </Paper>
           </Grid>
 
           {/* Main feed area */}
@@ -596,7 +619,7 @@ const SocialPage: React.FC = () => {
                 borderRadius: 3, 
                 mb: 2,
                 position: 'sticky',
-                top: 80,
+                top: 20,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                 border: '1px solid rgba(0, 0, 0, 0.05)'
               }}
@@ -611,6 +634,8 @@ const SocialPage: React.FC = () => {
               sx={{ 
                 p: 2, 
                 borderRadius: 3, 
+                position: 'sticky',
+                top: 300,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                 border: '1px solid rgba(0, 0, 0, 0.05)'
               }}
