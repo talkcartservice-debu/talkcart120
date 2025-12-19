@@ -574,6 +574,7 @@ router.get('/', async (req, res) => {
             media: Array.isArray(post.media) ? post.media.map(media => ({
               ...media,
               id: media._id || media.public_id,
+              url: media.url || media.secure_url,
               secure_url: media.secure_url || media.url,
               resource_type: media.resource_type || 'image',
               thumbnail_url: media.thumbnail_url || (media.resource_type === 'video' && media.public_id ? getVideoThumbnail(media.public_id) : undefined),
@@ -664,6 +665,7 @@ router.get('/achievements', async (req, res) => {
             media: Array.isArray(post.media) ? post.media.map(media => ({
               ...media,
               id: media._id || media.public_id,
+              url: media.url || media.secure_url,
               secure_url: media.secure_url || media.url,
               resource_type: media.resource_type || 'image',
               thumbnail_url: media.thumbnail_url || (media.resource_type === 'video' && media.public_id ? getVideoThumbnail(media.public_id) : undefined),
@@ -764,6 +766,7 @@ router.get('/user/:username/achievements', async (req, res) => {
             media: Array.isArray(post.media) ? post.media.map(media => ({
               ...media,
               id: media._id || media.public_id,
+              url: media.url || media.secure_url,
               secure_url: media.secure_url || media.url,
               resource_type: media.resource_type || 'image',
               thumbnail_url: media.thumbnail_url || (media.resource_type === 'video' && media.public_id ? getVideoThumbnail(media.public_id) : undefined),
@@ -913,6 +916,7 @@ router.get('/user/:username', async (req, res) => {
             media: Array.isArray(post.media) ? post.media.map(media => ({
               ...media,
               id: media._id || media.public_id,
+              url: media.url || media.secure_url,
               secure_url: media.secure_url || media.url,
               resource_type: media.resource_type || 'image',
               thumbnail_url: media.thumbnail_url || (media.resource_type === 'video' && media.public_id ? getVideoThumbnail(media.public_id) : undefined),
@@ -1052,6 +1056,7 @@ router.get('/public', async (req, res) => {
             media: Array.isArray(post.media) ? post.media.map(media => ({
               ...media,
               id: media._id || media.public_id,
+              url: media.url || media.secure_url,
               secure_url: media.secure_url || media.url,
               resource_type: media.resource_type || 'image',
               thumbnail_url: media.thumbnail_url || (media.resource_type === 'video' && media.public_id ? getVideoThumbnail(media.public_id) : undefined),
@@ -1133,6 +1138,7 @@ router.get('/trending', async (req, res) => {
             media: Array.isArray(post.media) ? post.media.map(media => ({
               ...media,
               id: media._id || media.public_id,
+              url: media.url || media.secure_url,
               secure_url: media.secure_url || media.url,
               resource_type: media.resource_type || 'image',
               thumbnail_url: media.thumbnail_url || (media.resource_type === 'video' && media.public_id ? getVideoThumbnail(media.public_id) : undefined),
@@ -1226,6 +1232,7 @@ router.get('/bookmarks/:userId', authenticateToken, async (req, res) => {
             media: Array.isArray(post.media) ? post.media.map(media => ({
               ...media,
               id: media._id || media.public_id,
+              url: media.url || media.secure_url,
               secure_url: media.secure_url || media.url,
               resource_type: media.resource_type || 'image',
               thumbnail_url: media.thumbnail_url || (media.resource_type === 'video' && media.public_id ? getVideoThumbnail(media.public_id) : undefined),
@@ -2714,6 +2721,7 @@ router.get('/user/:username', async (req, res) => {
             media: Array.isArray(post.media) ? post.media.map(media => ({
               ...media,
               id: media._id || media.public_id,
+              url: media.url || media.secure_url,
               secure_url: media.secure_url || media.url,
               resource_type: media.resource_type || 'image',
               thumbnail_url: media.thumbnail_url || (media.resource_type === 'video' && media.public_id ? getVideoThumbnail(media.public_id) : undefined),

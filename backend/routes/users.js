@@ -693,6 +693,10 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
       const { Follow } = require('../models');
       currentUserFollowing = await Follow.getFollowingIds(currentUserId);
       currentUserFollowingObjectIds = currentUserFollowing.map(id => new mongoose.Types.ObjectId(id));
+      
+      // Also get users who follow the current user for better mutual connection scoring
+      const currentUserFollowers = await Follow.getFollowerIds(currentUserId);
+      const currentUserFollowerObjectIds = currentUserFollowers.map(id => new mongoose.Types.ObjectId(id));
     }
 
     const suggestions = await User.aggregate([
@@ -723,7 +727,7 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
         }
       },
       // If user is authenticated, add mutual follower score
-      ...(currentUserId && currentUserId !== 'anonymous-user' && currentUserFollowingObjectIds.length > 0 ? [
+      ...(currentUserId && currentUserId !== 'anonymous-user' && (currentUserFollowingObjectIds.length > 0 || currentUserFollowerObjectIds?.length > 0) ? [
         {
           $lookup: {
             from: 'follows',
@@ -738,7 +742,12 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
               $size: {
                 $filter: {
                   input: '$userFollows.following',
-                  cond: { $in: ['$$this', currentUserFollowingObjectIds] }
+                  cond: { 
+                    $or: [
+                      { $in: ['$$this', currentUserFollowingObjectIds] },
+                      { $in: ['$$this', currentUserFollowerObjectIds || []] }
+                    ]
+                  }
                 }
               }
             },
@@ -748,11 +757,16 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
                   $size: {
                     $filter: {
                       input: '$userFollows.following',
-                      cond: { $in: ['$$this', currentUserFollowingObjectIds] }
+                      cond: { 
+                        $or: [
+                          { $in: ['$$this', currentUserFollowingObjectIds] },
+                          { $in: ['$$this', currentUserFollowerObjectIds || []] }
+                        ]
+                      }
                     }
                   }
                 },
-                2 // Weight for mutual followers
+                3 // Increased weight for mutual followers
               ]
             }
           }
@@ -804,10 +818,14 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
       let suggestionReason = 'New to TalkCart';
       if (user.isVerified) {
         suggestionReason = 'Verified user';
+      } else if (user.mutualFollowers > 3) {
+        suggestionReason = `${user.mutualFollowers} mutual connections`;
       } else if (user.mutualFollowers > 0) {
-        suggestionReason = `${user.mutualFollowers} mutual followers`;
-      } else if (user.followerCount > 100) {
+        suggestionReason = `${user.mutualFollowers} mutual connection`;
+      } else if (user.followerCount > 1000) {
         suggestionReason = 'Popular user';
+      } else if (user.followerCount > 100) {
+        suggestionReason = 'Growing user';
       }
 
       return {

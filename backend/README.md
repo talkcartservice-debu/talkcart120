@@ -1,6 +1,6 @@
 # TalkCart Backend
 
-A scalable backend API built with Node.js, Express, and MongoDB for the TalkCart Web3 super application.
+A scalable backend API built with Node.js, Express, and MongoDB for the TalkCart Web3 talkcart app.
 
 ## 🏗️ Architecture Overview
 

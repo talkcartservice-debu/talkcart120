@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import { User } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 import { api } from '@/lib/api';
 import ProfileHeader from './ProfileHeader';
 import PostGrid from '../posts/PostGrid';
@@ -57,6 +58,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { user: currentUser } = useAuth();
+    const { socket, isConnected } = useWebSocket();
 
     const [user, setUser] = useState<User | null>(initialUser || null);
     const [loading, setLoading] = useState(!initialUser);
@@ -94,6 +96,44 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
 
         fetchUser();
     }, [username, initialUser]);
+
+    // Listen for real-time follow updates
+    useEffect(() => {
+        if (!socket || !isConnected || isOwnProfile || !user) return;
+
+        const handleFollowersUpdate = (data: any) => {
+            // Update follower count when someone follows/unfollows this user
+            if (data.userId === user._id) {
+                setUser(prev => prev ? {
+                    ...prev,
+                    followerCount: data.followerCount || 0
+                } : null);
+            }
+        };
+
+        const handleFollowingUpdate = (data: any) => {
+            // Update following status when current user follows/unfollows someone
+            if (data.userId === currentUser?.id) {
+                // Refresh user data to get updated following status
+                api.users.getByUsername(username).then((response: any) => {
+                    if (response && response.success && response.user) {
+                        setUser(response.user);
+                        setIsFollowing(response.user.isFollowing || false);
+                    }
+                }).catch(err => {
+                    console.error('Error refreshing user data:', err);
+                });
+            }
+        };
+
+        socket.on('user:followers-update', handleFollowersUpdate);
+        socket.on('user:following-update', handleFollowingUpdate);
+
+        return () => {
+            socket.off('user:followers-update', handleFollowersUpdate);
+            socket.off('user:following-update', handleFollowingUpdate);
+        };
+    }, [socket, isConnected, user, currentUser, isOwnProfile, username]);
 
     // Handle tab change
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {

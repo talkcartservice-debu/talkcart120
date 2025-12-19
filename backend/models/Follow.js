@@ -153,6 +153,20 @@ followSchema.statics.getFollowingIds = async function(userId) {
   }
 };
 
+// Static method to get follower IDs
+followSchema.statics.getFollowerIds = async function(userId) {
+  try {
+    const follows = await this.find({
+      following: userId,
+      isActive: true
+    }).select('follower');
+
+    return follows.map(follow => follow.follower);
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Static method to get mutual followers
 followSchema.statics.getMutualFollowers = async function(userId1, userId2) {
   try {

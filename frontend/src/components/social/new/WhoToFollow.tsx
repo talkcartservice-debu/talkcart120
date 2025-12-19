@@ -58,17 +58,20 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({
   useEffect(() => {
     if (!socket || !isConnected) return;
 
-    const handleNewFollower = (data: any) => {
-      // Refresh suggestions when a new follow event occurs
+    const handleFollowUpdate = (data: any) => {
+      // Refresh suggestions when a follow event occurs
       refreshSuggestions();
     };
 
-    socket.on('user:followers-update', handleNewFollower);
-    socket.on('user:following-update', handleNewFollower);
+    // Listen for both server-emitted events and client-emitted events
+    socket.on('user:followers-update', handleFollowUpdate);
+    socket.on('user:following-update', handleFollowUpdate);
+    socket.on('follow_update', handleFollowUpdate);
 
     return () => {
-      socket.off('user:followers-update', handleNewFollower);
-      socket.off('user:following-update', handleNewFollower);
+      socket.off('user:followers-update', handleFollowUpdate);
+      socket.off('user:following-update', handleFollowUpdate);
+      socket.off('follow_update', handleFollowUpdate);
     };
   }, [socket, isConnected, refreshSuggestions]);
 
