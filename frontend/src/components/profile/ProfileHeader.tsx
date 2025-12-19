@@ -60,14 +60,23 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             }
         };
 
-        // Add event listener for profile updates
+        const handleFollowingCountUpdate = (event: CustomEvent<{ delta: number }>) => {
+            if (event.detail && event.detail.delta !== undefined) {
+                // Update the following count by the delta
+                onUserUpdate?.({ followingCount: Math.max((followingCount || 0) + event.detail.delta, 0) });
+            }
+        };
+
+        // Add event listeners for profile updates and following count updates
         window.addEventListener('user-profile-updated', handleUserUpdate as EventListener);
+        window.addEventListener('user:following-count-update', handleFollowingCountUpdate as EventListener);
 
         // Clean up
         return () => {
             window.removeEventListener('user-profile-updated', handleUserUpdate as EventListener);
+            window.removeEventListener('user:following-count-update', handleFollowingCountUpdate as EventListener);
         };
-    }, [onUserUpdate]);
+    }, [onUserUpdate, followingCount]);
 
     const handleFollowClick = () => {
         if (isFollowing) {

@@ -289,7 +289,7 @@ router.get('/enhanced', async (req, res) => {
         id: mediaItem._id || mediaItem.public_id,
         secure_url: mediaItem.secure_url || mediaItem.url,
         resource_type: mediaItem.resource_type || 'image',
-        url: mediaItem.url || mediaItem.secure_url,
+        url: mediaItem.url || mediaItem.secure_url,i
       })) : [];
       
       // Ensure author object is properly structured

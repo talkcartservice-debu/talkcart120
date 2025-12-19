@@ -63,13 +63,19 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({
       refreshSuggestions();
     };
 
+    const handleUserFollowersUpdate = (data: any) => {
+      // Refresh suggestions when a user's follower count changes
+      // This ensures the "who to follow" list stays current
+      refreshSuggestions();
+    };
+
     // Listen for both server-emitted events and client-emitted events
-    socket.on('user:followers-update', handleFollowUpdate);
+    socket.on('user:followers-update', handleUserFollowersUpdate);
     socket.on('user:following-update', handleFollowUpdate);
     socket.on('follow_update', handleFollowUpdate);
 
     return () => {
-      socket.off('user:followers-update', handleFollowUpdate);
+      socket.off('user:followers-update', handleUserFollowersUpdate);
       socket.off('user:following-update', handleFollowUpdate);
       socket.off('follow_update', handleFollowUpdate);
     };

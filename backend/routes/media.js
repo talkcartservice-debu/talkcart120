@@ -23,6 +23,9 @@ router.post('/upload', authenticateToken, (req, res) => {
   console.log('Headers:', req.headers);
   console.log('Body keys:', Object.keys(req.body));
 
+  // Add request timeout handling
+  req.setTimeout(120000); // 2 minutes timeout
+
   uploadSingle('file')(req, res, async (err) => {
     try {
       if (err) {
@@ -412,6 +415,9 @@ router.post('/upload/profile-picture', authenticateToken, (req, res) => {
   console.log('Content-Length:', req.headers['content-length']);
   console.log('Authorization header present:', !!req.headers.authorization);
   console.log('User from auth middleware:', req.user ? req.user.username : 'No user');
+
+  // Add request timeout handling
+  req.setTimeout(120000); // 2 minutes timeout
 
   // Use the specialized profile picture upload middleware
   uploadProfilePicture('file')(req, res, async (err) => {

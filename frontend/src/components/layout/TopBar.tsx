@@ -465,7 +465,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                           width: '100%',
                           textAlign: 'left',
                           '&:hover': {
-                            bgcolor: alpha(theme.palette.primary.main, 0.08),
+                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
                           }
                         }}
                       >
@@ -596,7 +596,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                           width: '100%',
                           textAlign: 'left',
                           '&:hover': {
-                            bgcolor: alpha(theme.palette.primary.main, 0.08),
+                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
                           }
                         }}
                       >
@@ -653,109 +653,207 @@ export const TopBar: React.FC<TopBarProps> = ({
           {isAuthenticated ? (
             <>
               {/* Social Feed Icon */}
-              <Tooltip title="Social Feed">
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      router.push('/social');
-                    } else {
-                      router.push('/auth/login');
-                    }
-                  }}
-                  sx={{ 
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    minWidth: 'auto',
-                    px: 1
-                  }}
-                >
-                  Home
-                </Button>
-              </Tooltip>
+              {isMobile ? (
+                <Tooltip title="Social Feed">
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      if (isAuthenticated) {
+                        router.push('/social');
+                      } else {
+                        router.push('/auth/login');
+                      }
+                    }}
+                    sx={{ 
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      minWidth: 'auto',
+                      px: 1
+                    }}
+                  >
+                    Home
+                  </Button>
+                </Tooltip>
+              ) : (
+                <Tooltip title="Social Feed">
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      if (isAuthenticated) {
+                        router.push('/social');
+                      } else {
+                        router.push('/auth/login');
+                      }
+                    }}
+                    sx={{ 
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      minWidth: 'auto',
+                      px: 1
+                    }}
+                  >
+                    Home
+                  </Button>
+                </Tooltip>
+              )}
 
               {/* Cart Button */}
-              <Tooltip title="Shopping Cart">
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      router.push('/marketplace/cart');
-                    } else {
-                      router.push('/auth/login');
-                    }
-                  }}
-                  sx={{ 
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    minWidth: 'auto',
-                    px: 1,
-                    position: 'relative'
-                  }}
-                >
-                  Cart
-                  {cart && cart.totalItems > 0 && (
-                    <Badge 
-                      badgeContent={cart.totalItems} 
-                      color="error"
-                      sx={{
-                        position: 'absolute',
-                        top: 4,
-                        right: 4
-                      }}
-                    >
-                      <span />
-                    </Badge>
-                  )}
-                </Button>
-              </Tooltip>
-
-              {/* Wallet Button */}
-              <Box sx={{ display: { xs: 'none', sm: 'block', ml: 1 } }}>
-                <WalletButton />
-              </Box>
+              {isMobile ? (
+                <Tooltip title="Shopping Cart">
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      if (isAuthenticated) {
+                        router.push('/marketplace/cart');
+                      } else {
+                        router.push('/auth/login');
+                      }
+                    }}
+                    sx={{ 
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      minWidth: 'auto',
+                      px: 1,
+                      position: 'relative'
+                    }}
+                  >
+                    Cart
+                    {cart && cart.totalItems > 0 && (
+                      <Badge 
+                        badgeContent={cart.totalItems} 
+                        color="error"
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4
+                        }}
+                      >
+                        <span />
+                      </Badge>
+                    )}
+                  </Button>
+                </Tooltip>
+              ) : (
+                <Tooltip title="Shopping Cart">
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      if (isAuthenticated) {
+                        router.push('/marketplace/cart');
+                      } else {
+                        router.push('/auth/login');
+                      }
+                    }}
+                    sx={{ 
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      minWidth: 'auto',
+                      px: 1,
+                      position: 'relative'
+                    }}
+                  >
+                    Cart
+                    {cart && cart.totalItems > 0 && (
+                      <Badge 
+                        badgeContent={cart.totalItems} 
+                        color="error"
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4
+                        }}
+                      >
+                        <span />
+                      </Badge>
+                    )}
+                  </Button>
+                </Tooltip>
+              )}
 
               {/* Messages Icon */}
-              <Tooltip title="Messages">
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      router.push('/messages');
-                    } else {
-                      router.push('/auth/login');
-                    }
-                  }}
-                  sx={{ 
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    minWidth: 'auto',
-                    px: 1,
-                    position: 'relative'
-                  }}
-                >
-                  Messages
-                  {unreadMessages > 0 && (
-                    <Badge 
-                      badgeContent={unreadMessages} 
-                      color="error"
-                      sx={{
-                        position: 'absolute',
-                        top: 4,
-                        right: 4
-                      }}
-                    >
-                      <span />
-                    </Badge>
-                  )}
-                </Button>
-              </Tooltip>
+              {isMobile ? (
+                <Tooltip title="Messages">
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      if (isAuthenticated) {
+                        router.push('/messages');
+                      } else {
+                        router.push('/auth/login');
+                      }
+                    }}
+                    sx={{ 
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      minWidth: 'auto',
+                      px: 1,
+                      position: 'relative'
+                    }}
+                  >
+                    Messages
+                    {unreadMessages > 0 && (
+                      <Badge 
+                        badgeContent={unreadMessages} 
+                        color="error"
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4
+                        }}
+                      >
+                        <span />
+                      </Badge>
+                    )}
+                  </Button>
+                </Tooltip>
+              ) : (
+                <Tooltip title="Messages">
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      if (isAuthenticated) {
+                        router.push('/messages');
+                      } else {
+                        router.push('/auth/login');
+                      }
+                    }}
+                    sx={{ 
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      minWidth: 'auto',
+                      px: 1,
+                      position: 'relative'
+                    }}
+                  >
+                    Messages
+                    {unreadMessages > 0 && (
+                      <Badge 
+                        badgeContent={unreadMessages} 
+                        color="error"
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4
+                        }}
+                      >
+                        <span />
+                      </Badge>
+                    )}
+                  </Button>
+                </Tooltip>
+              )}
 
               {/* Notification Icon */}
               <Tooltip title="Notifications">
@@ -774,19 +872,22 @@ export const TopBar: React.FC<TopBarProps> = ({
                     <Badge 
                       badgeContent={unreadNotifications} 
                       color="error"
-                      sx={
-                        {
-                          position: 'absolute',
-                          top: 4,
-                          right: 4
-                        }
-                      }
+                      sx={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 4
+                      }}
                     >
                       <span />
                     </Badge>
                   )}
                 </IconButton>
               </Tooltip>
+
+              {/* Wallet Button */}
+              <Box sx={{ display: { xs: 'none', sm: 'block' }, ml: 1 }}>
+                <WalletButton />
+              </Box>
 
               {/* User Avatar */}
               <Tooltip title="Profile">

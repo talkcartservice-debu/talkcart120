@@ -9,7 +9,9 @@ import {
   ListItemText,
   Divider,
   Tooltip,
-  useTheme
+  useTheme,
+  useMediaQuery,
+  IconButton
 } from '@mui/material';
 import { Wallet, LogOut, Copy, Check, ExternalLink, AlertTriangle } from 'lucide-react';
 import useWallet from '@/hooks/useWallet';
@@ -18,6 +20,7 @@ import toast from 'react-hot-toast';
 
 const WalletButton: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { 
     isConnected, 
     address, 
@@ -74,29 +77,45 @@ const WalletButton: React.FC = () => {
     <>
       {isConnected ? (
         <>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={handleClick}
-            sx={{ 
-              borderRadius: 2,
-              textTransform: 'none',
-              border: isCorrectNetwork ? `1px solid ${theme.palette.divider}` : `1px solid ${theme.palette.warning.main}`,
-              color: isCorrectNetwork ? 'text.primary' : 'warning.main',
-              '&:hover': {
-                borderColor: isCorrectNetwork ? 'primary.main' : 'warning.main',
-              },
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              padding: { xs: '4px 8px', sm: '6px 16px' },
-              minWidth: { xs: 'auto', sm: 120 }
-            }}
-          >
-            {isCorrectNetwork ? (
-              shortenAddress(address || '')
-            ) : (
-              'Wrong Network'
-            )}
-          </Button>
+          {isMobile ? (
+            <IconButton
+              onClick={handleClick}
+              sx={{ 
+                borderRadius: 2,
+                border: isCorrectNetwork ? `1px solid ${theme.palette.divider}` : `1px solid ${theme.palette.warning.main}`,
+                color: isCorrectNetwork ? 'text.primary' : 'warning.main',
+                '&:hover': {
+                  borderColor: isCorrectNetwork ? 'primary.main' : 'warning.main',
+                },
+              }}
+            >
+              <Wallet size={20} />
+            </IconButton>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleClick}
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+                border: isCorrectNetwork ? `1px solid ${theme.palette.divider}` : `1px solid ${theme.palette.warning.main}`,
+                color: isCorrectNetwork ? 'text.primary' : 'warning.main',
+                '&:hover': {
+                  borderColor: isCorrectNetwork ? 'primary.main' : 'warning.main',
+                },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                padding: { xs: '4px 8px', sm: '6px 16px' },
+                minWidth: { xs: 'auto', sm: 120 }
+              }}
+            >
+              {isCorrectNetwork ? (
+                shortenAddress(address || '')
+              ) : (
+                'Wrong Network'
+              )}
+            </Button>
+          )}
           
           <Menu
             anchorEl={anchorEl}
@@ -185,21 +204,39 @@ const WalletButton: React.FC = () => {
           </Menu>
         </>
       ) : (
-        <Tooltip title="Connect your wallet">
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={connect}
-            sx={{ 
-              borderRadius: 2,
-              textTransform: 'none',
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              padding: { xs: '4px 8px', sm: '6px 16px' }
-            }}
-          >
-            Connect Wallet
-          </Button>
-        </Tooltip>
+        isMobile ? (
+          <Tooltip title="Connect your wallet">
+            <IconButton
+              onClick={connect}
+              sx={{ 
+                borderRadius: 2,
+                border: `1px solid ${theme.palette.divider}`,
+                color: 'text.primary',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                },
+              }}
+            >
+              <Wallet size={20} />
+            </IconButton>
+          </Tooltip>
+        ) : (
+          <Tooltip title="Connect your wallet">
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={connect}
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                padding: { xs: '4px 8px', sm: '6px 16px' }
+              }}
+            >
+              Connect Wallet
+            </Button>
+          </Tooltip>
+        )
       )}
     </>
   );

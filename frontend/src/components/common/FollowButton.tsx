@@ -39,6 +39,20 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     },
     onSuccess: () => {
       toast.success(`Following ${user.displayName}`);
+      
+      // Dispatch events to update follower/following counts across the platform
+      window.dispatchEvent(new CustomEvent('user:followers-update', {
+        detail: { userId: user.id }
+      }));
+      
+      window.dispatchEvent(new CustomEvent('user:following-update', {
+        detail: { userId: user.id }
+      }));
+      
+      // Dispatch event for current user's following count update
+      window.dispatchEvent(new CustomEvent('user:following-count-update', {
+        detail: { delta: 1 }
+      }));
     },
     onError: () => {
       // rollback
@@ -62,6 +76,20 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     },
     onSuccess: () => {
       toast.success(`Unfollowed ${user.displayName}`);
+      
+      // Dispatch events to update follower/following counts across the platform
+      window.dispatchEvent(new CustomEvent('user:followers-update', {
+        detail: { userId: user.id }
+      }));
+      
+      window.dispatchEvent(new CustomEvent('user:following-update', {
+        detail: { userId: user.id }
+      }));
+      
+      // Dispatch event for current user's following count update
+      window.dispatchEvent(new CustomEvent('user:following-count-update', {
+        detail: { delta: -1 }
+      }));
     },
     onError: () => {
       setIsFollowing(true);

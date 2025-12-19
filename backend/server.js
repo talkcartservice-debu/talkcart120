@@ -584,6 +584,67 @@ app.use('/uploads', cors({
   }
 }));
 
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    // Set proper MIME types for common image formats
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+      '.svg': 'image/svg+xml',
+      '.bmp': 'image/bmp',
+      '.ico': 'image/x-icon',
+      '.tiff': 'image/tiff',
+      '.tif': 'image/tiff',
+      '.mp4': 'video/mp4',
+      '.webm': 'video/webm',
+      '.ogg': 'video/ogg',
+      '.mov': 'video/quicktime'
+    };
+    
+    // Special handling for files that might be misnamed
+    // Check file content to determine actual type
+    try {
+      const fs = require('fs');
+      if (fs.existsSync(filePath)) {
+        const buffer = fs.readFileSync(filePath, { encoding: null });
+        // Check if it's actually an SVG file
+        if (buffer && buffer.length > 10) {
+          const start = buffer.toString('utf8', 0, 100);
+          if (start.includes('<svg')) {
+            res.setHeader('Content-Type', 'image/svg+xml');
+            console.log('🔧 Detected SVG file with incorrect extension:', filePath);
+            return; // Exit early since we've set the correct header
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('⚠️ Error checking file type:', e.message);
+    }
+    
+    // If file has a known extension, use it
+    if (mimeTypes[ext]) {
+      res.setHeader('Content-Type', mimeTypes[ext]);
+    } else if (!ext || ext === '') {
+      // For files without extension, try to detect from content or default to svg+xml
+      // (since we're creating SVG placeholders)
+      res.setHeader('Content-Type', 'image/svg+xml');
+    }
+    
+    // Set cache headers
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    
+    // Override restrictive CSP for static files to allow cross-origin loading
+    res.removeHeader('Content-Security-Policy');
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src * data: blob:; connect-src *");
+  }
+}));
+
 // Initialize SocketService
 const SocketService = require('./services/socketService');
 const socketService = new SocketService(io);

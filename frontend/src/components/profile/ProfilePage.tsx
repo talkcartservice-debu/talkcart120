@@ -19,6 +19,8 @@ import {
     Bookmark,
     Image as ImageIcon,
     VideoLibrary,
+    People,
+    PersonAdd,
 } from '@mui/icons-material';
 import { User } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,6 +29,7 @@ import { api } from '@/lib/api';
 import ProfileHeader from './ProfileHeader';
 import PostGrid from '../posts/PostGrid';
 import MediaGrid from '../media/MediaGrid';
+import UserCard from './UserCard';
 import toast from 'react-hot-toast';
 
 interface ProfilePageProps {
@@ -66,6 +69,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
     const [activeTab, setActiveTab] = useState(0);
     const [isFollowing, setIsFollowing] = useState(false);
     const [followLoading, setFollowLoading] = useState(false);
+    const [followers, setFollowers] = useState<any[]>([]);
+    const [following, setFollowing] = useState<any[]>([]);
+    const [followersLoading, setFollowersLoading] = useState(false);
+    const [followingLoading, setFollowingLoading] = useState(false);
 
     const isOwnProfile = currentUser?.username === username;
 
@@ -135,6 +142,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
         };
     }, [socket, isConnected, user, currentUser, isOwnProfile, username]);
 
+    // Fetch followers when followers tab is activated
+    useEffect(() => {
+        if (activeTab === 3 && user && user._id) { // Followers tab index
+            fetchFollowers();
+        }
+    }, [activeTab, user]);
+
+    // Fetch following when following tab is activated
+    useEffect(() => {
+        if (activeTab === 4 && user && user._id) { // Following tab index
+            fetchFollowing();
+        }
+    }, [activeTab, user]);
+
     // Handle tab change
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setActiveTab(newValue);
@@ -154,6 +175,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
                     ...prev,
                     followerCount: (prev.followerCount || 0) + 1
                 } : null);
+                
+                // Dispatch event to update current user's following count
+                window.dispatchEvent(new CustomEvent('user:following-count-update', {
+                    detail: { delta: 1 }
+                }));
                 toast.success(`You are now following ${user.displayName || user.username}`);
             }
         } catch (err: any) {
@@ -177,6 +203,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
                     ...prev,
                     followerCount: Math.max((prev.followerCount || 0) - 1, 0)
                 } : null);
+                
+                // Dispatch event to update current user's following count
+                window.dispatchEvent(new CustomEvent('user:following-count-update', {
+                    detail: { delta: -1 }
+                }));
                 toast.success(`You unfollowed ${user.displayName || user.username}`);
             }
         } catch (err: any) {
@@ -202,6 +233,42 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
         } catch (err: any) {
             console.error('Message error:', err);
             toast.error(err.message || 'Failed to start conversation');
+        }
+    };
+
+    // Fetch followers list
+    const fetchFollowers = async () => {
+        if (!user || !user._id) return;
+
+        try {
+            setFollowersLoading(true);
+            const response: any = await api.users.getFollowers(user._id as string, 50, 0);
+            if (response && response.success && response.data) {
+                setFollowers(response.data.followers || []);
+            }
+        } catch (err: any) {
+            console.error('Error fetching followers:', err);
+            toast.error(err.message || 'Failed to load followers');
+        } finally {
+            setFollowersLoading(false);
+        }
+    };
+
+    // Fetch following list
+    const fetchFollowing = async () => {
+        if (!user || !user._id) return;
+
+        try {
+            setFollowingLoading(true);
+            const response: any = await api.users.getFollowing(user._id as string, 50, 0);
+            if (response && response.success && response.data) {
+                setFollowing(response.data.following || []);
+            }
+        } catch (err: any) {
+            console.error('Error fetching following:', err);
+            toast.error(err.message || 'Failed to load following');
+        } finally {
+            setFollowingLoading(false);
         }
     };
 
@@ -243,6 +310,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
         { label: 'Posts', icon: <Article />, value: 'posts' },
         { label: 'Media', icon: <ImageIcon />, value: 'media' },
         { label: 'Videos', icon: <VideoLibrary />, value: 'videos' },
+        { label: 'Followers', icon: <People />, value: 'followers' },
+        { label: 'Following', icon: <PersonAdd />, value: 'following' },
         ...(isOwnProfile ? [
             { label: 'Liked', icon: <Favorite />, value: 'liked' },
             { label: 'Saved', icon: <Bookmark />, value: 'saved' },
@@ -320,9 +389,59 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
                             />
                         </TabPanel>
 
+                        <TabPanel value={activeTab} index={3}>
+                            {followersLoading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                    <CircularProgress />
+                                </Box>
+                            ) : followers.length === 0 ? (
+                                <Box sx={{ textAlign: 'center', py: 4 }}>
+                                    <Typography color="text.secondary">
+                                        No followers yet
+                                    </Typography>
+                                </Box>
+                            ) : (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
+                                    {followers.map((follower: any) => (
+                                        <UserCard
+                                            key={follower.id || follower._id}
+                                            user={follower}
+                                            showFollowButton={true}
+                                            size="medium"
+                                        />
+                                    ))}
+                                </Box>
+                            )}
+                        </TabPanel>
+
+                        <TabPanel value={activeTab} index={4}>
+                            {followingLoading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                    <CircularProgress />
+                                </Box>
+                            ) : following.length === 0 ? (
+                                <Box sx={{ textAlign: 'center', py: 4 }}>
+                                    <Typography color="text.secondary">
+                                        Not following anyone yet
+                                    </Typography>
+                                </Box>
+                            ) : (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
+                                    {following.map((followedUser: any) => (
+                                        <UserCard
+                                            key={followedUser.id || followedUser._id}
+                                            user={followedUser}
+                                            showFollowButton={true}
+                                            size="medium"
+                                        />
+                                    ))}
+                                </Box>
+                            )}
+                        </TabPanel>
+
                         {isOwnProfile && (
                             <>
-                                <TabPanel value={activeTab} index={3}>
+                                <TabPanel value={activeTab} index={5}>
                                     <PostGrid
                                         userId={user._id}
                                         username={user.username}
@@ -331,7 +450,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
                                     />
                                 </TabPanel>
 
-                                <TabPanel value={activeTab} index={4}>
+                                <TabPanel value={activeTab} index={6}>
                                     <PostGrid
                                         userId={user._id}
                                         username={user.username}

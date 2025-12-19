@@ -60,6 +60,11 @@ if (config.cloudinary.enabled) {
     }
   });
   
+  // Add timeout configuration for Cloudinary
+  cloudinary.config({
+    timeout: 120000, // 2 minutes timeout
+  });
+  
   // Add debugging for Cloudinary storage
   storage._handleFile = function (req, file, callback) {
     console.log('=== Cloudinary Storage _handleFile ===');

@@ -51,6 +51,8 @@ import { useProfile } from '@/contexts/ProfileContext'; // Add this import
 import { ProfileUser, Post } from '@/types';
 import UserPosts from '@/components/profile/UserPosts';
 import ProfilePictureUpload from '@/components/profile/ProfilePictureUpload';
+import FollowersList from '@/components/profile/FollowersList';
+import FollowingList from '@/components/profile/FollowingList';
 // Enhanced TabPanel with animations
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -75,11 +77,12 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other })
 );
 
 // Modern Stats Card Component
-const StatsCard: React.FC<{ label: string; value: number; icon: React.ReactNode; color?: string }> = ({
+const StatsCard: React.FC<{ label: string; value: number; icon: React.ReactNode; color?: string; onClick?: () => void }> = ({
     label,
     value,
     icon,
-    color = 'primary'
+    color = 'primary',
+    onClick
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -87,6 +90,7 @@ const StatsCard: React.FC<{ label: string; value: number; icon: React.ReactNode;
     return (
         <Paper
             elevation={0}
+            onClick={onClick}
             sx={{
                 p: { xs: 1, sm: 2.5 },
                 textAlign: 'center',
@@ -94,11 +98,11 @@ const StatsCard: React.FC<{ label: string; value: number; icon: React.ReactNode;
                 border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                 borderRadius: 2,
                 transition: 'all 0.3s ease',
-                cursor: 'pointer',
+                cursor: onClick ? 'pointer' : 'default',
                 '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                    transform: onClick ? 'translateY(-2px)' : 'none',
+                    boxShadow: onClick ? `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}` : 'none',
+                    border: onClick ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}` : `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                 },
                 height: '100%',
                 display: 'flex',
@@ -127,7 +131,9 @@ const ProfileHeader: React.FC<{
     onFollow?: () => void;
     onMessage?: () => void;
     onAvatarUpdate?: (avatarUrl: string) => void;
-}> = ({ profile, isOwnProfile, onEditProfile, onFollow, onMessage, onAvatarUpdate }) => {
+    onFollowersClick?: () => void;
+    onFollowingClick?: () => void;
+}> = ({ profile, isOwnProfile, onEditProfile, onFollow, onMessage, onAvatarUpdate, onFollowersClick, onFollowingClick }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -421,6 +427,7 @@ const ProfileHeader: React.FC<{
                             value={profile.followerCount || 0}
                             icon={<PersonAdd />}
                             color="secondary"
+                            onClick={onFollowersClick}
                         />
                     </Grid>
                     <Grid item xs={6} sm={3}>
@@ -429,6 +436,7 @@ const ProfileHeader: React.FC<{
                             value={profile.followingCount || 0}
                             icon={<PersonRemove />}
                             color="info"
+                            onClick={onFollowingClick}
                         />
                     </Grid>
                     <Grid item xs={6} sm={3}>
@@ -459,6 +467,8 @@ const ContentTabs: React.FC<{
         { label: 'Posts', icon: <GridOn />, disabled: false },
         { label: 'Media', icon: <ImageIcon />, disabled: false },
         { label: 'Videos', icon: <PlayArrow />, disabled: false },
+        { label: 'Followers', icon: <PersonAdd />, disabled: false },
+        { label: 'Following', icon: <PersonRemove />, disabled: false },
         { label: 'Liked', icon: <Favorite />, disabled: !isOwnProfile },
         { label: 'Saved', icon: <Bookmark />, disabled: !isOwnProfile },
     ];
@@ -702,6 +712,8 @@ const ModernProfilePage: React.FC = () => {
                     onFollow={handleFollow}
                     onMessage={() => router.push(`/messages?user=${profile.username}`)}
                     onAvatarUpdate={handleAvatarUpdate} // Use the new handler
+                    onFollowersClick={() => setTab(3)}
+                    onFollowingClick={() => setTab(4)}
                 />
 
                 {/* Content Tabs */}
@@ -754,6 +766,18 @@ const ModernProfilePage: React.FC = () => {
                         </TabPanel>
 
                         <TabPanel value={tab} index={3}>
+                            {profile && (
+                                <FollowersList userId={profile.id} />
+                            )}
+                        </TabPanel>
+
+                        <TabPanel value={tab} index={4}>
+                            {profile && (
+                                <FollowingList userId={profile.id} />
+                            )}
+                        </TabPanel>
+
+                        <TabPanel value={tab} index={5}>
                             <Box p={isMobile ? 1 : 3}>
                                 <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
                                     Liked Posts
@@ -764,7 +788,7 @@ const ModernProfilePage: React.FC = () => {
                             </Box>
                         </TabPanel>
 
-                        <TabPanel value={tab} index={4}>
+                        <TabPanel value={tab} index={6}>
                             <Box p={isMobile ? 1 : 3}>
                                 <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
                                     Saved Posts
