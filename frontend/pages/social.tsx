@@ -42,6 +42,7 @@ import TrendingProducts from '@/components/social/new/TrendingProducts';
 import WhoToFollow from '@/components/social/new/WhoToFollow';
 import { usePosts } from '@/hooks/usePosts';
 import { CreatePostDialog } from '@/components/social/new/CreatePostDialog';
+import ShareDialog from '@/components/share/ShareDialog';
 import api from '@/lib/api';
 
 function a11yProps(index: number) {
@@ -57,6 +58,8 @@ const SocialPage: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [createPostOpen, setCreatePostOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
   const [userStats, setUserStats] = useState({
     postCount: 0,
     followerCount: 0,
@@ -159,9 +162,12 @@ const SocialPage: React.FC = () => {
   };
 
   const handleSharePost = (postId: string) => {
-    // Implement share functionality
-    navigator.clipboard.writeText(`${window.location.origin}/post/${postId}`);
-    toast.success('Post link copied to clipboard!');
+    // Find the post in the posts array
+    const post = posts.find(p => p.id === postId || p._id === postId);
+    if (post) {
+      setSelectedPost(post);
+      setShareDialogOpen(true);
+    }
   };
 
   // Render a single post
@@ -653,6 +659,13 @@ const SocialPage: React.FC = () => {
           <Plus size={28} />
         </IconButton>
       </Box>
+      
+      {/* Share Dialog */}
+      <ShareDialog 
+        open={shareDialogOpen} 
+        onClose={() => setShareDialogOpen(false)} 
+        post={selectedPost} 
+      />
     </Layout>
   );
 };
