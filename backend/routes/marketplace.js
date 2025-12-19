@@ -554,8 +554,18 @@ router.get('/products/random', async (req, res) => {
 // @desc    Get trending products based on views, sales, and ratings
 // @access  Public
 router.get('/products/trending', async (req, res) => {
+  console.log('=== TRENDING PRODUCTS ROUTE HIT!!! ===');
+  console.log('Request URL:', req.url);
+  console.log('Request query:', req.query);
   try {
     const { limit = 10 } = req.query;
+    
+    // Debug logging
+    console.log('Trending products request received:', { limit, query: req.query, typeOfLimit: typeof limit });
+    
+    // Parse limit to ensure it's a number
+    const parsedLimit = parseInt(limit);
+    console.log('Parsed limit:', parsedLimit, 'Type:', typeof parsedLimit);
     
     // Get trending products based on engagement metrics
     const trendingProducts = await Product.find({ isActive: true })
@@ -566,8 +576,10 @@ router.get('/products/trending', async (req, res) => {
         rating: -1, 
         createdAt: -1 
       })
-      .limit(parseInt(limit))
+      .limit(parsedLimit)
       .lean();
+
+    console.log('Found trending products:', trendingProducts.length);
 
     // Transform data for frontend compatibility
     const transformedProducts = trendingProducts.map(product => ({
@@ -583,12 +595,18 @@ router.get('/products/trending', async (req, res) => {
       }
     }));
 
-    res.json({
+    console.log('Transformed products:', transformedProducts.length);
+
+    const responseData = {
       success: true,
       data: {
         products: transformedProducts
       }
-    });
+    };
+    
+    console.log('Sending response:', JSON.stringify(responseData, null, 2));
+    
+    res.json(responseData);
   } catch (error) {
     console.error('Get trending products error:', error);
     res.status(500).json({
@@ -1290,55 +1308,6 @@ router.get('/products/random', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to get random products',
-      message: error.message
-    });
-  }
-});
-
-// @route   GET /api/marketplace/products/trending
-// @desc    Get trending products based on views, sales, and ratings
-// @access  Public
-router.get('/products/trending', async (req, res) => {
-  try {
-    const { limit = 10 } = req.query;
-    
-    // Get trending products based on engagement metrics
-    const trendingProducts = await Product.find({ isActive: true })
-      .populate('vendorId', 'username displayName avatar isVerified walletAddress')
-      .sort({ 
-        views: -1, 
-        sales: -1, 
-        rating: -1, 
-        createdAt: -1 
-      })
-      .limit(parseInt(limit))
-      .lean();
-
-    // Transform data for frontend compatibility
-    const transformedProducts = trendingProducts.map(product => ({
-      ...product,
-      id: product._id,
-      vendor: {
-        id: product.vendorId._id,
-        username: product.vendorId.username,
-        displayName: product.vendorId.displayName,
-        avatar: product.vendorId.avatar,
-        isVerified: product.vendorId.isVerified,
-        walletAddress: product.vendorId.walletAddress
-      }
-    }));
-
-    res.json({
-      success: true,
-      data: {
-        products: transformedProducts
-      }
-    });
-  } catch (error) {
-    console.error('Get trending products error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get trending products',
       message: error.message
     });
   }
