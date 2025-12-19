@@ -388,18 +388,6 @@ const SocialPage: React.FC = () => {
             TalkCart
           </Typography>
         </Box>
-        <IconButton 
-          sx={{
-            color: 'white',
-            bgcolor: 'rgba(255, 255, 255, 0.2)',
-            '&:hover': {
-              bgcolor: 'rgba(255, 255, 255, 0.3)'
-            }
-          }}
-          onClick={() => setCreatePostOpen(true)}
-        >
-          <Plus size={20} />
-        </IconButton>
       </Box>
       
       <Container maxWidth="lg" sx={{ py: 2 }}>

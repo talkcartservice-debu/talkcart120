@@ -22,6 +22,7 @@ interface VideoFeedContextValue {
   pauseAllVideos: () => void;
   currentPlayingVideo: string | null;
   isScrolling: boolean;
+  isMobile: boolean;
   settings: VideoAutoscrollSettings;
   updateSettings: (newSettings: Partial<VideoAutoscrollSettings>) => void;
   getVideoStats: () => any;
@@ -67,7 +68,77 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
   });
 
   const [isOnline, setIsOnline] = useState(true);
-  const [globalMuted, setGlobalMuted] = useState(settings.muteByDefault);
+  const [globalMuted, setGlobalMuted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Update globalMuted when settings change
+  useEffect(() => {
+    setGlobalMuted(settings.muteByDefault);
+  }, [settings.muteByDefault]);
+
+  // Ensure globalMuted stays in sync with settings
+  useEffect(() => {
+    setGlobalMuted(settings.muteByDefault);
+  }, [settings]);
+
+  // Detect mobile devices
+  useEffect(() => {
+    const checkIsMobile = () => {
+      if (typeof window !== 'undefined') {
+        const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        setIsMobile(mobile);
+        
+        // On mobile, adjust settings for better performance
+        if (mobile) {
+          setSettings(prev => {
+            const newSettings = {
+              ...prev,
+              // Reduce threshold on mobile for better detection
+              threshold: Math.min(prev.threshold, 0.5),
+              // Increase scroll delay on mobile for smoother experience
+              scrollPauseDelay: Math.max(prev.scrollPauseDelay, 200),
+              // Enable mute by default on mobile for autoplay compliance
+              muteByDefault: true,
+            };
+            
+            // Update globalMuted state when settings change
+            setGlobalMuted(newSettings.muteByDefault);
+            
+            return newSettings;
+          });
+          
+          // Update smooth scroll manager config for mobile
+          scrollVideoManager.updateConfig({
+            scrollThreshold: 50,
+            velocityThreshold: 2.0,
+            debounceMs: 50,
+            preloadDistance: 200,
+          });
+        } else {
+          // Reset to default config for desktop
+          scrollVideoManager.updateConfig({
+            scrollThreshold: 30,
+            velocityThreshold: 1.5,
+            debounceMs: 10,
+            preloadDistance: 300,
+          });
+        }
+      }
+    };
+
+    checkIsMobile();
+    
+    // Also check on resize/orientation change
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', checkIsMobile);
+      window.addEventListener('orientationchange', checkIsMobile);
+      
+      return () => {
+        window.removeEventListener('resize', checkIsMobile);
+        window.removeEventListener('orientationchange', checkIsMobile);
+      };
+    }
+  }, [scrollVideoManager]);
   const [scrollVideoManager] = useState(() => getSmoothScrollVideoManager({
     scrollThreshold: 30,
     velocityThreshold: 1.5,
@@ -300,6 +371,7 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
     pauseAllVideos,
     currentPlayingVideo,
     isScrolling,
+    isMobile,
     settings,
     updateSettings,
     getVideoStats,
@@ -311,6 +383,7 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
     pauseAllVideos,
     currentPlayingVideo,
     isScrolling,
+    isMobile,
     settings,
     updateSettings,
     getVideoStats,

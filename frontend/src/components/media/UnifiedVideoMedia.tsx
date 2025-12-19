@@ -29,7 +29,7 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Use video feed system for autoplay/pause functionality
-  const { registerVideo } = useVideoFeed();
+  const { registerVideo, isMobile } = useVideoFeed();
   
   // Generate unique ID for this video
   const videoId = useMemo(() => `video-${Math.random().toString(36).substr(2, 9)}`, []);
@@ -84,7 +84,8 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
         if (videoRef.current) {
           videoRef.current.loop = true;
           videoRef.current.playsInline = true;
-          videoRef.current.muted = true; // Start muted to comply with autoplay policies
+          // On mobile, start muted for autoplay compliance; on desktop, respect global setting
+          videoRef.current.muted = isMobile ? true : false;
         }
         
         return cleanup;
@@ -94,7 +95,7 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
     }
     // Explicitly return undefined for the case when condition is not met
     return undefined;
-  }, [videoId, registerVideo, finalSrc]);
+  }, [videoId, registerVideo, finalSrc, isMobile]);
   // Handle video loading errors
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.warn('❌ Video loading failed:', {
@@ -226,7 +227,7 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
       <video
         ref={videoRef}
         src={finalSrc}
-        controls
+        controls={!isMobile} // Hide controls on mobile for cleaner autoplay experience
         style={{ 
           width: '100%', 
           display: 'block', 
@@ -236,7 +237,7 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
         poster={poster}
         onError={handleVideoError}
         onLoadedData={handleVideoLoad}
-        muted
+        muted={isMobile ? true : false}
         loop
         playsInline
       />

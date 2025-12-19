@@ -399,6 +399,7 @@ class SmoothScrollVideoManager {
 
   private preloadNearbyVideos(videoData: VideoIntersectionData[], direction: 'up' | 'down') {
     const currentIndex = videoData.findIndex(v => v.videoId === this.currentPlayingVideo);
+    // Use a fixed preload count (will be managed by VideoFeedProvider)
     const preloadCount = 2;
 
     // Determine which videos to preload based on scroll direction
