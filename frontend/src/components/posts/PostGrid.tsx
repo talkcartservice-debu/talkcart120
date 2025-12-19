@@ -26,6 +26,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import UnifiedVideoMedia from '@/components/media/UnifiedVideoMedia';
+import UnifiedImageMedia from '@/components/media/UnifiedImageMedia';
 
 interface Post {
     _id: string;
@@ -249,13 +251,29 @@ const PostGrid: React.FC<PostGridProps> = ({
                             {/* Media Preview */}
                             {post.media && post.media.length > 0 && (
                                 <Box sx={{ position: 'relative' }}>
-                                    <CardMedia
-                                        component="img"
-                                        height="200"
-                                        image={post.media[0]?.thumbnail || post.media[0]?.url || ''}
-                                        alt="Post media"
-                                        sx={{ objectFit: 'cover' }}
-                                    />
+                                    {post.media[0]?.type === 'video' ? (
+                                        <UnifiedVideoMedia
+                                            src={post.media[0]?.thumbnail || post.media[0]?.url || ''}
+                                            alt="Post media"
+                                            style={{
+                                                width: '100%',
+                                                height: 200,
+                                                objectFit: 'cover',
+                                                display: 'block'
+                                            }}
+                                        />
+                                    ) : (
+                                        <UnifiedImageMedia
+                                            src={post.media[0]?.thumbnail || post.media[0]?.url || ''}
+                                            alt="Post media"
+                                            style={{
+                                                width: '100%',
+                                                height: 200,
+                                                objectFit: 'cover',
+                                                display: 'block'
+                                            }}
+                                        />
+                                    )}
 
                                     {/* Media type indicator */}
                                     {post.media[0]?.type === 'video' && (

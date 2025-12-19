@@ -17,6 +17,8 @@ import {
   Paper,
   Divider,
 } from '@mui/material';
+import UnifiedVideoMedia from '@/components/media/UnifiedVideoMedia';
+import UnifiedImageMedia from '@/components/media/UnifiedImageMedia';
 import { 
   Home, 
   Users, 
@@ -235,17 +237,31 @@ const SocialPage: React.FC = () => {
                 justifyContent: 'center'
               }}
             >
-              <img 
-                src={post.media[0]?.secure_url || post.media[0]?.url} 
-                alt="Post media" 
-                style={{ 
-                  width: '100%', 
-                  height: 'auto', 
-                  maxHeight: 'inherit',
-                  objectFit: 'cover',
-                  display: 'block'
-                }} 
-              />
+              {post.media[0]?.resource_type === 'video' ? (
+                <UnifiedVideoMedia 
+                  src={post.media[0]?.secure_url || post.media[0]?.url} 
+                  alt="Post media" 
+                  style={{ 
+                    width: '100%', 
+                    height: 'auto', 
+                    maxHeight: 'inherit',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }} 
+                />
+              ) : (
+                <UnifiedImageMedia 
+                  src={post.media[0]?.secure_url || post.media[0]?.url} 
+                  alt="Post media" 
+                  style={{ 
+                    width: '100%', 
+                    height: 'auto', 
+                    maxHeight: 'inherit',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }} 
+                />
+              )}
             </Box>
           )}
           
