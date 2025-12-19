@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { Video, Play } from 'lucide-react';
 import { normalizeMediaUrl } from '../../utils/mediaUtils';
+import { useVideoFeed } from '../video/VideoFeedManager';
 // Types
 interface VideoMediaProps {
   src: string;
@@ -25,6 +26,13 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
   const [loading, setLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Use video feed system for autoplay/pause functionality
+  const { registerVideo } = useVideoFeed();
+  
+  // Generate unique ID for this video
+  const videoId = useMemo(() => `video-${Math.random().toString(36).substr(2, 9)}`, []);
   
   // Enhanced source URL processing for videos
   const normalizedSrc = useMemo(() => {
@@ -65,6 +73,28 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
     }
     setLoading(false);
   }, [normalizedSrc, src]);
+  
+  // Register video with video feed system
+  useEffect(() => {
+    if (videoRef.current && containerRef.current && finalSrc) {
+      try {
+        const cleanup = registerVideo(videoId, videoRef.current, containerRef.current);
+        
+        // Set initial video properties
+        if (videoRef.current) {
+          videoRef.current.loop = true;
+          videoRef.current.playsInline = true;
+          videoRef.current.muted = true; // Start muted to comply with autoplay policies
+        }
+        
+        return cleanup;
+      } catch (err) {
+        console.warn('Failed to register video with feed system:', err);
+      }
+    }
+    // Explicitly return undefined for the case when condition is not met
+    return undefined;
+  }, [videoId, registerVideo, finalSrc]);
   // Handle video loading errors
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.warn('❌ Video loading failed:', {
@@ -184,6 +214,7 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
   // Render the video
   return (
     <Box 
+      ref={containerRef}
       className={className}
       sx={{ 
         position: 'relative', 
@@ -205,6 +236,9 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
         poster={poster}
         onError={handleVideoError}
         onLoadedData={handleVideoLoad}
+        muted
+        loop
+        playsInline
       />
       {loading && (
         <Box

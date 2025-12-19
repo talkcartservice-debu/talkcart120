@@ -40,6 +40,7 @@ export class HttpError extends Error {
   data?: any;
   constructor(status: number, message: string, data?: any) {
     super(message);
+    Object.setPrototypeOf(this, HttpError.prototype);
     this.name = 'HttpError';
     this.status = status;
     this.data = data;
@@ -215,7 +216,9 @@ class ApiService {
         
         // Ensure status is always a valid number
         const validStatus = retryResponse.status !== undefined && retryResponse.status !== null ? retryResponse.status : 500;
-        throw new HttpError(validStatus, errorMessage, errorData);
+        // Additional defensive check to ensure errorData is a valid object
+        const safeErrorData = errorData && typeof errorData === 'object' && errorData !== null ? errorData : { message: errorMessage };
+        throw new HttpError(validStatus, errorMessage, safeErrorData);
       }
       // Final defensive check to ensure we never return undefined
       if (retryData === undefined) {
@@ -247,7 +250,9 @@ class ApiService {
         }
         // Ensure status is always a valid number
         const validStatus = response.status !== undefined && response.status !== null ? response.status : 500;
-        throw new HttpError(validStatus, `Request failed with status ${response.status}`, errorData);
+        // Additional defensive check to ensure errorData is a valid object
+        const safeErrorData = errorData && typeof errorData === 'object' && errorData !== null ? errorData : { message: `Request failed with status ${response.status}` };
+        throw new HttpError(validStatus, `Request failed with status ${response.status}`, safeErrorData);
       }
       // Ensure data is valid before passing to HttpError constructor
       let errorData = data && typeof data === 'object' ? data : { message: `Request failed with status ${response.status}` };
@@ -297,7 +302,9 @@ class ApiService {
       
       // Ensure status is always a valid number
       const validStatus = response.status !== undefined && response.status !== null ? response.status : 500;
-      throw new HttpError(validStatus, userFriendlyMessage, errorData);
+      // Additional defensive check to ensure errorData is a valid object
+      const safeErrorData = errorData && typeof errorData === 'object' && errorData !== null ? errorData : { message: userFriendlyMessage };
+      throw new HttpError(validStatus, userFriendlyMessage, safeErrorData);
     }
     
     // For non-JSON success responses, return the response directly

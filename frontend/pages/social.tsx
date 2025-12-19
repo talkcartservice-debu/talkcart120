@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import UnifiedVideoMedia from '@/components/media/UnifiedVideoMedia';
 import UnifiedImageMedia from '@/components/media/UnifiedImageMedia';
+import { VideoFeedProvider } from '@/components/video/VideoFeedManager';
 import { 
   Home, 
   Users, 
@@ -544,71 +545,88 @@ const SocialPage: React.FC = () => {
             </Paper>
 
             {/* Feed content */}
-            <Box>
-              {loading && posts.length === 0 ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                  <CircularProgress size={32} />
-                </Box>
-              ) : error ? (
-                <Paper 
-                  sx={{ 
-                    p: 4, 
-                    textAlign: 'center', 
-                    borderRadius: 3,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                    border: '1px solid rgba(0, 0, 0, 0.05)'
-                  }}
-                >
-                  <AlertCircle size={56} color={theme.palette.error.main} style={{ marginBottom: 16 }} />
-                  <Typography color="error" variant="h6" sx={{ mb: 2 }}>
-                    {error}
-                  </Typography>
-                  <Button 
-                    variant="outlined" 
-                    color="primary" 
-                    startIcon={<RefreshCw size={18} />}
-                    sx={{ mt: 2, borderRadius: 2, px: 4 }}
-                    onClick={handleRefresh}
+            <VideoFeedProvider
+              initialSettings={{
+                enabled: true,
+                threshold: 0.6,
+                pauseOnScroll: true,
+                muteByDefault: true,
+                preloadStrategy: 'metadata',
+                maxConcurrentVideos: 1,
+                scrollPauseDelay: 150,
+                viewTrackingThreshold: 2,
+                autoplayOnlyOnWifi: false,
+                respectReducedMotion: true,
+              }}
+              showControls={false}
+              showStats={false}
+            >
+              <Box>
+                {loading && posts.length === 0 ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress size={32} />
+                  </Box>
+                ) : error ? (
+                  <Paper 
+                    sx={{ 
+                      p: 4, 
+                      textAlign: 'center', 
+                      borderRadius: 3,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                      border: '1px solid rgba(0, 0, 0, 0.05)'
+                    }}
                   >
-                    Try Again
-                  </Button>
-                </Paper>
-              ) : posts.length === 0 ? (
-                <Paper 
-                  sx={{ 
-                    p: 4, 
-                    textAlign: 'center', 
-                    borderRadius: 3,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                    border: '1px solid rgba(0, 0, 0, 0.05)'
-                  }}
-                >
-                  <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-                    No posts found
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                    Be the first to post something!
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    size="large"
-                    startIcon={<Plus size={20} />}
-                    onClick={() => setCreatePostOpen(true)}
-                    sx={{ borderRadius: 3, px: 4, py: 1.5 }}
+                    <AlertCircle size={56} color={theme.palette.error.main} style={{ marginBottom: 16 }} />
+                    <Typography color="error" variant="h6" sx={{ mb: 2 }}>
+                      {error}
+                    </Typography>
+                    <Button 
+                      variant="outlined" 
+                      color="primary" 
+                      startIcon={<RefreshCw size={18} />}
+                      sx={{ mt: 2, borderRadius: 2, px: 4 }}
+                      onClick={handleRefresh}
+                    >
+                      Try Again
+                    </Button>
+                  </Paper>
+                ) : posts.length === 0 ? (
+                  <Paper 
+                    sx={{ 
+                      p: 4, 
+                      textAlign: 'center', 
+                      borderRadius: 3,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                      border: '1px solid rgba(0, 0, 0, 0.05)'
+                    }}
                   >
-                    Create Your First Post
-                  </Button>
-                </Paper>
-              ) : (
-                <Box>
-                  {posts.map((post) => (
-                    <Box key={post.id}>
-                      {renderPost(post)}
-                    </Box>
-                  ))}
-                </Box>
-              )}
-            </Box>
+                    <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+                      No posts found
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                      Be the first to post something!
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      size="large"
+                      startIcon={<Plus size={20} />}
+                      onClick={() => setCreatePostOpen(true)}
+                      sx={{ borderRadius: 3, px: 4, py: 1.5 }}
+                    >
+                      Create Your First Post
+                    </Button>
+                  </Paper>
+                ) : (
+                  <Box>
+                    {posts.map((post) => (
+                      <Box key={post.id}>
+                        {renderPost(post)}
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            </VideoFeedProvider>
           </Grid>
 
           {/* Right Sidebar - Hidden on mobile */}
