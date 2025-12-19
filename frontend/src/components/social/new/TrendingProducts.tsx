@@ -59,7 +59,7 @@ const TrendingProducts: React.FC = () => {
   const fetchTrendingProducts = async () => {
     try {
       setLoading(true);
-      const response: any = await api.marketplace.getRandomProducts(4); // Fetch 4 products for 2x2 grid
+      const response: any = await api.marketplace.getTrendingProducts(4); // Fetch 4 products for 2x2 grid
       
       // Handle the expected response structure from backend
       if (response?.data?.products && Array.isArray(response.data.products)) {
@@ -70,11 +70,9 @@ const TrendingProducts: React.FC = () => {
         setProducts(response);
       } else {
         // If we can't parse the response properly, show an empty state
-        console.warn('Unexpected response structure from getRandomProducts:', response);
         setProducts([]);
       }
     } catch (err: any) {
-      console.error('Error fetching trending products:', err);
       // Show error state instead of mock data
       setProducts([]);
     } finally {

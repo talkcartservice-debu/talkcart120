@@ -490,20 +490,6 @@ const SocialPage: React.FC = () => {
                 border: '1px solid rgba(0, 0, 0, 0.05)'
               }}
             >
-              <TrendingProducts />
-            </Paper>
-            
-            <Paper 
-              sx={{ 
-                mt: 2,
-                p: 2, 
-                borderRadius: 3, 
-                position: 'sticky',
-                top: 250,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                border: '1px solid rgba(0, 0, 0, 0.05)'
-              }}
-            >
               <WhoToFollow />
             </Paper>
           </Grid>

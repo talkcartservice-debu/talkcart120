@@ -617,6 +617,135 @@ router.get('/products/trending', async (req, res) => {
   }
 });
 
+// @route   GET /api/marketplace/products/featured
+// @desc    Get featured products
+// @access  Public
+router.get('/products/featured', async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    const featuredProducts = await Product.find({ isActive: true, featured: true })
+      .populate('vendorId', 'username displayName avatar isVerified walletAddress')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    // Transform data for frontend compatibility
+    const transformedProducts = featuredProducts.map(product => ({
+      ...product,
+      id: product._id,
+      vendor: {
+        id: product.vendorId._id,
+        username: product.vendorId.username,
+        displayName: product.vendorId.displayName,
+        avatar: product.vendorId.avatar,
+        isVerified: product.vendorId.isVerified,
+        walletAddress: product.vendorId.walletAddress
+      }
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        products: transformedProducts
+      }
+    });
+  } catch (error) {
+    console.error('Get featured products error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get featured products',
+      message: error.message
+    });
+  }
+});
+
+// @route   GET /api/marketplace/products/best-selling
+// @desc    Get best selling products
+// @access  Public
+router.get('/products/best-selling', async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    const bestSellingProducts = await Product.find({ isActive: true })
+      .populate('vendorId', 'username displayName avatar isVerified walletAddress')
+      .sort({ sales: -1, createdAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    // Transform data for frontend compatibility
+    const transformedProducts = bestSellingProducts.map(product => ({
+      ...product,
+      id: product._id,
+      vendor: {
+        id: product.vendorId._id,
+        username: product.vendorId.username,
+        displayName: product.vendorId.displayName,
+        avatar: product.vendorId.avatar,
+        isVerified: product.vendorId.isVerified,
+        walletAddress: product.vendorId.walletAddress
+      }
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        products: transformedProducts
+      }
+    });
+  } catch (error) {
+    console.error('Get best selling products error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get best selling products',
+      message: error.message
+    });
+  }
+});
+
+// @route   GET /api/marketplace/products/new
+// @desc    Get newly added products
+// @access  Public
+router.get('/products/new', async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    const newProducts = await Product.find({ isActive: true })
+      .populate('vendorId', 'username displayName avatar isVerified walletAddress')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    // Transform data for frontend compatibility
+    const transformedProducts = newProducts.map(product => ({
+      ...product,
+      id: product._id,
+      vendor: {
+        id: product.vendorId._id,
+        username: product.vendorId.username,
+        displayName: product.vendorId.displayName,
+        avatar: product.vendorId.avatar,
+        isVerified: product.vendorId.isVerified,
+        walletAddress: product.vendorId.walletAddress
+      }
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        products: transformedProducts
+      }
+    });
+  } catch (error) {
+    console.error('Get new products error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get new products',
+      message: error.message
+    });
+  }
+});
+
 // @route   GET /api/marketplace/products/:id
 // @desc    Get single product
 // @access  Public
@@ -2711,6 +2840,504 @@ router.get('/vendors/me/analytics/benchmarks', authenticateTokenStrict, async (r
     res.status(500).json({
       success: false,
       error: 'Failed to get performance benchmarks',
+      message: error.message
+    });
+  }
+});
+
+// @route   GET /api/marketplace/products/:id/recommendations
+// @desc    Get product recommendations
+// @access  Public
+router.get('/products/:id/recommendations', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { limit = 5 } = req.query;
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid product ID' });
+    }
+
+    // Get the reference product
+    const referenceProduct = await Product.findById(id);
+    if (!referenceProduct || !referenceProduct.isActive) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    // Find similar products based on category and tags
+    const query = {
+      _id: { $ne: id },
+      isActive: true,
+      category: referenceProduct.category
+    };
+
+    // If the reference product has tags, find products with similar tags
+    if (referenceProduct.tags && referenceProduct.tags.length > 0) {
+      query.$or = [
+        { tags: { $in: referenceProduct.tags } },
+        { category: referenceProduct.category }
+      ];
+    }
+
+    const recommendedProducts = await Product.find(query)
+      .populate('vendorId', 'username displayName avatar isVerified walletAddress')
+      .sort({ sales: -1, rating: -1, createdAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    // Transform data for frontend compatibility
+    const transformedProducts = recommendedProducts.map(product => ({
+      ...product,
+      id: product._id,
+      vendor: {
+        id: product.vendorId._id,
+        username: product.vendorId.username,
+        displayName: product.vendorId.displayName,
+        avatar: product.vendorId.avatar,
+        isVerified: product.vendorId.isVerified,
+        walletAddress: product.vendorId.walletAddress
+      }
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        products: transformedProducts
+      }
+    });
+  } catch (error) {
+    console.error('Get product recommendations error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get product recommendations',
+      message: error.message
+    });
+  }
+});
+
+// @route   GET /api/marketplace/products/:id/related
+// @desc    Get related products
+// @access  Public
+router.get('/products/:id/related', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { limit = 12 } = req.query;
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid product ID' });
+    }
+
+    // Get the reference product
+    const referenceProduct = await Product.findById(id);
+    if (!referenceProduct || !referenceProduct.isActive) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    // Find related products (same vendor or category)
+    const query = {
+      _id: { $ne: id },
+      isActive: true,
+      $or: [
+        { vendorId: referenceProduct.vendorId },
+        { category: referenceProduct.category }
+      ]
+    };
+
+    const relatedProducts = await Product.find(query)
+      .populate('vendorId', 'username displayName avatar isVerified walletAddress')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    // Transform data for frontend compatibility
+    const transformedProducts = relatedProducts.map(product => ({
+      ...product,
+      id: product._id,
+      vendor: {
+        id: product.vendorId._id,
+        username: product.vendorId.username,
+        displayName: product.vendorId.displayName,
+        avatar: product.vendorId.avatar,
+        isVerified: product.vendorId.isVerified,
+        walletAddress: product.vendorId.walletAddress
+      }
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        products: transformedProducts
+      }
+    });
+  } catch (error) {
+    console.error('Get related products error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get related products',
+      message: error.message
+    });
+  }
+});
+
+// @route   POST /api/marketplace/products/compare
+// @desc    Compare products
+// @access  Public
+router.post('/products/compare', async (req, res) => {
+  try {
+    const { productIds } = req.body;
+    
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ success: false, error: 'Product IDs are required' });
+    }
+
+    // Validate all product IDs
+    for (const id of productIds) {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ success: false, error: `Invalid product ID: ${id}` });
+      }
+    }
+
+    // Get products
+    const products = await Product.find({
+      _id: { $in: productIds },
+      isActive: true
+    })
+    .populate('vendorId', 'username displayName avatar isVerified walletAddress')
+    .lean();
+
+    // Transform data for frontend compatibility
+    const transformedProducts = products.map(product => ({
+      ...product,
+      id: product._id,
+      vendor: {
+        id: product.vendorId._id,
+        username: product.vendorId.username,
+        displayName: product.vendorId.displayName,
+        avatar: product.vendorId.avatar,
+        isVerified: product.vendorId.isVerified,
+        walletAddress: product.vendorId.walletAddress
+      }
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        products: transformedProducts
+      }
+    });
+  } catch (error) {
+    console.error('Compare products error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to compare products',
+      message: error.message
+    });
+  }
+});
+
+// @route   GET /api/marketplace/products/:id/reviews/stats
+// @desc    Get product review statistics
+// @access  Public
+router.get('/products/:id/reviews/stats', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid product ID' });
+    }
+
+    // Get product reviews
+    const reviews = await ProductReview.find({ productId: id });
+    
+    if (reviews.length === 0) {
+      return res.json({
+        success: true,
+        data: {
+          totalReviews: 0,
+          averageRating: 0,
+          ratingDistribution: {
+            5: 0,
+            4: 0,
+            3: 0,
+            2: 0,
+            1: 0
+          }
+        }
+      });
+    }
+
+    // Calculate statistics
+    const totalReviews = reviews.length;
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    const averageRating = totalRating / totalReviews;
+    
+    // Rating distribution
+    const ratingDistribution = {
+      5: reviews.filter(r => r.rating === 5).length,
+      4: reviews.filter(r => r.rating === 4).length,
+      3: reviews.filter(r => r.rating === 3).length,
+      2: reviews.filter(r => r.rating === 2).length,
+      1: reviews.filter(r => r.rating === 1).length
+    };
+
+    res.json({
+      success: true,
+      data: {
+        totalReviews,
+        averageRating: parseFloat(averageRating.toFixed(1)),
+        ratingDistribution
+      }
+    });
+  } catch (error) {
+    console.error('Get product review stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get product review statistics',
+      message: error.message
+    });
+  }
+});
+
+// @route   POST /api/marketplace/reviews/:id/helpful
+// @desc    Mark review as helpful
+// @access  Private
+router.post('/reviews/:id/helpful', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid review ID' });
+    }
+
+    // Find the review
+    const review = await ProductReview.findById(id);
+    if (!review) {
+      return res.status(404).json({ success: false, error: 'Review not found' });
+    }
+
+    // Check if user already marked this review as helpful
+    if (review.helpfulBy && review.helpfulBy.includes(userId)) {
+      return res.status(400).json({ success: false, error: 'You already marked this review as helpful' });
+    }
+
+    // Add user to helpfulBy array
+    if (!review.helpfulBy) {
+      review.helpfulBy = [];
+    }
+    review.helpfulBy.push(userId);
+    review.helpfulCount = review.helpfulBy.length;
+    
+    await review.save();
+
+    res.json({
+      success: true,
+      data: {
+        helpfulCount: review.helpfulCount
+      },
+      message: 'Review marked as helpful'
+    });
+  } catch (error) {
+    console.error('Mark review helpful error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to mark review as helpful',
+      message: error.message
+    });
+  }
+});
+
+// @route   GET /api/marketplace/cart
+// @desc    Get user's cart
+// @access  Private
+router.get('/cart', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // In a real implementation, you would retrieve the cart from a database
+    // For now, we'll return an empty cart
+    res.json({
+      success: true,
+      data: {
+        items: [],
+        total: 0,
+        currency: 'USD'
+      }
+    });
+  } catch (error) {
+    console.error('Get cart error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get cart',
+      message: error.message
+    });
+  }
+});
+
+// @route   POST /api/marketplace/cart/add
+// @desc    Add product to cart
+// @access  Private
+router.post('/cart/add', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { productId, quantity = 1, color } = req.body;
+    
+    // Validate product ID
+    if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ success: false, error: 'Valid product ID is required' });
+    }
+    
+    // Validate quantity
+    const qty = parseInt(quantity);
+    if (isNaN(qty) || qty <= 0) {
+      return res.status(400).json({ success: false, error: 'Quantity must be a positive number' });
+    }
+    
+    // Check if product exists and is active
+    const product = await Product.findById(productId);
+    if (!product || !product.isActive) {
+      return res.status(404).json({ success: false, error: 'Product not found or inactive' });
+    }
+    
+    // In a real implementation, you would add the item to the user's cart in the database
+    // For now, we'll just return a success response
+    res.json({
+      success: true,
+      data: {
+        productId,
+        quantity: qty,
+        color,
+        message: 'Product added to cart successfully'
+      }
+    });
+  } catch (error) {
+    console.error('Add to cart error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to add product to cart',
+      message: error.message
+    });
+  }
+});
+
+// @route   PUT /api/marketplace/cart/:productId
+// @desc    Update cart item quantity
+// @access  Private
+router.put('/cart/:productId', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { productId } = req.params;
+    const { quantity } = req.body;
+    
+    // Validate product ID
+    if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ success: false, error: 'Valid product ID is required' });
+    }
+    
+    // Validate quantity
+    const qty = parseInt(quantity);
+    if (isNaN(qty) || qty <= 0) {
+      return res.status(400).json({ success: false, error: 'Quantity must be a positive number' });
+    }
+    
+    // In a real implementation, you would update the item quantity in the user's cart
+    // For now, we'll just return a success response
+    res.json({
+      success: true,
+      data: {
+        productId,
+        quantity: qty,
+        message: 'Cart item updated successfully'
+      }
+    });
+  } catch (error) {
+    console.error('Update cart error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update cart item',
+      message: error.message
+    });
+  }
+});
+
+// @route   DELETE /api/marketplace/cart/:productId
+// @desc    Remove item from cart
+// @access  Private
+router.delete('/cart/:productId', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { productId } = req.params;
+    
+    // Validate product ID
+    if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ success: false, error: 'Valid product ID is required' });
+    }
+    
+    // In a real implementation, you would remove the item from the user's cart
+    // For now, we'll just return a success response
+    res.json({
+      success: true,
+      message: 'Product removed from cart successfully'
+    });
+  } catch (error) {
+    console.error('Remove from cart error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to remove product from cart',
+      message: error.message
+    });
+  }
+});
+
+// @route   DELETE /api/marketplace/cart
+// @desc    Clear entire cart
+// @access  Private
+router.delete('/cart', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // In a real implementation, you would clear all items from the user's cart
+    // For now, we'll just return a success response
+    res.json({
+      success: true,
+      message: 'Cart cleared successfully'
+    });
+  } catch (error) {
+    console.error('Clear cart error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to clear cart',
+      message: error.message
+    });
+  }
+});
+
+// @route   POST /api/marketplace/cart/checkout
+// @desc    Checkout cart
+// @access  Private
+router.post('/cart/checkout', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { shippingAddress, paymentMethod, paymentDetails } = req.body;
+    
+    // In a real implementation, you would process the checkout
+    // For now, we'll just return a success response
+    res.status(201).json({
+      success: true,
+      data: {
+        orderId: `ORDER-${Date.now()}`,
+        status: 'pending',
+        message: 'Checkout initiated successfully'
+      }
+    });
+  } catch (error) {
+    console.error('Checkout error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process checkout',
       message: error.message
     });
   }
