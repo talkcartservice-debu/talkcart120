@@ -388,6 +388,18 @@ const SocialPage: React.FC = () => {
             TalkCart
           </Typography>
         </Box>
+        <IconButton 
+          sx={{
+            color: 'white',
+            bgcolor: 'rgba(255, 255, 255, 0.2)',
+            '&:hover': {
+              bgcolor: 'rgba(255, 255, 255, 0.3)'
+            }
+          }}
+          onClick={() => setCreatePostOpen(true)}
+        >
+          <Plus size={20} />
+        </IconButton>
       </Box>
       
       <Container maxWidth="lg" sx={{ py: 2 }}>
@@ -498,24 +510,6 @@ const SocialPage: React.FC = () => {
 
           {/* Main feed area */}
           <Grid item xs={12} md={6}>
-            {/* Create post button for mobile */}
-            <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
-              <Button 
-                variant="contained" 
-                fullWidth
-                startIcon={<Plus size={20} />}
-                onClick={() => setCreatePostOpen(true)}
-                sx={{ 
-                  py: 1.5, 
-                  borderRadius: 3, 
-                  textTransform: 'none', 
-                  fontWeight: 600,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-                }}
-              >
-                Create Post
-              </Button>
-            </Box>
             
             {/* Feed tabs */}
             <Paper 

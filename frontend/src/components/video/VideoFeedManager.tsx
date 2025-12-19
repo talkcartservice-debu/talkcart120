@@ -81,6 +81,15 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
     setGlobalMuted(settings.muteByDefault);
   }, [settings]);
 
+  const [scrollVideoManager] = useState(() => getSmoothScrollVideoManager({
+    scrollThreshold: 30,
+    velocityThreshold: 1.5,
+    debounceMs: 10,
+    preloadDistance: 300,
+    smoothTransition: true,
+    adaptiveQuality: true,
+  }));
+
   // Detect mobile devices
   useEffect(() => {
     const checkIsMobile = () => {
@@ -138,15 +147,15 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
         window.removeEventListener('orientationchange', checkIsMobile);
       };
     }
+    
+    // Return a cleanup function for all code paths
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', checkIsMobile);
+        window.removeEventListener('orientationchange', checkIsMobile);
+      }
+    };
   }, [scrollVideoManager]);
-  const [scrollVideoManager] = useState(() => getSmoothScrollVideoManager({
-    scrollThreshold: 30,
-    velocityThreshold: 1.5,
-    debounceMs: 10,
-    preloadDistance: 300,
-    smoothTransition: true,
-    adaptiveQuality: true,
-  }));
 
   // Handle video events
   const handleVideoPlay = useCallback((videoId: string) => {
