@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { Video, Play } from 'lucide-react';
 import { normalizeMediaUrl } from '../../utils/mediaUtils';
-
 // Types
 interface VideoMediaProps {
   src: string;
@@ -27,10 +26,33 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
   const [retryCount, setRetryCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   
-  // Use source URL directly for Cloudinary URLs, normalize others
-  const normalizedSrc = src ? (
-    src.includes('cloudinary.com') ? src : (normalizeMediaUrl(src, 'video') || src)
-  ) : null;
+  // Enhanced source URL processing for videos
+  const normalizedSrc = useMemo(() => {
+    if (!src) return null;
+    
+    // For Cloudinary URLs, use directly but fix any path duplication issues
+    if (src.includes('cloudinary.com')) {
+      let fixedSrc = src;
+      // Fix duplicate talkcart path issue in Cloudinary URLs
+      if (fixedSrc.includes('/talkcart/talkcart/')) {
+        fixedSrc = fixedSrc.replace(/\/talkcart\/talkcart\//g, '/talkcart/');
+      }
+      return fixedSrc;
+    }
+    
+    // For localhost URLs in development, ensure proper formatting
+    if (src.includes('localhost:') || src.includes('127.0.0.1')) {
+      let fixedSrc = src;
+      // Fix duplicate talkcart path issue
+      if (fixedSrc.includes('/uploads/talkcart/talkcart/')) {
+        fixedSrc = fixedSrc.replace(/\/uploads\/talkcart\/talkcart\//g, '/uploads/talkcart/');
+      }
+      return fixedSrc;
+    }
+    
+    // For other URLs, use the existing normalization
+    return normalizeMediaUrl(src, 'video') || src;
+  }, [src]);
 
   // Set the final source when normalizedSrc changes
   useEffect(() => {
@@ -43,7 +65,6 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
     }
     setLoading(false);
   }, [normalizedSrc, src]);
-
   // Handle video loading errors
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.warn('❌ Video loading failed:', {

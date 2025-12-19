@@ -253,7 +253,7 @@ const PostGrid: React.FC<PostGridProps> = ({
                                 <Box sx={{ position: 'relative' }}>
                                     {post.media[0]?.type === 'video' ? (
                                         <UnifiedVideoMedia
-                                            src={post.media[0]?.thumbnail || post.media[0]?.url || ''}
+                                            src={post.media[0]?.url || post.media[0]?.thumbnail || ''}
                                             alt="Post media"
                                             style={{
                                                 width: '100%',
@@ -264,7 +264,7 @@ const PostGrid: React.FC<PostGridProps> = ({
                                         />
                                     ) : (
                                         <UnifiedImageMedia
-                                            src={post.media[0]?.thumbnail || post.media[0]?.url || ''}
+                                            src={post.media[0]?.url || post.media[0]?.thumbnail || ''}
                                             alt="Post media"
                                             style={{
                                                 width: '100%',
@@ -274,7 +274,6 @@ const PostGrid: React.FC<PostGridProps> = ({
                                             }}
                                         />
                                     )}
-
                                     {/* Media type indicator */}
                                     {post.media[0]?.type === 'video' && (
                                         <Box

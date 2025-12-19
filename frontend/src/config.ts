@@ -21,7 +21,7 @@ export const AUTH_REFRESH_TOKEN_KEY = 'refreshToken';
 
 // App configuration
 export const APP_NAME = 'TalkCart';
-export const APP_DESCRIPTION = 'Web3 super application combining social networking, marketplace, streaming, DAO governance, and messaging';
+export const APP_DESCRIPTION = 'Web3 talkcart app combining social networking, marketplace, streaming, DAO governance, and messaging';
 
 // UI assets and fallbacks
 export const DEFAULT_AVATAR_URL = process.env.NEXT_PUBLIC_DEFAULT_AVATAR_URL || '/images/default-avatar.png';

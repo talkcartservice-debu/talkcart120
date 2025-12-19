@@ -132,7 +132,7 @@ const PostDetailPage: React.FC = () => {
     const firstMedia = media[0];
 
     // Check if the URL is a post detail page URL (which is invalid for media)
-    const mediaUrl = firstMedia.secure_url || firstMedia.url;
+    const mediaUrl = firstMedia.url || firstMedia.secure_url;
     
     // Check if this is a known missing file pattern
     const isKnownMissingFile = mediaUrl && typeof mediaUrl === 'string' && (

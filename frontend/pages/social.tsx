@@ -245,7 +245,7 @@ const SocialPage: React.FC = () => {
             >
               {post.media[0]?.resource_type === 'video' ? (
                 <UnifiedVideoMedia 
-                  src={post.media[0]?.secure_url || post.media[0]?.url} 
+                  src={post.media[0]?.url || post.media[0]?.secure_url} 
                   alt="Post media" 
                   style={{ 
                     width: '100%', 
@@ -257,7 +257,7 @@ const SocialPage: React.FC = () => {
                 />
               ) : (
                 <UnifiedImageMedia 
-                  src={post.media[0]?.secure_url || post.media[0]?.url} 
+                  src={post.media[0]?.url || post.media[0]?.secure_url} 
                   alt="Post media" 
                   style={{ 
                     width: '100%', 
