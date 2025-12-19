@@ -351,6 +351,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 borderRadius: '50%',
                 objectFit: 'cover',
                 mr: 1,
+                display: { xs: 'none', sm: 'block' }
               }}
             />
             <Typography 

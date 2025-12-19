@@ -378,6 +378,30 @@ const SocialPage: React.FC = () => {
         <meta name="description" content="Connect with friends and discover trending content" />
       </Head>
       
+      {/* Mobile Header */}
+      <Box className="social-mobile-header">
+        <Box className="social-mobile-brand">
+          <Box className="social-brand-logo">
+            <Box component="span" className="social-brand-initial">T</Box>
+          </Box>
+          <Typography variant="h6" className="social-brand-text">
+            TalkCart
+          </Typography>
+        </Box>
+        <IconButton 
+          sx={{
+            color: 'white',
+            bgcolor: 'rgba(255, 255, 255, 0.2)',
+            '&:hover': {
+              bgcolor: 'rgba(255, 255, 255, 0.3)'
+            }
+          }}
+          onClick={() => setCreatePostOpen(true)}
+        >
+          <Plus size={20} />
+        </IconButton>
+      </Box>
+      
       <Container maxWidth="lg" sx={{ py: 2 }}>
         <Grid container spacing={2}>
           {/* Left Sidebar - Hidden on mobile */}

@@ -97,6 +97,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             minHeight: 'calc(100vh - 64px)',
             height: 'calc(100vh - 64px)',
             overflowY: 'auto',
+            // Adjust for mobile header on small screens
+            '@media (max-width: 960px)': {
+              minHeight: 'calc(100vh - 64px - 60px)',
+              height: 'calc(100vh - 64px - 60px)',
+            }
           })
         }}
       >
