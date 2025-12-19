@@ -3150,6 +3150,265 @@ router.post('/reviews/:id/helpful', authenticateToken, async (req, res) => {
   }
 });
 
+// @route   GET /api/marketplace/products/:productId/reviews
+// @desc    Get product reviews
+// @access  Public
+router.get('/products/:productId/reviews', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ success: false, error: 'Invalid product ID' });
+    }
+
+    // Check if product exists
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    // Get reviews with pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const reviews = await ProductReview.find({ productId })
+      .populate('userId', 'username displayName avatar')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean();
+
+    // Get total count
+    const total = await ProductReview.countDocuments({ productId });
+
+    res.json({
+      success: true,
+      data: {
+        reviews,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / parseInt(limit))
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get product reviews error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get product reviews',
+      message: error.message
+    });
+  }
+});
+
+// @route   POST /api/marketplace/products/:productId/reviews
+// @desc    Add product review
+// @access  Private
+router.post('/products/:productId/reviews', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { productId } = req.params;
+    const { rating, comment, title } = req.body;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ success: false, error: 'Invalid product ID' });
+    }
+
+    // Validate rating
+    const ratingValue = parseInt(rating);
+    if (isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+      return res.status(400).json({ success: false, error: 'Rating must be between 1 and 5' });
+    }
+
+    // Check if product exists and is active
+    const product = await Product.findById(productId);
+    if (!product || !product.isActive) {
+      return res.status(404).json({ success: false, error: 'Product not found or inactive' });
+    }
+
+    // Check if user has purchased this product
+    const hasPurchased = await Order.findOne({
+      userId,
+      'items.productId': productId,
+      status: 'completed'
+    });
+
+    if (!hasPurchased) {
+      return res.status(403).json({ success: false, error: 'You can only review products you have purchased' });
+    }
+
+    // Check if user has already reviewed this product
+    const existingReview = await ProductReview.findOne({
+      userId,
+      productId
+    });
+
+    if (existingReview) {
+      return res.status(409).json({ success: false, error: 'You have already reviewed this product' });
+    }
+
+    const review = new ProductReview({
+      userId,
+      productId,
+      rating: ratingValue,
+      comment,
+      title
+    });
+
+    await review.save();
+
+    // Update product rating
+    const reviews = await ProductReview.find({ productId });
+    const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+    
+    product.rating = averageRating;
+    product.reviewCount = reviews.length;
+    await product.save();
+
+    await review.populate('userId', 'username displayName avatar');
+
+    res.status(201).json({
+      success: true,
+      data: review,
+      message: 'Review added successfully'
+    });
+  } catch (error) {
+    console.error('Add product review error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to add product review',
+      message: error.message
+    });
+  }
+});
+
+// @route   PUT /api/marketplace/reviews/:id
+// @desc    Update product review
+// @access  Private
+router.put('/reviews/:id', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+    const { rating, comment, title } = req.body;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid review ID' });
+    }
+
+    // Validate rating if provided
+    let ratingValue = null;
+    if (rating !== undefined) {
+      ratingValue = parseInt(rating);
+      if (isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+        return res.status(400).json({ success: false, error: 'Rating must be between 1 and 5' });
+      }
+    }
+
+    // Find the review
+    const review = await ProductReview.findById(id);
+    if (!review) {
+      return res.status(404).json({ success: false, error: 'Review not found' });
+    }
+
+    // Check if user owns this review
+    if (review.userId.toString() !== userId) {
+      return res.status(403).json({ success: false, error: 'Not authorized to update this review' });
+    }
+
+    // Update review
+    if (ratingValue !== null) review.rating = ratingValue;
+    if (comment !== undefined) review.comment = comment;
+    if (title !== undefined) review.title = title;
+    review.updatedAt = new Date();
+
+    await review.save();
+
+    // Update product rating if rating was changed
+    if (ratingValue !== null) {
+      const reviews = await ProductReview.find({ productId: review.productId });
+      const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+      
+      const product = await Product.findById(review.productId);
+      if (product) {
+        product.rating = averageRating;
+        product.reviewCount = reviews.length;
+        await product.save();
+      }
+    }
+
+    await review.populate('userId', 'username displayName avatar');
+
+    res.json({
+      success: true,
+      data: review,
+      message: 'Review updated successfully'
+    });
+  } catch (error) {
+    console.error('Update product review error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update product review',
+      message: error.message
+    });
+  }
+});
+
+// @route   DELETE /api/marketplace/reviews/:id
+// @desc    Delete product review
+// @access  Private
+router.delete('/reviews/:id', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid review ID' });
+    }
+
+    // Find the review
+    const review = await ProductReview.findById(id);
+    if (!review) {
+      return res.status(404).json({ success: false, error: 'Review not found' });
+    }
+
+    // Check if user owns this review or is admin
+    if (review.userId.toString() !== userId) {
+      return res.status(403).json({ success: false, error: 'Not authorized to delete this review' });
+    }
+
+    // Delete review
+    await ProductReview.findByIdAndDelete(id);
+
+    // Update product rating
+    const reviews = await ProductReview.find({ productId: review.productId });
+    const averageRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
+    
+    const product = await Product.findById(review.productId);
+    if (product) {
+      product.rating = averageRating;
+      product.reviewCount = reviews.length;
+      await product.save();
+    }
+
+    res.json({
+      success: true,
+      message: 'Review deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete product review error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete product review',
+      message: error.message
+    });
+  }
+});
+
 // @route   GET /api/marketplace/cart
 // @desc    Get user's cart
 // @access  Private

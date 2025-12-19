@@ -689,14 +689,48 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
     // If user is authenticated, get their following IDs for mutual follower calculation
     let currentUserFollowing = [];
     let currentUserFollowingObjectIds = [];
+    let currentUserFollowerObjectIds = [];
     if (currentUserId && currentUserId !== 'anonymous-user') {
-      const { Follow } = require('../models');
-      currentUserFollowing = await Follow.getFollowingIds(currentUserId);
-      currentUserFollowingObjectIds = currentUserFollowing.map(id => new mongoose.Types.ObjectId(id));
-      
-      // Also get users who follow the current user for better mutual connection scoring
-      const currentUserFollowers = await Follow.getFollowerIds(currentUserId);
-      const currentUserFollowerObjectIds = currentUserFollowers.map(id => new mongoose.Types.ObjectId(id));
+      try {
+        // Validate currentUserId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(currentUserId)) {
+          console.error('Invalid currentUserId:', currentUserId);
+          throw new Error('Invalid user ID format');
+        }
+        
+        const { Follow } = require('../models');
+        
+        // Validate that Follow model has the required methods
+        if (!Follow || typeof Follow.getFollowingIds !== 'function' || typeof Follow.getFollowerIds !== 'function') {
+          console.error('Follow model or required methods not available');
+          throw new Error('Follow model not properly loaded');
+        }
+        
+        currentUserFollowing = await Follow.getFollowingIds(currentUserId);
+        currentUserFollowingObjectIds = currentUserFollowing.map(id => {
+          if (!mongoose.Types.ObjectId.isValid(id)) {
+            console.error('Invalid following ID:', id);
+            return null;
+          }
+          return new mongoose.Types.ObjectId(id);
+        }).filter(id => id !== null);
+        
+        // Also get users who follow the current user for better mutual connection scoring
+        const currentUserFollowers = await Follow.getFollowerIds(currentUserId);
+        currentUserFollowerObjectIds = currentUserFollowers.map(id => {
+          if (!mongoose.Types.ObjectId.isValid(id)) {
+            console.error('Invalid follower ID:', id);
+            return null;
+          }
+          return new mongoose.Types.ObjectId(id);
+        }).filter(id => id !== null);
+      } catch (followError) {
+        console.error('Error getting follow data:', followError);
+        // Continue with empty arrays if there's an error getting follow data
+        currentUserFollowing = [];
+        currentUserFollowingObjectIds = [];
+        currentUserFollowerObjectIds = [];
+      }
     }
 
     const suggestions = await User.aggregate([
@@ -727,7 +761,7 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
         }
       },
       // If user is authenticated, add mutual follower score
-      ...(currentUserId && currentUserId !== 'anonymous-user' && (currentUserFollowingObjectIds.length > 0 || currentUserFollowerObjectIds?.length > 0) ? [
+      ...(currentUserId && currentUserId !== 'anonymous-user' && (currentUserFollowingObjectIds.length > 0 || currentUserFollowerObjectIds.length > 0) ? [
         {
           $lookup: {
             from: 'follows',
@@ -745,7 +779,7 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
                   cond: { 
                     $or: [
                       { $in: ['$$this', currentUserFollowingObjectIds] },
-                      { $in: ['$$this', currentUserFollowerObjectIds || []] }
+                      { $in: ['$$this', currentUserFollowerObjectIds] }
                     ]
                   }
                 }
@@ -760,7 +794,7 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
                       cond: { 
                         $or: [
                           { $in: ['$$this', currentUserFollowingObjectIds] },
-                          { $in: ['$$this', currentUserFollowerObjectIds || []] }
+                          { $in: ['$$this', currentUserFollowerObjectIds] }
                         ]
                       }
                     }
@@ -856,10 +890,12 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Get user suggestions error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Failed to get user suggestions',
-      message: error.message
+      message: error.message,
+      stack: error.stack
     });
   }
 });
