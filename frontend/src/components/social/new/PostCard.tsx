@@ -284,11 +284,30 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
         return mediaItem;
       }
       
-      // Prefer secure_url for Cloudinary URLs as they're more likely to be correct
-      const url = mediaItem.secure_url || mediaItem.url;
+      // Extract URL from media item - try multiple possible fields
+      let url = mediaItem.secure_url || mediaItem.url || (mediaItem as any).src;
+      
+      // Handle case where URL might be nested in another object
+      if (url && typeof url === 'object' && url.url) {
+        url = url.url;
+      }
       
       if (!url) {
-        return '/images/placeholder-image-new.png'; // Return placeholder instead of null
+        console.log('No URL found in media item, returning placeholder');
+        return mediaItem.resource_type === 'video' 
+          ? '/images/placeholder-video-new.png' 
+          : '/images/placeholder-image-new.png';
+      }
+      
+      // Convert to string if it's not already
+      url = String(url);
+      
+      // Additional validation to prevent very short or invalid URLs
+      if (url.length < 5) {
+        console.log('URL is too short, treating as invalid:', url);
+        return mediaItem.resource_type === 'video' 
+          ? '/images/placeholder-video-new.png' 
+          : '/images/placeholder-image-new.png';
       }
       
       // For Cloudinary URLs, use the Next.js proxy to avoid CORS issues
@@ -296,6 +315,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
         // Convert https://res.cloudinary.com/... to /cloudinary/...
         if (url.startsWith('https://res.cloudinary.com/')) {
           const proxyUrl = url.replace('https://res.cloudinary.com/', '/cloudinary/');
+          console.log('Using Cloudinary proxy URL:', proxyUrl);
           return proxyUrl;
         }
         return url;
@@ -310,6 +330,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
           normalizedUrl = normalizedUrl.replace('http://localhost:8000', '');
         } else if (normalizedUrl.startsWith('/uploads/')) {
           // Already a relative path
+          console.log('Using relative URL:', normalizedUrl);
           return normalizedUrl;
         }
         
@@ -318,12 +339,15 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
         // Add cache-busting in development
         if (process.env.NODE_ENV === 'development' && !finalUrl.includes('?')) {
           const cacheBustedUrl = `${finalUrl}?v=${Date.now()}`;
+          console.log('Cache-busted URL:', cacheBustedUrl);
           return cacheBustedUrl;
         }
         
+        console.log('Using localhost URL:', finalUrl);
         return finalUrl;
       }
       
+      // Use the enhanced normalizeMediaUrl utility for better handling
       const normalizedUrl = normalizeMediaUrl(url, mediaItem.resource_type);
       
       // Even if normalization fails, return the original URL as fallback
@@ -334,7 +358,18 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
           (finalUrl.includes('localhost:') || finalUrl.includes('127.0.0.1')) &&
           !finalUrl.includes('?')) {
         const cacheBustedUrl = `${finalUrl}?v=${Date.now()}`;
+        console.log('Development cache-busted URL:', cacheBustedUrl);
         return cacheBustedUrl;
+      }
+      
+      console.log('Returning final URL:', finalUrl);
+      
+      // Final validation before returning
+      if (!finalUrl || typeof finalUrl !== 'string' || finalUrl.length < 5) {
+        console.log('Final URL validation failed, returning placeholder');
+        return mediaItem.resource_type === 'video' 
+          ? '/images/placeholder-video-new.png' 
+          : '/images/placeholder-image-new.png';
       }
       
       return finalUrl;
@@ -352,12 +387,19 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
     try {
       // Debug logging
       console.log('Rendering media item:', mediaItem);
+      console.log('Post type:', post?.type);
       
+      // Get the valid media URL using our enhanced function
       let mediaUrl = getValidMediaUrl(mediaItem);
       
-      // Apply the same Cloudinary proxy logic
+      console.log('Media URL after getValidMediaUrl:', mediaUrl);
+      console.log('Media URL type:', typeof mediaUrl);
+      console.log('Media URL length:', mediaUrl ? mediaUrl.length : 0);
+      
+      // Apply the same Cloudinary proxy logic if needed
       if (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.includes('cloudinary.com') && mediaUrl.startsWith('https://res.cloudinary.com/')) {
         mediaUrl = mediaUrl.replace('https://res.cloudinary.com/', '/cloudinary/');
+        console.log('Applied Cloudinary proxy, new URL:', mediaUrl);
       }
       
       // If no URL, show placeholder
@@ -382,11 +424,64 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
         );
       }
       
-      // Determine if it's a video
+      // Determine if it's a video - enhanced detection
       const isVideo = mediaItem?.resource_type === 'video' || 
-                     (mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.ogg'));
+                     (mediaUrl && (mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.ogg') || mediaUrl.includes('.mov') || mediaUrl.includes('.avi')));
       
-      if (isVideo) {
+      // Additional check for video posts that might not have proper extension in URL
+      const isVideoPost = post?.type === 'video';
+      
+      // If it's marked as a video post but our detection didn't catch it, treat it as video
+      const shouldRenderAsVideo = isVideo || isVideoPost;
+      
+      if (shouldRenderAsVideo) {
+        // Check if the media URL is valid
+        const isMediaUrlValid = mediaUrl && (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://') || mediaUrl.startsWith('/'));
+        
+        // Additional validation for video URLs
+        const isVideoUrlValid = isMediaUrlValid && mediaUrl.length > 10; // Basic sanity check
+        
+        if (!isVideoUrlValid) {
+          console.log('Invalid video URL detected:', { mediaUrl, isMediaUrlValid, length: mediaUrl ? mediaUrl.length : 0 });
+          return (
+            <Box sx={{ 
+              width: '100%', 
+              height: '100%',
+              minHeight: isMobile ? 20 : 30,
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              bgcolor: 'background.default',
+              color: 'error.main'
+            }}>
+              <Typography sx={{ fontSize: isMobile ? '0.45rem' : '0.55rem' }}>
+                Video not available
+              </Typography>
+            </Box>
+          );
+        }
+        
+        // Additional check for suspiciously short URLs that might cause rendering issues
+        if (mediaUrl && mediaUrl.length < 10) {
+          console.log('Suspiciously short video URL detected:', mediaUrl);
+          return (
+            <Box sx={{ 
+              width: '100%', 
+              height: '100%',
+              minHeight: isMobile ? 20 : 30,
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              bgcolor: 'background.default',
+              color: 'error.main'
+            }}>
+              <Typography sx={{ fontSize: isMobile ? '0.45rem' : '0.55rem' }}>
+                Video URL invalid
+              </Typography>
+            </Box>
+          );
+        }
+        
         return (
           <Box sx={{ 
             width: '100%', 
@@ -397,27 +492,98 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
             zIndex: 0
           }}>
             <Box sx={{ position: 'relative', pt: '80%', width: '100%' }}> {/* Changed to 80% for 5:4 aspect ratio */}
-              <video
-                src={mediaUrl}
-                controls
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block'
-                }}
-                onError={(e) => {
-                  console.error('Video error:', e);
-                  // Handle video error - show fallback
-                }}
-              />
+              {/* Conditional rendering of video element to prevent invalid URL issues */}
+              {mediaUrl && mediaUrl.length > 10 ? (
+                <video
+                  src={mediaUrl}
+                  controls
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
+                  onError={(e) => {
+                    console.error('Video error:', e);
+                    // Handle video error - show fallback
+                  }}
+                  onInvalid={(e) => {
+                    console.error('Video invalid:', e);
+                  }}
+                />
+              ) : (
+                <Box 
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'background.default'
+                  }}
+                >
+                  <Typography sx={{ fontSize: isMobile ? '0.45rem' : '0.55rem', color: 'error.main' }}>
+                    Invalid video URL
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </Box>
         );
       } else {
+        // Check if the media URL is valid
+        const isMediaUrlValid = mediaUrl && (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://') || mediaUrl.startsWith('/'));
+        
+        // Additional validation for image URLs
+        const isImageUrlValid = isMediaUrlValid && mediaUrl.length > 10; // Basic sanity check
+        
+        if (!isImageUrlValid) {
+          console.log('Invalid image URL detected:', { mediaUrl, isMediaUrlValid, length: mediaUrl ? mediaUrl.length : 0 });
+          return (
+            <Box sx={{ 
+              width: '100%', 
+              height: '100%',
+              minHeight: isMobile ? 20 : 30,
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              bgcolor: 'background.default',
+              color: 'error.main'
+            }}>
+              <Typography sx={{ fontSize: isMobile ? '0.45rem' : '0.55rem' }}>
+                Image not available
+              </Typography>
+            </Box>
+          );
+        }
+        
+        // Additional check for suspiciously short URLs
+        if (mediaUrl && mediaUrl.length < 10) {
+          console.log('Suspiciously short image URL detected:', mediaUrl);
+          return (
+            <Box sx={{ 
+              width: '100%', 
+              height: '100%',
+              minHeight: isMobile ? 20 : 30,
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              bgcolor: 'background.default',
+              color: 'error.main'
+            }}>
+              <Typography sx={{ fontSize: isMobile ? '0.45rem' : '0.55rem' }}>
+                Image URL invalid
+              </Typography>
+            </Box>
+          );
+        }
+        
         // Image content with consistent sizing and better error handling
         return (
           <Box sx={{ 
@@ -429,28 +595,49 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
             zIndex: 0
           }}>
             <Box sx={{ position: 'relative', pt: '80%', width: '100%' }}> {/* Changed to 80% for 5:4 aspect ratio */}
-              <img
-                src={mediaUrl}
-                alt={post.content || 'Post image'}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block'
-                }}
-                onError={(e) => {
-                  console.error('Image error:', e);
-                  // When image fails to load, show a visible error state
-                  const target = e.target as HTMLImageElement;
-                  target.style.backgroundColor = '#f0f0f0'; // Light gray background
-                  target.style.objectFit = 'contain';
-                  // Add a visual indicator that the image failed to load
-                  target.parentElement!.style.backgroundColor = '#f0f0f0';
-                }}
-              />
+              {/* Conditional rendering of image element to prevent invalid URL issues */}
+              {mediaUrl && mediaUrl.length > 10 ? (
+                <img
+                  src={mediaUrl}
+                  alt={post.content || 'Post image'}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
+                  onError={(e) => {
+                    console.error('Image error:', e);
+                    // When image fails to load, show a visible error state
+                    const target = e.target as HTMLImageElement;
+                    target.style.backgroundColor = '#f0f0f0'; // Light gray background
+                    target.style.objectFit = 'contain';
+                    // Add a visual indicator that the image failed to load
+                    target.parentElement!.style.backgroundColor = '#f0f0f0';
+                  }}
+                />
+              ) : (
+                <Box 
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'background.default'
+                  }}
+                >
+                  <Typography sx={{ fontSize: isMobile ? '0.45rem' : '0.55rem', color: 'error.main' }}>
+                    Invalid image URL
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </Box>
         );

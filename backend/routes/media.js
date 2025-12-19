@@ -1120,7 +1120,18 @@ router.post('/video/optimized', authenticateToken, (req, res) => {
       transformOptions.audio_codec = 'aac';
     }
 
-    const optimizedUrl = cloudinary.url(publicId, transformOptions);
+    // Generate optimized URL
+    let optimizedUrl;
+    try {
+      optimizedUrl = cloudinary.url(publicId, transformOptions);
+    } catch (urlError) {
+      console.error('Error generating Cloudinary URL:', urlError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to generate optimized video URL',
+        details: 'Error generating Cloudinary URL'
+      });
+    }
 
     console.log('Generated optimized video URL:', optimizedUrl);
 

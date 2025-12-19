@@ -160,12 +160,38 @@ const validationSchemas = {
  */
 const validateSettings = (req, res, next) => {
   try {
-    const { settingType, settings } = req.body;
+    // Handle both possible request body structures for backward compatibility
+    let settingType = req.body.settingType || req.body.type;
+    let settings = req.body.settings || req.body.data || req.body;
+    
+    // If settingType is not provided but we have a settings object with known keys, try to infer the type
+    if (!settingType) {
+      if (settings && typeof settings === 'object' && settings.privacy) {
+        settingType = 'privacy';
+        settings = settings.privacy;
+      } else if (settings && typeof settings === 'object' && settings.notifications) {
+        settingType = 'notifications';
+        settings = settings.notifications;
+      } else if (settings && typeof settings === 'object' && settings.interaction) {
+        settingType = 'interaction';
+        settings = settings.interaction;
+      } else if (settings && typeof settings === 'object' && settings.theme) {
+        settingType = 'theme';
+        settings = settings.theme;
+      } else if (settings && typeof settings === 'object' && settings.wallet) {
+        settingType = 'wallet';
+        settings = settings.wallet;
+      } else if (settings && typeof settings === 'object' && settings.security) {
+        settingType = 'security';
+        settings = settings.security;
+      }
+    }
 
-    if (!settingType || !settings) {
+    // Validate settingType is provided
+    if (!settingType) {
       return res.status(400).json({
         success: false,
-        message: 'Setting type and settings data are required',
+        message: 'Setting type is required',
       });
     }
 
@@ -194,6 +220,7 @@ const validateSettings = (req, res, next) => {
     }
 
     // Replace the settings with validated and sanitized data
+    req.body.settingType = settingType;
     req.body.settings = value;
     next();
   } catch (error) {

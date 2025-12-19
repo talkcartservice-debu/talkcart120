@@ -1597,17 +1597,17 @@ router.put('/settings', authenticateToken, validateSettings, async (req, res) =>
       default:
         // Handle case where settingType is not specified but we have settings object
         // Try to infer the setting type from the data structure
-        if (settings.privacy) {
+        if (settings && typeof settings === 'object' && settings.privacy) {
           updateData = { 'settings.privacy': settings.privacy };
-        } else if (settings.notifications) {
+        } else if (settings && typeof settings === 'object' && settings.notifications) {
           updateData = { 'settings.notifications': settings.notifications };
-        } else if (settings.interaction) {
+        } else if (settings && typeof settings === 'object' && settings.interaction) {
           updateData = { 'settings.interaction': settings.interaction };
-        } else if (settings.theme) {
+        } else if (settings && typeof settings === 'object' && settings.theme) {
           updateData = { 'settings.theme': settings.theme };
-        } else if (settings.wallet) {
+        } else if (settings && typeof settings === 'object' && settings.wallet) {
           updateData = { 'settings.wallet': settings.wallet };
-        } else if (settings.security) {
+        } else if (settings && typeof settings === 'object' && settings.security) {
           updateData = { 'settings.security': settings.security };
         } else {
           // If we can't infer the type, update the whole settings object
@@ -1616,11 +1616,22 @@ router.put('/settings', authenticateToken, validateSettings, async (req, res) =>
         break;
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.user.userId,
-      updateData,
-      { new: true, runValidators: true }
-    ).select('-password');
+    let user;
+    try {
+      user = await User.findByIdAndUpdate(
+        req.user.userId,
+        updateData,
+        { new: true, runValidators: true }
+      ).select('-password');
+    } catch (dbError) {
+      console.error('Database error updating settings:', dbError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to update settings',
+        message: 'Database error occurred while updating settings',
+        details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+      });
+    }
 
     if (!user) {
       return res.status(404).json({
@@ -1636,10 +1647,20 @@ router.put('/settings', authenticateToken, validateSettings, async (req, res) =>
     });
   } catch (error) {
     console.error('Update settings error:', error);
+    // Add more detailed error information in development
+    if (process.env.NODE_ENV === 'development') {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to update settings',
+        message: error.message,
+        stack: error.stack,
+      });
+    }
+    
     res.status(500).json({
       success: false,
       error: 'Failed to update settings',
-      message: error.message,
+      message: 'An unexpected error occurred while updating settings',
     });
   }
 });
