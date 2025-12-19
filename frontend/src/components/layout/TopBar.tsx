@@ -672,77 +672,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                     px: 1
                   }}
                 >
-                  Social
-                </Button>
-              </Tooltip>
-
-              {/* Notification Icon */}
-              <Tooltip title="Notifications">
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={handleNotificationsOpen}
-                  sx={{ 
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    minWidth: 'auto',
-                    px: 1,
-                    position: 'relative'
-                  }}
-                >
-                  Notifications
-                  {unreadNotifications > 0 && (
-                    <Badge 
-                      badgeContent={unreadNotifications} 
-                      color="error"
-                      sx={{
-                        position: 'absolute',
-                        top: 4,
-                        right: 4
-                      }}
-                    >
-                      <span />
-                    </Badge>
-                  )}
-                </Button>
-              </Tooltip>
-
-              {/* Messages Icon */}
-              <Tooltip title="Messages">
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      router.push('/messages');
-                    } else {
-                      router.push('/auth/login');
-                    }
-                  }}
-                  sx={{ 
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    minWidth: 'auto',
-                    px: 1,
-                    position: 'relative'
-                  }}
-                >
-                  Messages
-                  {unreadMessages > 0 && (
-                    <Badge 
-                      badgeContent={unreadMessages} 
-                      color="error"
-                      sx={{
-                        position: 'absolute',
-                        top: 4,
-                        right: 4
-                      }}
-                    >
-                      <span />
-                    </Badge>
-                  )}
+                  Home
                 </Button>
               </Tooltip>
 
@@ -788,6 +718,75 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Box sx={{ display: { xs: 'none', sm: 'block', ml: 1 } }}>
                 <WalletButton />
               </Box>
+
+              {/* Messages Icon */}
+              <Tooltip title="Messages">
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      router.push('/messages');
+                    } else {
+                      router.push('/auth/login');
+                    }
+                  }}
+                  sx={{ 
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    minWidth: 'auto',
+                    px: 1,
+                    position: 'relative'
+                  }}
+                >
+                  Messages
+                  {unreadMessages > 0 && (
+                    <Badge 
+                      badgeContent={unreadMessages} 
+                      color="error"
+                      sx={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 4
+                      }}
+                    >
+                      <span />
+                    </Badge>
+                  )}
+                </Button>
+              </Tooltip>
+
+              {/* Notification Icon */}
+              <Tooltip title="Notifications">
+                <IconButton
+                  color="inherit"
+                  size="small"
+                  onClick={handleNotificationsOpen}
+                  sx={{ 
+                    minWidth: 'auto',
+                    px: 1,
+                    position: 'relative'
+                  }}
+                >
+                  <Bell size={20} />
+                  {unreadNotifications > 0 && (
+                    <Badge 
+                      badgeContent={unreadNotifications} 
+                      color="error"
+                      sx={
+                        {
+                          position: 'absolute',
+                          top: 4,
+                          right: 4
+                        }
+                      }
+                    >
+                      <span />
+                    </Badge>
+                  )}
+                </IconButton>
+              </Tooltip>
 
               {/* User Avatar */}
               <Tooltip title="Profile">
