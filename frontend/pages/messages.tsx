@@ -48,7 +48,17 @@ import {
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import data from '@emoji-mart/data';
+// @ts-ignore
 import Picker from '@emoji-mart/react';
+
+interface PickerProps {
+  data: any;
+  onEmojiSelect: (emoji: any) => void;
+  theme?: string;
+  previewPosition?: string;
+}
+
+const TypedPicker = Picker as React.ComponentType<PickerProps>;
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import useMessages from '@/hooks/useMessages';
@@ -1098,7 +1108,7 @@ const MessagesPage: React.FC = () => {
                 {showEmojiPicker && (
                   <Paper elevation={3} style={{ position: 'absolute', bottom: 64, right: 64, padding: 8, zIndex: 2 }}>
                     <Box sx={{ width: 300 }}>
-                      <Picker
+                      <TypedPicker
                         data={data}
                         onEmojiSelect={(e: any) => {
                           const native = e?.native || e?.unified ? String.fromCodePoint(...e.unified.split('-').map((u: string) => parseInt(u, 16))) : '';
