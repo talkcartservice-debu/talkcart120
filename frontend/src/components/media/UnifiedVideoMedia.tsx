@@ -27,8 +27,10 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
   const [retryCount, setRetryCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   
-  // Normalize the source URL
-  const normalizedSrc = src ? (normalizeMediaUrl(src, 'video') || src) : null;
+  // Use source URL directly for Cloudinary URLs, normalize others
+  const normalizedSrc = src ? (
+    src.includes('cloudinary.com') ? src : (normalizeMediaUrl(src, 'video') || src)
+  ) : null;
 
   // Set the final source when normalizedSrc changes
   useEffect(() => {
@@ -101,7 +103,7 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
       }
       
       // If we've tried a few times and still failing, try a placeholder
-      if (retryCount > 3) {
+      if (retryCount > 5) {
         console.log('❌ Too many retries, showing placeholder');
         setError(true);
         return;
@@ -205,5 +207,4 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
     </Box>
   );
 };
-
 export default UnifiedVideoMedia;

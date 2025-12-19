@@ -67,8 +67,10 @@ const UnifiedImageMedia: React.FC<ImageMediaProps> = ({
     }
   }, [src, alt, maxHeight, className]);
   
-  // Normalize the source URL
-  const normalizedSrc = src ? (normalizeMediaUrl(src, 'image') || src) : null;
+  // Use source URL directly for Cloudinary URLs, normalize others
+  const normalizedSrc = src ? (
+    src.includes('cloudinary.com') ? src : (normalizeMediaUrl(src, 'image') || src)
+  ) : null;
   
   // Special handling for localhost URLs to ensure they are valid
   useEffect(() => {

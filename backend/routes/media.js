@@ -109,7 +109,11 @@ router.post('/upload', authenticateToken, (req, res) => {
       if (resource_type === 'video') {
         // Ensure we have a proper URL for videos
         // Properly distinguish by checking if the URL contains cloudinary.com
-        if (!secure_url || !secure_url.includes('cloudinary.com')) {
+        // Skip this validation for Cloudinary URLs as they are already valid
+        if (secure_url && secure_url.includes('cloudinary.com')) {
+          // Cloudinary URLs are already valid, no need for additional validation
+          console.log('✅ Cloudinary video URL is already valid:', secure_url);
+        } else if (!secure_url) {
           // If using local storage, ensure proper URL format
           if (!config.cloudinary.enabled) {
             const baseUrl = `${req.protocol}://${req.get('host')}`;
@@ -301,7 +305,8 @@ router.post('/upload/single', authenticateToken, (req, res) => {
           };
           
           // Log warning if secure_url doesn't contain cloudinary.com (unexpected)
-          if (secure_url && !secure_url.includes('cloudinary.com')) {
+          // But don't warn for valid Cloudinary URLs that might have different structures
+          if (secure_url && !secure_url.includes('cloudinary.com') && config.cloudinary.enabled) {
             console.warn('⚠️  WARNING: Cloudinary file missing cloudinary.com in secure_url:', secure_url);
           }
           
@@ -490,7 +495,8 @@ router.post('/upload/profile-picture', authenticateToken, (req, res) => {
           };
           
           // Log warning if secure_url doesn't contain cloudinary.com (unexpected)
-          if (secure_url && !secure_url.includes('cloudinary.com')) {
+          // But don't warn for valid Cloudinary URLs that might have different structures
+          if (secure_url && !secure_url.includes('cloudinary.com') && config.cloudinary.enabled) {
             console.warn('⚠️  WARNING: Cloudinary file missing cloudinary.com in secure_url:', secure_url);
           }
           
@@ -715,7 +721,8 @@ router.post('/test-upload', (req, res) => {
           };
           
           // Log warning if secure_url doesn't contain cloudinary.com (unexpected)
-          if (secure_url && !secure_url.includes('cloudinary.com')) {
+          // But don't warn for valid Cloudinary URLs that might have different structures
+          if (secure_url && !secure_url.includes('cloudinary.com') && config.cloudinary.enabled) {
             console.warn('⚠️  WARNING: Cloudinary file missing cloudinary.com in secure_url:', secure_url);
           }
           

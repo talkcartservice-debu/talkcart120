@@ -80,12 +80,13 @@ if (config.cloudinary.enabled) {
       
       console.log('Cloudinary storage response:', info);
       
-      // Ensure we have the proper fields
+      // Ensure we have the proper fields for Cloudinary responses
       if (info && info.path && info.path.includes('cloudinary.com')) {
-        if (!info.secure_url) {
+        // Preserve existing secure_url and url if they're already set correctly
+        if (!info.secure_url || !info.secure_url.includes('cloudinary.com')) {
           info.secure_url = info.path;
         }
-        if (!info.url) {
+        if (!info.url || !info.url.includes('cloudinary.com')) {
           info.url = info.path;
         }
         if (!info.public_id && info.path) {
@@ -212,7 +213,8 @@ const uploadSingle = (fieldName) => {
       // Enhanced Cloudinary response processing
       if (config.cloudinary.enabled && req.file) {
         // Ensure we have proper Cloudinary fields
-        if (req.file.path && req.file.path.includes('cloudinary.com') && !req.file.secure_url) {
+        // Preserve existing secure_url if it's already valid
+        if (req.file.path && req.file.path.includes('cloudinary.com') && (!req.file.secure_url || !req.file.secure_url.includes('cloudinary.com'))) {
           req.file.secure_url = req.file.path;
         }
         

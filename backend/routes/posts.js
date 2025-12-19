@@ -93,7 +93,20 @@ const normalizeMediaUrls = (mediaArray) => {
   if (!Array.isArray(mediaArray)) return mediaArray || [];
   return mediaArray.map(item => {
     try {
-      const originalUrl = item.secure_url || item.url || '';
+      // Preserve Cloudinary URLs as they are - they should be valid as-is
+      const secure_url = item.secure_url || item.url || '';
+      const regular_url = item.url || item.secure_url || '';
+      
+      // If this is a Cloudinary URL, don't modify it
+      if (secure_url && secure_url.includes('cloudinary.com')) {
+        return {
+          ...item,
+          url: regular_url,
+          secure_url: secure_url,
+        };
+      }
+      
+      const originalUrl = secure_url;
       const resolved = resolveLocalUploadUrl(originalUrl);
       
       // Fix duplicate talkcart path issue
