@@ -688,26 +688,40 @@ export default function LoginPage() {
                             e.preventDefault();
                             try {
                               // Load Google Identity Services
+                              console.log('Checking if Google Identity Services is loaded:', !!window.google);
                               // @ts-ignore
                               if (!window.google) {
+                                console.log('Loading Google Identity Services script');
                                 await new Promise<void>((resolve, reject) => {
                                   const s = document.createElement('script');
                                   s.src = 'https://accounts.google.com/gsi/client';
                                   s.async = true;
                                   s.defer = true;
-                                  s.onload = () => resolve();
-                                  s.onerror = () => reject(new Error('Failed to load Google script'));
+                                  s.onload = () => {
+                                    console.log('Google Identity Services script loaded successfully');
+                                    resolve();
+                                  };
+                                  s.onerror = () => {
+                                    console.error('Failed to load Google Identity Services script');
+                                    reject(new Error('Failed to load Google script'));
+                                  };
                                   document.head.appendChild(s);
                                 });
+                              } else {
+                                console.log('Google Identity Services already loaded');
                               }
                               // @ts-ignore
+                              console.log('Initializing Google OAuth with client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
                               window.google.accounts.id.initialize({
                                 client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
                                 callback: async (response: any) => {
                                   try {
+                                    console.log('Google OAuth callback received:', response);
                                     const idToken = response?.credential;
+                                    console.log('ID Token:', idToken ? `${idToken.substring(0, 20)}...` : 'NONE');
                                     if (!idToken) throw new Error('No id_token');
                                     const res = await api.auth.oauthGoogle(idToken);
+                                    console.log('Backend response:', res);
                                     if (res?.success) {
                                       setAuthTokens(res.accessToken, res.refreshToken);
                                       toast.success('Signed in with Google');
@@ -716,6 +730,7 @@ export default function LoginPage() {
                                       throw new Error(res?.message || 'Google sign-in failed');
                                     }
                                   } catch (err: any) {
+                                    console.error('Google OAuth error:', err);
                                     toast.error(err.message || 'Google sign-in failed');
                                   }
                                 },

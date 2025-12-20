@@ -436,8 +436,16 @@ router.post('/login', async (req, res) => {
 });
 
 // OAuth configuration
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
-const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID || process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID || '';
+
+// Debug logging for OAuth configuration
+console.log('OAuth Configuration:');
+console.log('GOOGLE_CLIENT_ID env var exists:', !!process.env.GOOGLE_CLIENT_ID);
+console.log('GOOGLE_CLIENT_ID value:', GOOGLE_CLIENT_ID ? `${GOOGLE_CLIENT_ID.substring(0, 20)}...` : 'NOT SET');
+console.log('Full GOOGLE_CLIENT_ID value:', GOOGLE_CLIENT_ID);
+console.log('APPLE_CLIENT_ID env var exists:', !!process.env.APPLE_CLIENT_ID);
+console.log('APPLE_CLIENT_ID value:', APPLE_CLIENT_ID ? `${APPLE_CLIENT_ID.substring(0, 20)}...` : 'NOT SET');
 
 // Helper: create a unique username based on a base string
 async function createUniqueUsername(base) {
@@ -456,14 +464,25 @@ async function createUniqueUsername(base) {
 // @access  Public
 router.post('/oauth/google', async (req, res) => {
   try {
+    console.log('Google OAuth request received');
     const { idToken } = req.body || {};
+    console.log('ID Token provided:', !!idToken);
+    
     if (!idToken) {
       return res.status(400).json({ success: false, message: 'Missing idToken' });
     }
 
     // Verify id_token via Google tokeninfo
     const verifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`;
+    console.log('Verifying token with URL:', verifyUrl);
     const { data } = await axios.get(verifyUrl);
+    console.log('Google token data received:', data ? 'YES' : 'NO');
+    
+    // Log comparison data
+    console.log('Audience comparison:');
+    console.log('  Token audience (data.aud):', data?.aud);
+    console.log('  Expected client ID (GOOGLE_CLIENT_ID):', GOOGLE_CLIENT_ID);
+    console.log('  Match:', data?.aud === GOOGLE_CLIENT_ID);
 
     // Expect audience to match our client id
     if (!data || data.aud !== GOOGLE_CLIENT_ID) {
