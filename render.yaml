@@ -1,20 +1,13 @@
+# Render deployment configuration
+# This file tells Render how to deploy the TalkCart backend service
+
 services:
   - type: web
     name: talkcart-backend
-    env: node
+    runtime: node
     plan: free
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
-      - key: HOST
-        value: 0.0.0.0
-      - key: MONGODB_URI
-        sync: false  # This means you need to set this in the Render dashboard
-      - key: JWT_SECRET
-        sync: false  # This means you need to set this in the Render dashboard
-      - key: REFRESH_TOKEN_SECRET
-        sync: false  # This means you need to set this in the Render dashboard

@@ -1,4 +1,14 @@
 {
+  "name": "talkcart",
+  "version": "1.0.0",
+  "description": "TalkCart - Web3 Super Application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "cd backend && npm run dev",
+    "build": "echo 'No build step required'",
+    "test": "echo 'No tests configured'"
+  },
   "dependencies": {
     "axios": "^1.13.2",
     "next": "^14.2.15"

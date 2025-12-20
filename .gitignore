@@ -141,5 +141,3 @@ Thumbs.db
 **/*.swp
 **/*.swo
 
-# Render deployment
-render.yaml
