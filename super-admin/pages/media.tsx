@@ -211,10 +211,19 @@ export default function MediaAdmin() {
     if (selectedFiles.size === 0) return;
 
     try {
-      const filesToDelete = Array.from(selectedFiles).map(fileKey => {
-        const [productId, fileId] = fileKey.split('|');
-        return { productId, imageId: fileId };
-      });
+      const filesToDelete = Array.from(selectedFiles)
+        .map(fileKey => {
+          const [productId, fileId] = fileKey.split('|');
+          // Ensure both productId and fileId are valid strings
+          if (!productId || !fileId) return null;
+          return { productId, imageId: fileId };
+        })
+        .filter(Boolean) as Array<{productId: string, imageId: string}>; // Type assertion after filtering
+
+      if (filesToDelete.length === 0) {
+        setError('No valid files to delete');
+        return;
+      }
 
       const res = await AdminExtraApi.bulkDeleteMedia(filesToDelete);
       if (res?.success) {

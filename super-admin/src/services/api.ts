@@ -362,6 +362,22 @@ export const AdminApi = {
     });
     return res.json();
   },
+  updateUserRole: async (id: string, role: string) => {
+    const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}/role`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    });
+    return res.json();
+  },
+  updateUserVerification: async (id: string, isVerified: boolean) => {
+    const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}/verification`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isVerified }),
+    });
+    return res.json();
+  },
   deleteUser: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}`, {
       method: 'DELETE',
@@ -370,6 +386,18 @@ export const AdminApi = {
   },
   restoreUser: async (userId: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${userId}/restore`, {
+      method: 'POST'
+    });
+    return res.json();
+  },
+  suspendUser: async (id: string) => {
+    const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}/suspend`, {
+      method: 'POST'
+    });
+    return res.json();
+  },
+  unsuspendUser: async (id: string) => {
+    const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}/unsuspend`, {
       method: 'POST'
     });
     return res.json();
