@@ -7,11 +7,15 @@ import {
   Button,
   Alert,
   TextField,
+  useMediaQuery,
 } from '@mui/material';
 import { Download, Upload, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTheme } from '@mui/material/styles';
 
 export const SettingsExportImport: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [importData, setImportData] = useState('');
 
   const handleExport = () => {
@@ -74,23 +78,46 @@ export const SettingsExportImport: React.FC = () => {
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography 
+          variant="h6" 
+          gutterBottom
+          sx={{
+            fontSize: { xs: '1.25rem', sm: '1.5rem' }
+          }}
+        >
           Settings Export & Import
         </Typography>
         
         <Box display="flex" flexDirection="column" gap={3}>
           {/* Export Section */}
           <Box>
-            <Typography variant="subtitle2" gutterBottom>
+            <Typography 
+              variant="subtitle2" 
+              gutterBottom
+              sx={{
+                fontSize: { xs: '1.1rem', sm: '1.25rem' }
+              }}
+            >
               Export Settings
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                mb: 2,
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
+            >
               Download your current settings as a JSON file for backup or transfer.
             </Typography>
             <Button
               variant="contained"
               startIcon={<Download size={16} />}
               onClick={handleExport}
+              fullWidth={isMobile}
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
             >
               Export Settings
             </Button>
@@ -98,10 +125,23 @@ export const SettingsExportImport: React.FC = () => {
 
           {/* Import Section */}
           <Box>
-            <Typography variant="subtitle2" gutterBottom>
+            <Typography 
+              variant="subtitle2" 
+              gutterBottom
+              sx={{
+                fontSize: { xs: '1.1rem', sm: '1.25rem' }
+              }}
+            >
               Import Settings
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                mb: 2,
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
+            >
               Paste your exported settings JSON data below to restore your preferences.
             </Typography>
             <TextField
@@ -111,20 +151,37 @@ export const SettingsExportImport: React.FC = () => {
               placeholder="Paste your exported settings JSON here..."
               value={importData}
               onChange={(e) => setImportData(e.target.value)}
-              sx={{ mb: 2 }}
+              sx={{ 
+                mb: 2,
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiFormLabel-root': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }
+              }}
             />
             <Button
               variant="outlined"
               startIcon={<Upload size={16} />}
               onClick={handleImport}
               disabled={!importData.trim()}
+              fullWidth={isMobile}
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
             >
               Import Settings
             </Button>
           </Box>
 
           <Alert severity="warning">
-            <Typography variant="body2">
+            <Typography 
+              variant="body2"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
+            >
               <strong>Note:</strong> Importing settings will overwrite your current preferences. 
               Make sure to export your current settings first if you want to keep them.
             </Typography>

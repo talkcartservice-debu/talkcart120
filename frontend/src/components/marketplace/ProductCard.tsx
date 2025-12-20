@@ -10,6 +10,7 @@ import {
   alpha,
   Chip,
   Button,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Eye,
@@ -104,6 +105,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const router = useRouter();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [imageError, setImageError] = useState(false);
   const [convertedPrice, setConvertedPrice] = useState<number | null>(null);
   const [isConverting, setIsConverting] = useState(false);
@@ -286,7 +288,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <Card
       sx={{
-        height: 320,
+        height: { xs: 'auto', sm: 320 },
         display: 'flex',
         flexDirection: 'column',
         borderRadius: 2,
@@ -307,7 +309,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {/* Product Image - Ensuring rectangular shape */}
       <Box sx={{ 
         position: 'relative', 
-        height: 200,
+        height: { xs: 180, sm: 200 },
         backgroundColor: '#f8f8f8',
         display: 'flex',
         alignItems: 'center',
@@ -350,7 +352,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       </Box>
               
       {/* Product Name and Price */}
-      <CardContent sx={{ flexGrow: 1, p: 1.5, pt: 1 }}>
+      <CardContent sx={{ flexGrow: 1, p: { xs: 1, sm: 1.5 }, pt: { xs: 0.75, sm: 1 } }}>
         <Typography 
           variant="subtitle1"
           sx={{ 
@@ -363,7 +365,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             WebkitBoxOrient: 'vertical',
             lineHeight: '1.4em',
             height: '1.4em', // Adjusted height
-            fontSize: '1rem',
+            fontSize: { xs: '0.875rem', sm: '1rem' },
             color: theme.palette.text.primary
           }}
         >
@@ -381,7 +383,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   color="#B12704"
                   sx={{ 
                     fontWeight: 700,
-                    fontSize: '1.1rem',
+                    fontSize: { xs: '1rem', sm: '1.1rem' },
                   }}
                   component="p"
                 >
@@ -396,7 +398,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   sx={{ 
                     textDecoration: 'line-through', 
                     color: 'text.secondary',
-                    fontSize: '0.9rem'
+                    fontSize: { xs: '0.8rem', sm: '0.9rem' }
                   }}
                 >
                   {product?.currency === 'ETH' 
@@ -417,7 +419,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                       color="#B12704"
                       sx={{ 
                         fontWeight: 700,
-                        fontSize: '1.1rem',
+                        fontSize: { xs: '1rem', sm: '1.1rem' },
                       }}
                       component="p"
                     >
@@ -435,7 +437,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         color="#B12704"
                         sx={{ 
                           fontWeight: 700,
-                          fontSize: '1.1rem',
+                          fontSize: { xs: '1rem', sm: '1.1rem' },
                         }}
                         component="p"
                       >
@@ -449,7 +451,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         color="#B12704"
                         sx={{ 
                           fontWeight: 700,
-                          fontSize: '1.1rem',
+                          fontSize: { xs: '1rem', sm: '1.1rem' },
                           fontStyle: 'italic',
                         }}
                         component="p"
@@ -463,7 +465,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         color="#B12704"
                         sx={{ 
                           fontWeight: 700,
-                          fontSize: '1.1rem',
+                          fontSize: { xs: '1rem', sm: '1.1rem' },
                         }}
                         component="p"
                       >
@@ -488,8 +490,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
               label={product.recommendationReason}
               size="small"
               sx={{ 
-                fontSize: '0.7rem',
-                height: '20px',
+                fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                height: { xs: '18px', sm: '20px' },
                 backgroundColor: alpha(theme.palette.primary.main, 0.1),
                 color: theme.palette.primary.main,
                 '& .MuiChip-label': {
@@ -514,8 +516,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 minWidth: 0, 
                 px: 0.5, 
                 py: 0.25, 
-                fontSize: '0.7rem',
-                minHeight: '24px'
+                fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                minHeight: { xs: '20px', sm: '24px' }
               }}
             >
               👍
@@ -531,8 +533,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 minWidth: 0, 
                 px: 0.5, 
                 py: 0.25, 
-                fontSize: '0.7rem',
-                minHeight: '24px'
+                fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                minHeight: { xs: '20px', sm: '24px' }
               }}
             >
               👎
@@ -544,13 +546,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <Button
             variant="contained"
             size="small"
-            startIcon={<ShoppingCart size={12} />}
+            startIcon={<ShoppingCart size={isMobile ? 10 : 12} />}
             onClick={handleAddToCart}
             sx={{
               flex: 1,
-              py: 0.5,
-              px: 0.5,
-              fontSize: '0.7rem',
+              py: { xs: 0.4, sm: 0.5 },
+              px: { xs: 0.4, sm: 0.5 },
+              fontSize: { xs: '0.65rem', sm: '0.7rem' },
               fontWeight: 500,
               borderRadius: 1,
               textTransform: 'none',

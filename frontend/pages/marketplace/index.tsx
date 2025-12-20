@@ -543,6 +543,9 @@ const MarketplacePage: React.FC = () => {
                       bgcolor: '#1d2733',
                     },
                     whiteSpace: 'nowrap',
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    py: { xs: 1, sm: 1.5 },
+                    px: { xs: 1.5, sm: 2 },
                   }}
                 >
                   My Orders
@@ -561,6 +564,9 @@ const MarketplacePage: React.FC = () => {
                         bgcolor: '#1565c0',
                       },
                       whiteSpace: 'nowrap',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      py: { xs: 1, sm: 1.5 },
+                      px: { xs: 1.5, sm: 2 },
                     }}
                   >
                     My Dashboard
@@ -580,6 +586,9 @@ const MarketplacePage: React.FC = () => {
                         bgcolor: '#e88900',
                       },
                       whiteSpace: 'nowrap',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      py: { xs: 1, sm: 1.5 },
+                      px: { xs: 1.5, sm: 2 },
                     }}
                   >
                     Vendor Store
@@ -599,6 +608,9 @@ const MarketplacePage: React.FC = () => {
                         bgcolor: '#e88900',
                       },
                       whiteSpace: 'nowrap',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      py: { xs: 1, sm: 1.5 },
+                      px: { xs: 1.5, sm: 2 },
                     }}
                   >
                     My Store Dashboard
@@ -618,6 +630,9 @@ const MarketplacePage: React.FC = () => {
                         bgcolor: '#45a049',
                       },
                       whiteSpace: 'nowrap',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      py: { xs: 1, sm: 1.5 },
+                      px: { xs: 1.5, sm: 2 },
                     }}
                   >
                     Register Your Store
@@ -640,6 +655,9 @@ const MarketplacePage: React.FC = () => {
                       bgcolor: '#45a049',
                     },
                     whiteSpace: 'nowrap',
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    py: { xs: 1, sm: 1.5 },
+                    px: { xs: 1.5, sm: 2 },
                   }}
                 >
                   Register to Sell
@@ -652,8 +670,8 @@ const MarketplacePage: React.FC = () => {
         
         {/* Main Content with Sidebar */}
         <Grid container spacing={3}>
-          {/* Sidebar */}
-          <Grid item xs={12} md={3} lg={2.5}>
+          {/* Sidebar - Hidden on mobile by default, shown as overlay or drawer */}
+          <Grid item xs={12} md={3} lg={2.5} sx={{ display: { xs: 'none', md: 'block' } }}>
             <MarketplaceSidebar userId={user?.id || null} />
           </Grid>
           
@@ -706,7 +724,7 @@ const MarketplacePage: React.FC = () => {
                     />
                   </Grid>
                   
-                  <Grid item xs={12} md={2.5}>
+                  <Grid item xs={12} sm={6} md={2.5}>
                     <FormControl fullWidth>
                       <InputLabel>Category</InputLabel>
                       <Select
@@ -738,7 +756,7 @@ const MarketplacePage: React.FC = () => {
                     </FormControl>
                   </Grid>
                   
-                  <Grid item xs={12} md={2.5}>
+                  <Grid item xs={12} sm={6} md={2.5}>
                     <FormControl fullWidth>
                       <InputLabel>Vendor</InputLabel>
                       <Select
@@ -773,7 +791,7 @@ const MarketplacePage: React.FC = () => {
                     </FormControl>
                   </Grid>
                   
-                  <Grid item xs={6} md={1.5}>
+                  <Grid item xs={6} sm={6} md={1.5}>
                     <TextField
                       fullWidth
                       label="Min Price"
@@ -795,7 +813,7 @@ const MarketplacePage: React.FC = () => {
                     />
                   </Grid>
                   
-                  <Grid item xs={6} md={1.5}>
+                  <Grid item xs={6} sm={6} md={1.5}>
                     <TextField
                       fullWidth
                       label="Max Price"
@@ -817,7 +835,7 @@ const MarketplacePage: React.FC = () => {
                     />
                   </Grid>
                   
-                  <Grid item xs={12} md={1.5}>
+                  <Grid item xs={12} sm={12} md={1.5}>
                     <FormControl fullWidth>
                       <InputLabel>Sort By</InputLabel>
                       <Select
@@ -861,7 +879,7 @@ const MarketplacePage: React.FC = () => {
                     />
                   }
                   label="NFTs Only"
-                  sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
+                  sx={{ '& .MuiFormControlLabel-label': { fontSize: { xs: '0.75rem', sm: '0.875rem' } } }}
                 />
                 
                 <FormControlLabel
@@ -880,7 +898,7 @@ const MarketplacePage: React.FC = () => {
                     />
                   }
                   label="Featured"
-                  sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
+                  sx={{ '& .MuiFormControlLabel-label': { fontSize: { xs: '0.75rem', sm: '0.875rem' } } }}
                 />
                 
                 <Button
@@ -893,7 +911,8 @@ const MarketplacePage: React.FC = () => {
                     textTransform: 'none',
                     '&:hover': {
                       backgroundColor: '#f0f8ff',
-                    }
+                    },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
                   }}
                 >
                   {showFilters ? 'Hide Filters' : 'More Filters'}
@@ -910,7 +929,8 @@ const MarketplacePage: React.FC = () => {
                       textTransform: 'none',
                       '&:hover': {
                         backgroundColor: '#f0f8ff',
-                      }
+                      },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
                     }}
                   >
                     Clear All
@@ -933,7 +953,8 @@ const MarketplacePage: React.FC = () => {
                     '&:disabled': {
                       backgroundColor: '#FF9900',
                       opacity: 0.7,
-                    }
+                    },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
                   }}
                 >
                   Refresh
@@ -1085,7 +1106,7 @@ const MarketplacePage: React.FC = () => {
                           />
                         }
                         label="In Stock Only"
-                        sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
+                        sx={{ '& .MuiFormControlLabel-label': { fontSize: { xs: '0.75rem', sm: '0.875rem' } } }}
                       />
                     </Grid>
                     
@@ -1107,7 +1128,7 @@ const MarketplacePage: React.FC = () => {
                           />
                         }
                         label="Free Shipping"
-                        sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
+                        sx={{ '& .MuiFormControlLabel-label': { fontSize: { xs: '0.75rem', sm: '0.875rem' } } }}
                       />
                     </Grid>
                     
@@ -1129,13 +1150,13 @@ const MarketplacePage: React.FC = () => {
                           />
                         }
                         label="On Sale"
-                        sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
+                        sx={{ '& .MuiFormControlLabel-label': { fontSize: { xs: '0.75rem', sm: '0.875rem' } } }}
                       />
                     </Grid>
                     
                     {/* Apply Filters Button */}
                     <Grid item xs={12}>
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, flexWrap: 'wrap' }}>
                         <Button
                           variant="outlined"
                           onClick={clearFilters}
@@ -1145,7 +1166,10 @@ const MarketplacePage: React.FC = () => {
                             '&:hover': {
                               borderColor: '#999',
                               backgroundColor: '#f5f5f5',
-                            }
+                            },
+                            fontSize: { xs: '0.875rem', sm: '1rem' },
+                            py: { xs: 1, sm: 1.5 },
+                            px: { xs: 2, sm: 3 }
                           }}
                         >
                           Reset
@@ -1161,7 +1185,10 @@ const MarketplacePage: React.FC = () => {
                             color: 'white',
                             '&:hover': {
                               backgroundColor: '#e88900',
-                            }
+                            },
+                            fontSize: { xs: '0.875rem', sm: '1rem' },
+                            py: { xs: 1, sm: 1.5 },
+                            px: { xs: 2, sm: 3 }
                           }}
                         >
                           Apply Filters
@@ -1200,14 +1227,26 @@ const MarketplacePage: React.FC = () => {
                 <Paper 
                   elevation={0}
                   sx={{ 
-                    p: 2, 
+                    p: { xs: 1, sm: 2 }, 
                     border: '1px solid #ddd',
                     borderRadius: 1,
                     backgroundColor: '#f8f8f8',
+                    width: '100%',
+                    maxWidth: { xs: '100%', sm: 'auto' }
                   }}
                 >
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Typography variant="body2" color="text.secondary" component="span">
+                  <Stack 
+                    direction={{ xs: 'column', sm: 'row' }} 
+                    spacing={2} 
+                    alignItems="center"
+                    sx={{ width: '100%' }}
+                  >
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary" 
+                      component="span"
+                      sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                    >
                       Page {pagination.page} of {pagination.pages}
                     </Typography>
                     <Pagination
@@ -1217,6 +1256,13 @@ const MarketplacePage: React.FC = () => {
                       size="medium"
                       showFirstButton
                       showLastButton
+                      sx={{
+                        '& .MuiPaginationItem-root': {
+                          minWidth: { xs: 32, sm: 40 },
+                          height: { xs: 32, sm: 40 },
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                        }
+                      }}
                     />
                   </Stack>
                 </Paper>

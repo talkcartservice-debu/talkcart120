@@ -76,17 +76,38 @@ export const WalletSettings: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h6" fontWeight={600} gutterBottom>
+      <Typography 
+        variant="h6" 
+        fontWeight={600} 
+        gutterBottom
+        sx={{
+          fontSize: { xs: '1.25rem', sm: '1.5rem' }
+        }}
+      >
         Wallet Settings
       </Typography>
-      <Typography variant="body2" color="text.secondary" paragraph>
+      <Typography 
+        variant="body2" 
+        color="text.secondary" 
+        paragraph
+        sx={{
+          fontSize: { xs: '0.875rem', sm: '1rem' }
+        }}
+      >
         Manage your wallet preferences and connection settings.
       </Typography>
 
       {/* Wallet Overview */}
       <Card sx={{ mb: 3, bgcolor: 'action.hover' }}>
         <CardContent>
-          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+          <Typography 
+            variant="subtitle2" 
+            fontWeight={600} 
+            gutterBottom
+            sx={{
+              fontSize: { xs: '1rem', sm: '1.125rem' }
+            }}
+          >
             <Wallet size={16} style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Wallet Status
           </Typography>
@@ -97,8 +118,17 @@ export const WalletSettings: React.FC = () => {
                   label="Connected"
                   color="success"
                   size="small"
+                  sx={{
+                    fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                  }}
                 />
-                <Typography variant="body2" sx={{ ml: 1 }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    ml: 1,
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                >
                   {user.walletAddress.substring(0, 6)}...{user.walletAddress.substring(user.walletAddress.length - 4)}
                 </Typography>
               </>
@@ -107,6 +137,9 @@ export const WalletSettings: React.FC = () => {
                 label="Not Connected"
                 color="warning"
                 size="small"
+                sx={{
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                }}
               />
             )}
           </Box>
@@ -114,25 +147,38 @@ export const WalletSettings: React.FC = () => {
       </Card>
 
       {/* Wallet Connection */}
-      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+      <Typography 
+        variant="subtitle1" 
+        fontWeight={600} 
+        gutterBottom
+        sx={{
+          fontSize: { xs: '1.1rem', sm: '1.25rem' }
+        }}
+      >
         <Wallet size={20} style={{ marginRight: 8, verticalAlign: 'middle' }} />
         Wallet Connection
       </Typography>
 
       <List>
-        <ListItem>
+        <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
           <ListItemText
             primary="Wallet Address"
             secondary={user?.walletAddress ? 
               `${user.walletAddress.substring(0, 12)}...${user.walletAddress.substring(user.walletAddress.length - 8)}` : 
               "No wallet connected"
             }
+            sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
           />
           {user?.walletAddress ? (
             <Button 
               variant="outlined" 
               color="error"
               onClick={() => handleWalletSettingChange('walletAddress', '')}
+              size="small"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                alignSelf: { xs: 'flex-end', sm: 'auto' }
+              }}
             >
               Disconnect
             </Button>
@@ -140,37 +186,46 @@ export const WalletSettings: React.FC = () => {
             <Button 
               variant="contained" 
               onClick={handleConnectWallet}
+              size="small"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                alignSelf: { xs: 'flex-end', sm: 'auto' }
+              }}
             >
               Connect Wallet
             </Button>
           )}
         </ListItem>
 
-        <ListItem>
+        <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
           <ListItemIcon>
             <Eye size={24} />
           </ListItemIcon>
           <ListItemText
             primary="Show Wallet Balance"
             secondary="Display your wallet balance in the interface"
+            sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
           />
           <Switch
             checked={walletSettings.showBalance}
             onChange={(e) => handleWalletSettingChange('showBalance', e.target.checked)}
+            sx={{ alignSelf: { xs: 'flex-end', sm: 'auto' } }}
           />
         </ListItem>
 
-        <ListItem>
+        <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
           <ListItemIcon>
             <Wifi size={24} />
           </ListItemIcon>
           <ListItemText
             primary="Auto Connect"
             secondary="Automatically connect to your wallet on page load"
+            sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
           />
           <Switch
             checked={walletSettings.autoConnect}
             onChange={(e) => handleWalletSettingChange('autoConnect', e.target.checked)}
+            sx={{ alignSelf: { xs: 'flex-end', sm: 'auto' } }}
           />
         </ListItem>
       </List>
@@ -178,21 +233,32 @@ export const WalletSettings: React.FC = () => {
       <Divider sx={{ my: 3 }} />
 
       {/* Network Settings */}
-      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+      <Typography 
+        variant="subtitle1" 
+        fontWeight={600} 
+        gutterBottom
+        sx={{
+          fontSize: { xs: '1.1rem', sm: '1.25rem' }
+        }}
+      >
         <Network size={20} style={{ marginRight: 8, verticalAlign: 'middle' }} />
         Network Settings
       </Typography>
 
       <List>
-        <ListItem>
+        <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
           <ListItemText
             primary="Default Network"
             secondary="Select your preferred blockchain network"
+            sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
           />
-          <FormControl size="small" sx={{ minWidth: 150 }}>
+          <FormControl size="small" sx={{ minWidth: 150, alignSelf: { xs: 'flex-end', sm: 'auto' } }}>
             <Select
               value={walletSettings.defaultNetwork}
               onChange={(e) => handleWalletSettingChange('defaultNetwork', e.target.value)}
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
             >
               <MenuItem value="ethereum">Ethereum</MenuItem>
               <MenuItem value="polygon">Polygon</MenuItem>
@@ -202,12 +268,24 @@ export const WalletSettings: React.FC = () => {
           </FormControl>
         </ListItem>
 
-        <ListItem>
+        <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
           <ListItemText
             primary="Gas Preference"
             secondary="Select your preferred gas fee speed"
+            sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
           />
-          <ButtonGroup size="small">
+          <ButtonGroup 
+            size="small" 
+            sx={{ 
+              flexWrap: 'wrap',
+              gap: { xs: 0.5, sm: 0 },
+              '& .MuiButton-root': {
+                fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                minWidth: { xs: 60, sm: 'auto' },
+                px: { xs: 0.75, sm: 1 }
+              }
+            }}
+          >
             <Button
               variant={walletSettings.gasPreference === 'slow' ? 'contained' : 'outlined'}
               onClick={() => handleWalletSettingChange('gasPreference', 'slow')}
@@ -231,7 +309,9 @@ export const WalletSettings: React.FC = () => {
       </List>
 
       <Alert severity="info" sx={{ mt: 3 }}>
-        Wallet settings are securely stored and only used for platform interactions.
+        <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+          Wallet settings are securely stored and only used for platform interactions.
+        </Typography>
       </Alert>
     </Box>
   );

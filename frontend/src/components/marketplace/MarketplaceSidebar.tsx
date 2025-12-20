@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, List, ListItem, ListItemText, Divider, useTheme, IconButton, Collapse, Grid, Card, CardContent, Button, CircularProgress } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, Divider, useTheme, IconButton, Collapse, Grid, Card, CardContent, Button, CircularProgress, useMediaQuery } from '@mui/material';
 import { ChevronRight, ChevronDown, Sparkles, TrendingUp, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { useRecommendations } from '@/hooks/useRecommendations';
@@ -46,6 +46,7 @@ interface Product {
 const SidebarProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const router = useRouter();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [imageError, setImageError] = useState(false);
 
   const getImageSrc = () => {
@@ -75,8 +76,8 @@ const SidebarProductCard: React.FC<{ product: Product }> = ({ product }) => {
     >
       {/* Product Image */}
       <Box sx={{ 
-        width: 120, // Increased width
-        height: 120, // Increased height
+        width: { xs: 80, sm: 120 }, // Increased width
+        height: { xs: 80, sm: 120 }, // Increased height
         position: 'relative',
         backgroundColor: '#f8f8f8',
       }}>
@@ -120,7 +121,7 @@ const SidebarProductCard: React.FC<{ product: Product }> = ({ product }) => {
       {/* Product Info and Button */}
       <CardContent sx={{ 
         flexGrow: 1, 
-        p: 2, // Increased padding
+        p: { xs: 1, sm: 2 }, // Increased padding
         display: 'flex', 
         flexDirection: 'column',
         justifyContent: 'space-between'
@@ -135,7 +136,7 @@ const SidebarProductCard: React.FC<{ product: Product }> = ({ product }) => {
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             lineHeight: '1.4em',
-            fontSize: '1rem' // Increased font size
+            fontSize: { xs: '0.875rem', sm: '1rem' } // Increased font size
           }}
         >
           {product?.name || 'Product'}
@@ -144,12 +145,12 @@ const SidebarProductCard: React.FC<{ product: Product }> = ({ product }) => {
         <Button
           variant="contained"
           size="medium" // Changed to medium
-          startIcon={<Eye size={16} />} // Increased icon size
+          startIcon={<Eye size={isMobile ? 14 : 16} />} // Increased icon size
           onClick={() => router.push(`/marketplace/${product.id}`)}
           sx={{
-            py: 1, // Increased padding
-            px: 2, // Added horizontal padding
-            fontSize: '0.875rem', // Increased font size
+            py: { xs: 0.75, sm: 1 }, // Increased padding
+            px: { xs: 1.5, sm: 2 }, // Added horizontal padding
+            fontSize: { xs: '0.75rem', sm: '0.875rem' }, // Increased font size
             fontWeight: 600,
             borderRadius: 1,
             textTransform: 'none',
@@ -274,6 +275,7 @@ const SidebarRecommendedProducts: React.FC<{ userId: string | null; limit?: numb
 
 const ImageOnlyProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [imageError, setImageError] = useState(false);
 
   const getImageSrc = () => {
@@ -306,7 +308,7 @@ const ImageOnlyProductCard: React.FC<{ product: Product }> = ({ product }) => {
     >
       {/* Product Image Only */}
       <Box sx={{ 
-        height: { xs: 180, sm: 200, md: 220 }, // Increased height for better visibility
+        height: { xs: 140, sm: 180, md: 200 }, // Increased height for better visibility
         position: 'relative'
       }}>
         {!imageError ? (
@@ -336,8 +338,8 @@ const ImageOnlyProductCard: React.FC<{ product: Product }> = ({ product }) => {
           >
             <Box 
               sx={{ 
-                width: { xs: 80, sm: 100, md: 120 }, // Increased placeholder size
-                height: { xs: 80, sm: 100, md: 120 },
+                width: { xs: 60, sm: 80, md: 100 }, // Increased placeholder size
+                height: { xs: 60, sm: 80, md: 100 },
                 backgroundColor: theme.palette.grey[300],
                 borderRadius: '50%',
                 opacity: 0.7,
@@ -464,6 +466,7 @@ interface MarketplaceSidebarProps {
 
 const MarketplaceSidebar: React.FC<MarketplaceSidebarProps> = ({ userId }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [openSections, setOpenSections] = useState({
     trending: true
   });
@@ -479,14 +482,14 @@ const MarketplaceSidebar: React.FC<MarketplaceSidebarProps> = ({ userId }) => {
     <Box 
       sx={{ 
         width: '100%', // Changed to 100% to fully fill the container
-        borderRight: `1px solid ${theme.palette.divider}`,
+        borderRight: { xs: 'none', sm: `1px solid ${theme.palette.divider}` },
         backgroundColor: theme.palette.background.paper,
         height: '100%',
         overflowY: 'auto'
       }}
     >
-      <Box sx={{ p: 2.5 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: theme.palette.primary.main }}>
+      <Box sx={{ p: { xs: 2, sm: 2.5 } }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: theme.palette.primary.main, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
           Smart Recommendations
         </Typography>
       </Box>
@@ -501,18 +504,19 @@ const MarketplaceSidebar: React.FC<MarketplaceSidebarProps> = ({ userId }) => {
           '&:hover': {
             backgroundColor: theme.palette.grey[100]
           },
-          cursor: 'pointer'
+          cursor: 'pointer',
+          py: { xs: 1, sm: 1.5 }
         }}
       >
-        <TrendingUp size={18} style={{ marginRight: 8, color: theme.palette.secondary.main }} />
-        <ListItemText primary="Trending Products" />
+        <TrendingUp size={isMobile ? 16 : 18} style={{ marginRight: 8, color: theme.palette.secondary.main }} />
+        <ListItemText primary="Trending Products" sx={{ '& .MuiTypography-root': { fontSize: { xs: '0.875rem', sm: '1rem' } } }} />
         <IconButton edge="end">
-          {openSections.trending ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+          {openSections.trending ? <ChevronDown size={isMobile ? 16 : 18} /> : <ChevronRight size={isMobile ? 16 : 18} />}
         </IconButton>
       </ListItem>
       
       <Collapse in={openSections.trending} timeout="auto" unmountOnExit>
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
           <SidebarTrendingProducts limit={10} />
         </Box>
       </Collapse>

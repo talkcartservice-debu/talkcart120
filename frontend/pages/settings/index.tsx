@@ -729,15 +729,29 @@ export default function SettingsPage() {
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         {/* Header */}
         <Box mb={4}>
-          <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
+          <Typography 
+            variant="h4" 
+            component="h1" 
+            fontWeight={700} 
+            gutterBottom
+            sx={{
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' }
+            }}
+          >
             Account Settings
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
+          >
             Manage your profile, privacy, and application preferences
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 2, md: 3 } }}>
           {/* Settings Navigation */}
           <Box sx={{ width: { xs: '100%', md: 240 } }}>
             <Paper elevation={0} variant="outlined" sx={{ borderRadius: 2 }}>
@@ -755,7 +769,10 @@ export default function SettingsPage() {
                   '& .MuiTab-root': {
                     alignItems: 'flex-start',
                     textAlign: 'left',
-                    py: 2,
+                    py: { xs: 1.5, sm: 2 },
+                    minHeight: { xs: 48, sm: 56 },
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                    px: { xs: 1, sm: 2 },
                   },
                 }}
               >
@@ -804,13 +821,17 @@ export default function SettingsPage() {
               </Tabs>
             </Paper>
 
-            <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ mt: { xs: 2, md: 3 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row', md: 'column' }, gap: 2 }}>
               <Button
                 variant="outlined"
                 color="error"
                 startIcon={<Trash2 size={18} />}
                 onClick={() => setShowDeleteConfirm(true)}
                 fullWidth
+                size={isMobile ? "small" : "medium"}
+                sx={{
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }}
               >
                 Delete Account
               </Button>
@@ -820,6 +841,10 @@ export default function SettingsPage() {
                 startIcon={<LogOut size={18} />}
                 onClick={handleLogoutClick}
                 fullWidth
+                size={isMobile ? "small" : "medium"}
+                sx={{
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }}
               >
                 Logout
               </Button>
@@ -841,9 +866,15 @@ export default function SettingsPage() {
 
                   <Divider sx={{ my: 3 }} />
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 } }}>
                     {/* Profile Picture */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: { xs: 2, md: 3 },
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      textAlign: { xs: 'center', sm: 'left' }
+                    }}>
                       <ProfilePictureUpload
                         user={user ? {
                           ...user,
@@ -852,28 +883,55 @@ export default function SettingsPage() {
                           cover: undefined
                         } as any : null}
                         onUploadSuccess={handleAvatarUploadSuccess}
-                        size={100}
+                        size={isMobile ? 80 : 100}
                         showUploadButton={true}
                         allowRemove={true}
                       />
 
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600}>
+                      <Box sx={{ width: { xs: '100%', sm: 'auto' } }}>
+                        <Typography 
+                          variant="subtitle1" 
+                          fontWeight={600}
+                          sx={{ 
+                            fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                            wordBreak: 'break-word'
+                          }}
+                        >
                           {user?.displayName || 'User'}
                           {user?.isVerified && (
                             <Chip
                               label="Verified"
                               size="small"
                               color="success"
-                              sx={{ ml: 1 }}
+                              sx={{ 
+                                ml: { xs: 0, sm: 1 },
+                                mt: { xs: 1, sm: 0 },
+                                display: { xs: 'block', sm: 'inline-flex' },
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' }
+                              }}
                               icon={<Shield size={12} />}
                             />
                           )}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{ 
+                            mt: 0.5,
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                          }}
+                        >
                           @{user?.username || 'username'}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary" 
+                          sx={{ 
+                            display: 'block', 
+                            mt: { xs: 1, sm: 1 },
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                          }}
+                        >
                           Member since {new Date(user?.createdAt || Date.now()).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
                         </Typography>
                       </Box>
@@ -888,8 +946,20 @@ export default function SettingsPage() {
                       required
                       disabled={!editingProfile}
                       helperText="Your name as displayed to other users"
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          fontSize: { xs: '0.9rem', sm: '1rem' }
+                        },
+                        '& .MuiFormLabel-root': {
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontSize: { xs: '0.75rem', sm: '0.75rem' }
+                        }
+                      }}
                     />
-
+                    
                     <TextField
                       label="Username"
                       value={profileForm.username}
@@ -901,6 +971,18 @@ export default function SettingsPage() {
                       InputProps={{
                         startAdornment: <InputAdornment position="start">@</InputAdornment>,
                       }}
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          fontSize: { xs: '0.9rem', sm: '1rem' }
+                        },
+                        '& .MuiFormLabel-root': {
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontSize: { xs: '0.75rem', sm: '0.75rem' }
+                        }
+                      }}
                     />
                     <TextField
                       label="Email"
@@ -909,8 +991,20 @@ export default function SettingsPage() {
                       fullWidth
                       disabled
                       helperText="Contact support to change your email address"
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          fontSize: { xs: '0.9rem', sm: '1rem' }
+                        },
+                        '& .MuiFormLabel-root': {
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontSize: { xs: '0.75rem', sm: '0.75rem' }
+                        }
+                      }}
                     />
-
+                    
                     <TextField
                       label="Bio"
                       value={profileForm.bio}
@@ -921,8 +1015,20 @@ export default function SettingsPage() {
                       disabled={!editingProfile}
                       helperText={`${profileForm.bio.length}/500 characters`}
                       inputProps={{ maxLength: 500 }}
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          fontSize: { xs: '0.9rem', sm: '1rem' }
+                        },
+                        '& .MuiFormLabel-root': {
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontSize: { xs: '0.75rem', sm: '0.75rem' }
+                        }
+                      }}
                     />
-
+                    
                     <TextField
                       label="Location"
                       value={profileForm.location}
@@ -930,8 +1036,20 @@ export default function SettingsPage() {
                       fullWidth
                       disabled={!editingProfile}
                       helperText="Where are you based? (optional)"
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          fontSize: { xs: '0.9rem', sm: '1rem' }
+                        },
+                        '& .MuiFormLabel-root': {
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontSize: { xs: '0.75rem', sm: '0.75rem' }
+                        }
+                      }}
                     />
-
+                    
                     <TextField
                       label="Website"
                       value={profileForm.website}
@@ -939,15 +1057,39 @@ export default function SettingsPage() {
                       fullWidth
                       disabled={!editingProfile}
                       helperText="Your personal or business website (optional)"
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          fontSize: { xs: '0.9rem', sm: '1rem' }
+                        },
+                        '& .MuiFormLabel-root': {
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontSize: { xs: '0.75rem', sm: '0.75rem' }
+                        }
+                      }}
                     />
 
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 2 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: { xs: 'center', sm: 'flex-end' }, 
+                      mt: { xs: 2, sm: 2 }, 
+                      gap: { xs: 1, sm: 2 },
+                      flexDirection: { xs: 'column', sm: 'row' }
+                    }}>
                       {editingProfile ? (
                         <>
                           <Button
                             variant="outlined"
                             onClick={() => setEditingProfile(false)}
                             disabled={isUpdating}
+                            size={isMobile ? "small" : "medium"}
+                            fullWidth={isMobile}
+                            sx={{
+                              order: { xs: 2, sm: 1 },
+                              fontSize: { xs: '0.875rem', sm: '1rem' }
+                            }}
                           >
                             Cancel
                           </Button>
@@ -956,6 +1098,12 @@ export default function SettingsPage() {
                             onClick={handleSaveProfile}
                             disabled={isUpdating}
                             startIcon={isUpdating ? <CircularProgress size={16} /> : <Save size={16} />}
+                            size={isMobile ? "small" : "medium"}
+                            fullWidth={isMobile}
+                            sx={{
+                              order: { xs: 1, sm: 2 },
+                              fontSize: { xs: '0.875rem', sm: '1rem' }
+                            }}
                           >
                             {isUpdating ? 'Saving...' : 'Save Changes'}
                           </Button>
@@ -965,6 +1113,11 @@ export default function SettingsPage() {
                           variant="contained"
                           startIcon={<Edit size={16} />}
                           onClick={() => setEditingProfile(true)}
+                          size={isMobile ? "small" : "medium"}
+                          fullWidth={isMobile}
+                          sx={{
+                            fontSize: { xs: '0.875rem', sm: '1rem' }
+                          }}
                         >
                           Edit Profile
                         </Button>
@@ -987,29 +1140,37 @@ export default function SettingsPage() {
                   <Divider sx={{ my: 3 }} />
 
                   <List>
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemIcon>
                         <Lock size={24} />
                       </ListItemIcon>
                       <ListItemText
                         primary="Password"
                         secondary={`Last changed: ${(user as any)?.passwordLastChanged ? new Date((user as any).passwordLastChanged).toLocaleDateString() : 'Never'}`}
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
                       <Button
                         variant="outlined"
                         onClick={() => setShowPasswordDialog(true)}
+                        size={isMobile ? "small" : "medium"}
+                        sx={{
+                          minWidth: { xs: 80, sm: 'auto' },
+                          px: { xs: 1, sm: 2 },
+                          alignSelf: { xs: 'flex-end', sm: 'auto' }
+                        }}
                       >
                         Change
                       </Button>
                     </ListItem>
 
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemIcon>
                         <Shield size={24} />
                       </ListItemIcon>
                       <ListItemText
                         primary="Two-Factor Authentication"
                         secondary={securitySettings.twoFactorEnabled ? "Enabled - Using Authenticator App" : "Disabled - Add an extra layer of security to your account"}
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
                       <Button
                         variant="outlined"
@@ -1018,33 +1179,47 @@ export default function SettingsPage() {
                           ...prev,
                           twoFactorEnabled: !prev.twoFactorEnabled
                         }))}
+                        size={isMobile ? "small" : "medium"}
+                        sx={{
+                          minWidth: { xs: 80, sm: 'auto' },
+                          px: { xs: 1, sm: 2 },
+                          alignSelf: { xs: 'flex-end', sm: 'auto' }
+                        }}
                       >
                         {securitySettings.twoFactorEnabled ? "Disable" : "Enable"}
                       </Button>
                     </ListItem>
 
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemIcon>
                         <Smartphone size={24} />
                       </ListItemIcon>
                       <ListItemText
                         primary="Connected Devices"
                         secondary="Manage devices that are logged into your account"
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
                       <Button
                         variant="outlined"
+                        size={isMobile ? "small" : "medium"}
+                        sx={{
+                          minWidth: { xs: 80, sm: 'auto' },
+                          px: { xs: 1, sm: 2 },
+                          alignSelf: { xs: 'flex-end', sm: 'auto' }
+                        }}
                       >
                         Manage
                       </Button>
                     </ListItem>
 
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemIcon>
                         <Bell size={24} />
                       </ListItemIcon>
                       <ListItemText
                         primary="Login Notifications"
                         secondary="Get notified when someone logs into your account"
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
                       <Switch
                         checked={securitySettings.loginNotifications}
@@ -1052,18 +1227,20 @@ export default function SettingsPage() {
                           ...prev,
                           loginNotifications: !prev.loginNotifications
                         }))}
+                        sx={{ alignSelf: { xs: 'flex-end', sm: 'auto' } }}
                       />
                     </ListItem>
 
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemIcon>
                         <RefreshCw size={24} />
                       </ListItemIcon>
                       <ListItemText
                         primary="Session Timeout"
                         secondary="Automatically log out after period of inactivity"
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, alignSelf: { xs: 'flex-end', sm: 'auto' } }}>
                         <TextField
                           select
                           value={securitySettings.sessionTimeout}
@@ -1095,12 +1272,23 @@ export default function SettingsPage() {
                     </Typography>
                   </Alert>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: { xs: 'center', sm: 'flex-end' }, 
+                    mt: { xs: 2, sm: 3 },
+                    width: '100%'
+                  }}>
                     <Button
                       variant="contained"
                       onClick={() => handleSaveSettings('Security')}
                       disabled={isUpdating}
                       startIcon={isUpdating ? <CircularProgress size={16} /> : <Save size={16} />}
+                      size={isMobile ? "small" : "medium"}
+                      fullWidth={isMobile}
+                      sx={{
+                        maxWidth: { xs: '100%', sm: 300 },
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }}
                     >
                       {isUpdating ? 'Saving...' : 'Save Security Settings'}
                     </Button>
@@ -1139,22 +1327,31 @@ export default function SettingsPage() {
                     {t('settings.theme')}
                   </Typography>
 
-                  <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: { xs: 1, sm: 2 }, 
+                    mb: 4,
+                    flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                    justifyContent: { xs: 'center', sm: 'flex-start' }
+                  }}>
                     <Paper
                       elevation={0}
                       variant="outlined"
                       sx={{
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         borderRadius: 2,
                         textAlign: 'center',
                         cursor: 'pointer',
                         borderColor: themeSettings.theme === 'light' ? 'primary.main' : 'divider',
                         borderWidth: themeSettings.theme === 'light' ? 2 : 1,
+                        width: { xs: '30%', sm: 'auto' },
+                        minWidth: { xs: 80, sm: 'auto' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
                       }}
                       onClick={() => handleThemeChange('light')}
                     >
-                      <Sun size={32} color={actualTheme === 'dark' ? '#fff' : '#000'} />
-                      <Typography variant="body2" sx={{ mt: 1 }}>
+                      <Sun size={isMobile ? 24 : 32} color={actualTheme === 'dark' ? '#fff' : '#000'} />
+                      <Typography variant="body2" sx={{ mt: 1, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         Light
                       </Typography>
                     </Paper>
@@ -1163,17 +1360,20 @@ export default function SettingsPage() {
                       elevation={0}
                       variant="outlined"
                       sx={{
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         borderRadius: 2,
                         textAlign: 'center',
                         cursor: 'pointer',
                         borderColor: themeSettings.theme === 'dark' ? 'primary.main' : 'divider',
                         borderWidth: themeSettings.theme === 'dark' ? 2 : 1,
+                        width: { xs: '30%', sm: 'auto' },
+                        minWidth: { xs: 80, sm: 'auto' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
                       }}
                       onClick={() => handleThemeChange('dark')}
                     >
-                      <Moon size={32} color={actualTheme === 'dark' ? '#fff' : '#000'} />
-                      <Typography variant="body2" sx={{ mt: 1 }}>
+                      <Moon size={isMobile ? 24 : 32} color={actualTheme === 'dark' ? '#fff' : '#000'} />
+                      <Typography variant="body2" sx={{ mt: 1, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         Dark
                       </Typography>
                     </Paper>
@@ -1182,20 +1382,23 @@ export default function SettingsPage() {
                       elevation={0}
                       variant="outlined"
                       sx={{
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         borderRadius: 2,
                         textAlign: 'center',
                         cursor: 'pointer',
                         borderColor: themeSettings.theme === 'system' ? 'primary.main' : 'divider',
                         borderWidth: themeSettings.theme === 'system' ? 2 : 1,
+                        width: { xs: '30%', sm: 'auto' },
+                        minWidth: { xs: 80, sm: 'auto' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
                       }}
                       onClick={() => handleThemeChange('system')}
                     >
                       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                        <Sun size={32} color={actualTheme === 'dark' ? '#fff' : '#000'} style={{ marginRight: -8 }} />
-                        <Moon size={32} color={actualTheme === 'dark' ? '#fff' : '#000'} />
+                        <Sun size={isMobile ? 24 : 32} color={actualTheme === 'dark' ? '#fff' : '#000'} style={{ marginRight: -8 }} />
+                        <Moon size={isMobile ? 24 : 32} color={actualTheme === 'dark' ? '#fff' : '#000'} />
                       </Box>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
+                      <Typography variant="body2" sx={{ mt: 1, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         System
                       </Typography>
                     </Paper>
@@ -1205,22 +1408,46 @@ export default function SettingsPage() {
                     {t('settings.fontSize')}
                   </Typography>
 
-                  <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: { xs: 1, sm: 2 }, 
+                    mb: 4,
+                    flexWrap: 'wrap',
+                    justifyContent: 'center'
+                  }}>
                     <Button
                       variant={themeSettings.fontSize === 'small' ? 'contained' : 'outlined'}
                       onClick={() => handleFontSizeChange('small')}
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        minWidth: { xs: 70, sm: 'auto' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
+                      }}
                     >
                       Small
                     </Button>
                     <Button
                       variant={themeSettings.fontSize === 'medium' ? 'contained' : 'outlined'}
                       onClick={() => handleFontSizeChange('medium')}
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        minWidth: { xs: 70, sm: 'auto' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
+                      }}
                     >
                       Medium
                     </Button>
                     <Button
                       variant={themeSettings.fontSize === 'large' ? 'contained' : 'outlined'}
                       onClick={() => handleFontSizeChange('large')}
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        minWidth: { xs: 70, sm: 'auto' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
+                      }}
                     >
                       Large
                     </Button>
@@ -1230,11 +1457,23 @@ export default function SettingsPage() {
                     {t('settings.language')}
                   </Typography>
 
-                  <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: { xs: 1, sm: 2 }, 
+                    mb: 4, 
+                    flexWrap: 'wrap',
+                    justifyContent: { xs: 'center', sm: 'flex-start' }
+                  }}>
                     <Button
                       variant={themeSettings.language === 'en' ? 'contained' : 'outlined'}
                       onClick={() => handleLanguageChange('en')}
                       startIcon={<Languages size={16} />}
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        minWidth: { xs: 80, sm: 'auto' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
+                      }}
                     >
                       English
                     </Button>
@@ -1242,6 +1481,12 @@ export default function SettingsPage() {
                       variant={themeSettings.language === 'es' ? 'contained' : 'outlined'}
                       onClick={() => handleLanguageChange('es')}
                       startIcon={<Languages size={16} />}
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        minWidth: { xs: 80, sm: 'auto' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
+                      }}
                     >
                       Español
                     </Button>
@@ -1249,6 +1494,12 @@ export default function SettingsPage() {
                       variant={themeSettings.language === 'fr' ? 'contained' : 'outlined'}
                       onClick={() => handleLanguageChange('fr')}
                       startIcon={<Languages size={16} />}
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        minWidth: { xs: 80, sm: 'auto' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
+                      }}
                     >
                       Français
                     </Button>
@@ -1256,6 +1507,12 @@ export default function SettingsPage() {
                       variant={themeSettings.language === 'de' ? 'contained' : 'outlined'}
                       onClick={() => handleLanguageChange('de')}
                       startIcon={<Languages size={16} />}
+                      size={isMobile ? "small" : "medium"}
+                      sx={{
+                        minWidth: { xs: 80, sm: 'auto' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        flex: { xs: '1 1 auto', sm: '0 0 auto' }
+                      }}
                     >
                       Deutsch
                     </Button>
@@ -1266,13 +1523,14 @@ export default function SettingsPage() {
                   </Typography>
 
                   <List>
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemIcon>
                         <Accessibility size={24} />
                       </ListItemIcon>
                       <ListItemText
                         primary={t('settings.reducedMotion')}
                         secondary={t('settings.reducedMotion.description')}
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
                       <Switch
                         checked={themeSettings.reducedMotion}
@@ -1281,16 +1539,18 @@ export default function SettingsPage() {
                           setReducedMotion(newValue);
                           setThemeSettings(prev => ({ ...prev, reducedMotion: newValue }));
                         }}
+                        sx={{ alignSelf: { xs: 'flex-end', sm: 'auto' } }}
                       />
                     </ListItem>
 
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemIcon>
                         <Eye size={24} />
                       </ListItemIcon>
                       <ListItemText
                         primary={t('settings.highContrast')}
                         secondary={t('settings.highContrast.description')}
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
                       <Switch
                         checked={themeSettings.highContrast}
@@ -1299,16 +1559,27 @@ export default function SettingsPage() {
                           setHighContrast(newValue);
                           setThemeSettings(prev => ({ ...prev, highContrast: newValue }));
                         }}
+                        sx={{ alignSelf: { xs: 'flex-end', sm: 'auto' } }}
                       />
                     </ListItem>
                   </List>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: { xs: 'center', sm: 'flex-end' }, 
+                    mt: { xs: 2, sm: 3 },
+                    width: '100%'
+                  }}>
                     <Button
                       variant="contained"
                       onClick={() => handleSaveSettings('Appearance')}
                       disabled={isUpdating}
                       startIcon={isUpdating ? <CircularProgress size={16} /> : <Save size={16} />}
+                      size={isMobile ? "small" : "medium"}
+                      fullWidth={isMobile}
+                      sx={{
+                        maxWidth: { xs: '100%', sm: 300 }
+                      }}
                     >
                       {isUpdating ? 'Saving...' : 'Save Appearance Settings'}
                     </Button>
@@ -1334,12 +1605,12 @@ export default function SettingsPage() {
                     </Typography>
                     <Card variant="outlined" sx={{ mb: 2 }}>
                       <CardContent>
-                        <Box display="flex" alignItems="center" justifyContent="space-between">
+                        <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 0 }, textAlign: { xs: 'center', sm: 'left' } }}>
                           <Box>
-                            <Typography variant="body2" fontWeight={600}>
+                            <Typography variant="body2" fontWeight={600} sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               MetaMask
                             </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
                               0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4
                               <IconButton size="small" onClick={() => {
                                 navigator.clipboard.writeText('0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4');
@@ -1349,16 +1620,42 @@ export default function SettingsPage() {
                               </IconButton>
                             </Typography>
                           </Box>
-                          <Chip label="Connected" color="success" size="small" />
+                          <Chip label="Connected" color="success" size="small" sx={{ alignSelf: { xs: 'center', sm: 'auto' } }} />
                         </Box>
                       </CardContent>
                     </Card>
 
-                    <Box display="flex" gap={2}>
-                      <Button variant="outlined" startIcon={<ExternalLink size={16} />}>
+                    <Box 
+                      display="flex" 
+                      gap={{ xs: 1, sm: 2 }}
+                      sx={{
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        width: { xs: '100%', sm: 'auto' }
+                      }}
+                    >
+                      <Button 
+                        variant="outlined" 
+                        startIcon={<ExternalLink size={16} />}
+                        size={isMobile ? "small" : "medium"}
+                        fullWidth={isMobile}
+                        sx={{
+                          justifyContent: { xs: 'center', sm: 'flex-start' },
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        }}
+                      >
                         View on Etherscan
                       </Button>
-                      <Button variant="outlined" color="error" startIcon={<Trash2 size={16} />}>
+                      <Button 
+                        variant="outlined" 
+                        color="error" 
+                        startIcon={<Trash2 size={16} />}
+                        size={isMobile ? "small" : "medium"}
+                        fullWidth={isMobile}
+                        sx={{
+                          justifyContent: { xs: 'center', sm: 'flex-start' },
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        }}
+                      >
                         Disconnect Wallet
                       </Button>
                     </Box>
@@ -1369,34 +1666,39 @@ export default function SettingsPage() {
                   </Typography>
 
                   <List>
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemText
                         primary="Show Wallet Balance"
                         secondary="Display your wallet balance on your profile"
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
                       <Switch
                         checked={walletSettings.showBalance}
                         onChange={() => handleWalletSettingChange('showBalance', !walletSettings.showBalance)}
+                        sx={{ alignSelf: { xs: 'flex-end', sm: 'auto' } }}
                       />
                     </ListItem>
 
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemText
                         primary="Auto-Connect"
                         secondary="Automatically connect wallet on login"
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
                       <Switch
                         checked={walletSettings.autoConnect}
                         onChange={() => handleWalletSettingChange('autoConnect', !walletSettings.autoConnect)}
+                        sx={{ alignSelf: { xs: 'flex-end', sm: 'auto' } }}
                       />
                     </ListItem>
 
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemText
                         primary="Default Network"
                         secondary="Choose your preferred blockchain network"
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
-                      <Box sx={{ minWidth: 120 }}>
+                      <Box sx={{ minWidth: 120, alignSelf: { xs: 'flex-end', sm: 'auto' } }}>
                         <TextField
                           select
                           value={walletSettings.defaultNetwork}
@@ -1414,12 +1716,13 @@ export default function SettingsPage() {
                       </Box>
                     </ListItem>
 
-                    <ListItem>
+                    <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 } }}>
                       <ListItemText
                         primary="Gas Preference"
                         secondary="Set your default gas price preference"
+                        sx={{ flex: 1, mb: { xs: 1, sm: 0 } }}
                       />
-                      <Box sx={{ minWidth: 120 }}>
+                      <Box sx={{ minWidth: 120, alignSelf: { xs: 'flex-end', sm: 'auto' } }}>
                         <TextField
                           select
                           value={walletSettings.gasPreference}
@@ -1438,12 +1741,23 @@ export default function SettingsPage() {
                     </ListItem>
                   </List>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: { xs: 'center', sm: 'flex-end' }, 
+                    mt: { xs: 2, sm: 3 },
+                    width: '100%'
+                  }}>
                     <Button
                       variant="contained"
                       onClick={() => handleSaveSettings('Wallet')}
                       disabled={isUpdating}
                       startIcon={isUpdating ? <CircularProgress size={16} /> : <Save size={16} />}
+                      size={isMobile ? "small" : "medium"}
+                      fullWidth={isMobile}
+                      sx={{
+                        maxWidth: { xs: '100%', sm: 300 },
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }}
                     >
                       {isUpdating ? 'Saving...' : 'Save Wallet Settings'}
                     </Button>
@@ -1473,11 +1787,24 @@ export default function SettingsPage() {
                       You can download a copy of your data or delete your account permanently.
                     </Typography>
 
-                    <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                    <Box 
+                      sx={{ 
+                        display: 'flex', 
+                        gap: { xs: 1, sm: 2 }, 
+                        mt: 2,
+                        flexDirection: { xs: 'column', sm: 'row' }
+                      }}
+                    >
                       <Button
                         variant="outlined"
                         startIcon={<Download size={16} />}
                         onClick={() => setShowExportDialog(true)}
+                        size={isMobile ? "small" : "medium"}
+                        fullWidth={isMobile}
+                        sx={{
+                          justifyContent: { xs: 'center', sm: 'flex-start' },
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        }}
                       >
                         Export Data
                       </Button>
@@ -1486,6 +1813,12 @@ export default function SettingsPage() {
                         color="error"
                         startIcon={<Trash2 size={16} />}
                         onClick={() => setShowDeleteConfirm(true)}
+                        size={isMobile ? "small" : "medium"}
+                        fullWidth={isMobile}
+                        sx={{
+                          justifyContent: { xs: 'center', sm: 'flex-start' },
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
+                        }}
                       >
                         Delete Account
                       </Button>
@@ -1506,6 +1839,9 @@ export default function SettingsPage() {
                       component="a"
                       href="/privacy-policy"
                       target="_blank"
+                      sx={{
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }}
                     >
                       View Privacy Policy
                     </Button>
@@ -1523,10 +1859,25 @@ export default function SettingsPage() {
         onClose={() => setShowPasswordDialog(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={isMobile}
         disableEnforceFocus  // Prevents focus trapping issues
         hideBackdrop={false}  // Ensure backdrop is properly handled
+        PaperProps={{
+          sx: { 
+            height: isMobile ? '100vh' : 'auto', 
+            maxHeight: isMobile ? '100vh' : '90vh',
+            margin: isMobile ? 0 : undefined,
+            borderRadius: isMobile ? 0 : undefined
+          }
+        }}
       >
-        <DialogTitle>
+        <DialogTitle 
+          sx={{
+            pb: isMobile ? 1 : 2,
+            pt: isMobile ? 1 : 2,
+            fontSize: { xs: '1.25rem', sm: '1.5rem' }
+          }}
+        >
           Change Password
           <IconButton
             aria-label="close"
@@ -1537,11 +1888,17 @@ export default function SettingsPage() {
               top: 8,
             }}
           >
-            <X size={18} />
+            <X size={isMobile ? 16 : 18} />
           </IconButton>
         </DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 1 }}>
+        <DialogContent 
+          dividers
+          sx={{
+            px: isMobile ? 1.5 : 3,
+            py: isMobile ? 1 : 2
+          }}
+        >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 3 }, py: { xs: 0.5, sm: 1 } }}>
             <TextField
               label="Current Password"
               type={showPassword.current ? 'text' : 'password'}
@@ -1549,17 +1906,30 @@ export default function SettingsPage() {
               onChange={(e) => handlePasswordFormChange('currentPassword', e.target.value)}
               fullWidth
               required
+              size={isMobile ? "small" : "medium"}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       onClick={() => handleTogglePasswordVisibility('current')}
                       edge="end"
+                      size={isMobile ? "small" : "medium"}
                     >
-                      {showPassword.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {showPassword.current ? <EyeOff size={isMobile ? 16 : 18} /> : <Eye size={isMobile ? 16 : 18} />}
                     </IconButton>
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                },
+                '& .MuiFormLabel-root': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiFormHelperText-root': {
+                  fontSize: { xs: '0.75rem', sm: '0.75rem' }
+                }
               }}
             />
 
@@ -1571,17 +1941,30 @@ export default function SettingsPage() {
               fullWidth
               required
               helperText="Password must be at least 8 characters"
+              size={isMobile ? "small" : "medium"}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       onClick={() => handleTogglePasswordVisibility('new')}
                       edge="end"
+                      size={isMobile ? "small" : "medium"}
                     >
-                      {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {showPassword.new ? <EyeOff size={isMobile ? 16 : 18} /> : <Eye size={isMobile ? 16 : 18} />}
                     </IconButton>
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                },
+                '& .MuiFormLabel-root': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiFormHelperText-root': {
+                  fontSize: { xs: '0.75rem', sm: '0.75rem' }
+                }
               }}
             />
 
@@ -1598,30 +1981,62 @@ export default function SettingsPage() {
                   ? 'Passwords do not match'
                   : ' '
               }
+              size={isMobile ? "small" : "medium"}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       onClick={() => handleTogglePasswordVisibility('confirm')}
                       edge="end"
+                      size={isMobile ? "small" : "medium"}
                     >
-                      {showPassword.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {showPassword.confirm ? <EyeOff size={isMobile ? 16 : 18} /> : <Eye size={isMobile ? 16 : 18} />}
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                },
+                '& .MuiFormLabel-root': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiFormHelperText-root': {
+                  fontSize: { xs: '0.75rem', sm: '0.75rem' }
+                }
+              }}
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowPasswordDialog(false)}>
+        <DialogActions 
+          sx={{
+            px: isMobile ? 1.5 : 3,
+            py: isMobile ? 1 : 2,
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1, sm: 0 }
+          }}
+        >
+          <Button 
+            onClick={() => setShowPasswordDialog(false)}
+            size={isMobile ? "small" : "medium"}
+            fullWidth={isMobile}
+            sx={{
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
+          >
             Cancel
           </Button>
           <Button
             variant="contained"
             onClick={handleSavePassword}
             disabled={isUpdating || !passwordForm.currentPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword}
-            startIcon={isUpdating ? <CircularProgress size={16} /> : null}
+            startIcon={isUpdating ? <CircularProgress size={isMobile ? 14 : 16} /> : null}
+            size={isMobile ? "small" : "medium"}
+            fullWidth={isMobile}
+            sx={{
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             {isUpdating ? 'Updating...' : 'Update Password'}
           </Button>
@@ -1640,7 +2055,7 @@ export default function SettingsPage() {
         disableEnforceFocus  // Prevents focus trapping issues
         hideBackdrop={false}  // Ensure backdrop is properly handled
       >
-        <DialogTitle sx={{ color: 'error.main' }}>
+        <DialogTitle sx={{ color: 'error.main', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
           Delete Account
           <IconButton
             aria-label="close"
@@ -1661,12 +2076,12 @@ export default function SettingsPage() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <AlertTriangle size={24} color={muiTheme.palette.error.main} />
-              <Typography variant="h6" color="error.main">
+              <Typography variant="h6" color="error.main" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                 This action cannot be undone
               </Typography>
             </Box>
 
-            <Typography variant="body1" paragraph>
+            <Typography variant="body1" paragraph sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
               When you delete your account:
             </Typography>
 
@@ -1691,7 +2106,7 @@ export default function SettingsPage() {
               </ListItem>
             </List>
 
-            <Typography variant="body2" sx={{ mt: 2 }}>
+            <Typography variant="body2" sx={{ mt: 2, fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
               To confirm, please type &quot;DELETE&quot; in the field below:
             </Typography>
 
@@ -1704,14 +2119,33 @@ export default function SettingsPage() {
               onChange={(e) => setDeletePassword(e.target.value)}
               size="small"
               required
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                },
+                '& .MuiFormLabel-root': {
+                  fontSize: { xs: '0.75rem', sm: '1rem' }
+                }
+              }}
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => {
-            setShowDeleteConfirm(false);
-            setDeletePassword('');
-          }}>
+        <DialogActions 
+          sx={{
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1, sm: 0 }
+          }}
+        >
+          <Button 
+            onClick={() => {
+              setShowDeleteConfirm(false);
+              setDeletePassword('');
+            }}
+            fullWidth={isMobile}
+            sx={{
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -1720,6 +2154,10 @@ export default function SettingsPage() {
             onClick={handleDeleteAccount}
             disabled={isUpdating || !deletePassword.trim()}
             startIcon={isUpdating ? <CircularProgress size={16} /> : null}
+            fullWidth={isMobile}
+            sx={{
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             {isUpdating ? 'Deleting...' : 'Delete Account'}
           </Button>
@@ -1733,7 +2171,7 @@ export default function SettingsPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>
+        <DialogTitle sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
           Export Your Data
           <IconButton
             aria-label="close"
@@ -1750,7 +2188,7 @@ export default function SettingsPage() {
         </DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 1 }}>
-            <Typography variant="body1">
+            <Typography variant="body1" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
               We&apos;ll prepare a download with all your account data, including:
             </Typography>
 
@@ -1783,7 +2221,7 @@ export default function SettingsPage() {
 
             {isExporting && (
               <Box sx={{ width: '100%', mt: 2 }}>
-                <Typography variant="body2" gutterBottom>
+                <Typography variant="body2" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
                   Preparing your data... {dataExportProgress}%
                 </Typography>
                 <LinearProgress variant="determinate" value={dataExportProgress} />
@@ -1791,10 +2229,19 @@ export default function SettingsPage() {
             )}
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions 
+          sx={{
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1, sm: 0 }
+          }}
+        >
           <Button
             onClick={() => setShowExportDialog(false)}
             disabled={isExporting}
+            fullWidth={isMobile}
+            sx={{
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             Cancel
           </Button>
@@ -1803,6 +2250,10 @@ export default function SettingsPage() {
             onClick={handleExportData}
             disabled={isExporting}
             startIcon={isExporting ? <CircularProgress size={16} /> : <Download size={16} />}
+            fullWidth={isMobile}
+            sx={{
+              fontSize: { xs: '0.875rem', sm: '1rem' }
+            }}
           >
             {isExporting ? 'Preparing...' : 'Export Data'}
           </Button>
