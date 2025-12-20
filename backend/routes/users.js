@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const { authenticateToken, authenticateTokenStrict } = require('./auth');
 const { User, Follow } = require('../models');
+const NotificationService = require('../services/notificationService');
 
 // Health check endpoint
 router.get('/health', (req, res) => {
