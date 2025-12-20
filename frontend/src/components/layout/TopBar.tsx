@@ -144,7 +144,15 @@ export const TopBar: React.FC<TopBarProps> = ({
   // Handle search suggestion click
   const handleSuggestionClick = (suggestion: any) => {
     if (suggestion.type === 'user') {
-      const username = suggestion.text.replace('@', '');
+      // Extract username from metadata if available, otherwise from text
+      let username;
+      if (suggestion.metadata?.username) {
+        // Remove @ prefix if present
+        username = suggestion.metadata.username.replace('@', '');
+      } else {
+        // For backward compatibility, try to extract from text
+        username = suggestion.text.replace('@', '');
+      }
       router.push(`/profile/${username}`);
     } else if (suggestion.type === 'hashtag') {
       const hashtag = suggestion.text.replace('#', '').replace('Trending: ', '');
@@ -176,15 +184,15 @@ export const TopBar: React.FC<TopBarProps> = ({
               src={suggestion.metadata.avatar}
               sx={{ width: 24, height: 24 }}
             >
-              {suggestion.text.charAt(1).toUpperCase()}
+              {(suggestion.metadata.displayName || suggestion.text).charAt(0).toUpperCase()}
             </Avatar>
           );
         } else {
           icon = <User size={16} />;
         }
-        // Show display name as secondary text if available
-        if (suggestion.metadata?.displayName) {
-          secondaryText = suggestion.metadata.displayName;
+        // Show username as secondary text
+        if (suggestion.metadata?.username) {
+          secondaryText = `@${suggestion.metadata.username}`;
         }
         break;
       case 'hashtag':

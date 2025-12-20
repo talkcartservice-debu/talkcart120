@@ -63,6 +63,7 @@ class SearchService {
             url: `/profile/${user.username}`,
             metadata: {
               username: user.username,
+              displayName: user.displayName,
               isVerified: user.isVerified,
               followersCount: user.followerCount,
               bio: user.bio
@@ -166,7 +167,8 @@ class SearchService {
             type: 'user',
             text: user.displayName || user.username,
             metadata: {
-              username: `@${user.username}`,
+              username: user.username, // Store without @ prefix
+              displayName: user.displayName,
               avatar: user.avatar,
               isVerified: user.isVerified,
               followersCount: user.followerCount
@@ -202,6 +204,9 @@ class SearchService {
           id: '1',
           type: 'user',
           text: `User ${query}`,
+          metadata: {
+            username: query
+          }
         },
         {
           id: '2',
