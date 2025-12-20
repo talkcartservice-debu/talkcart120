@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Disable telemetry and tracing to avoid permission issues
+  poweredByHeader: false,
+  compress: false,
   reactStrictMode: true,
   // Transpile problematic ESM packages to avoid build issues with d3/recharts
   transpilePackages: ['recharts', 'victory-vendor', 'd3-scale', 'd3-interpolate'],

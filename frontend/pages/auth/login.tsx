@@ -105,6 +105,101 @@ export default function LoginPage() {
     checkBiometric();
   }, []);
 
+  // Cleanup Google Sign-In state on unmount
+  useEffect(() => {
+    return () => {
+      // Reset Google Sign-In state when component unmounts
+      (window as any).lastGoogleSignInClick = 0;
+    };
+  }, []);
+
+  // Initialize Google Sign-In button
+  useEffect(() => {
+    const initializeGoogleSignIn = async () => {
+      try {
+        // Load Google Identity Services
+        console.log('Checking if Google Identity Services is loaded:', !!(window as any).google);
+        if (!(window as any).google) {
+          console.log('Loading Google Identity Services script');
+          await new Promise<void>((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://accounts.google.com/gsi/client';
+            s.async = true;
+            s.defer = true;
+            s.onload = () => {
+              console.log('Google Identity Services script loaded successfully');
+              resolve();
+            };
+            s.onerror = () => {
+              console.error('Failed to load Google Identity Services script');
+              reject(new Error('Failed to load Google script'));
+            };
+            document.head.appendChild(s);
+          });
+        } else {
+          console.log('Google Identity Services already loaded');
+        }
+
+        console.log('Initializing Google OAuth with client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
+
+        // Initialize Google Sign-In
+        (window as any).google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
+          callback: async (response: any) => {
+            try {
+              console.log('Google OAuth callback received:', response);
+              const idToken = response?.credential;
+              console.log('ID Token:', idToken ? `${idToken.substring(0, 20)}...` : 'NONE');
+              if (!idToken) throw new Error('No id_token');
+              const res = await api.auth.oauthGoogle(idToken);
+              console.log('Backend response:', res);
+              if (res?.success) {
+                setAuthTokens(res.accessToken, res.refreshToken);
+                toast.success('Signed in with Google');
+                router.push('/social');
+              } else {
+                throw new Error(res?.message || 'Google sign-in failed');
+              }
+            } catch (err: any) {
+              console.error('Google OAuth error:', err);
+              toast.error(err.message || 'Google sign-in failed');
+            }
+          },
+        });
+
+        // Render the Google Sign-In button
+        // Wait a bit for the DOM to be ready
+        setTimeout(() => {
+          const googleButtonContainer = document.getElementById('google-signin-button');
+          if (googleButtonContainer) {
+            (window as any).google.accounts.id.renderButton(
+              googleButtonContainer,
+              { 
+                type: 'standard',
+                theme: 'outline',
+                size: 'large',
+                text: 'signin_with',
+                shape: 'rectangular',
+                logo_alignment: 'left',
+                width: googleButtonContainer.offsetWidth || 200
+              }
+            );
+          } else {
+            console.warn('Google Sign-In button container not found');
+          }
+        }, 100);
+      } catch (err: any) {
+        console.error('Google sign-in initialization error:', err);
+        toast.error(err.message || 'Failed to initialize Google Sign-In');
+      }
+    };
+
+    // Initialize Google Sign-In when component mounts
+    if (typeof window !== 'undefined') {
+      initializeGoogleSignIn();
+    }
+  }, [router, setAuthTokens]);
+
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
     setError(''); // Clear error when user types
@@ -680,80 +775,9 @@ export default function LoginPage() {
 
                       {/* Social Sign-in */}
                       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} sx={{ mt: 1 }}>
-                        <Button
-                          fullWidth
-                          variant="outlined"
-                          size="medium"
-                          onClick={async (e) => {
-                            e.preventDefault();
-                            try {
-                              // Load Google Identity Services
-                              console.log('Checking if Google Identity Services is loaded:', !!window.google);
-                              // @ts-ignore
-                              if (!window.google) {
-                                console.log('Loading Google Identity Services script');
-                                await new Promise<void>((resolve, reject) => {
-                                  const s = document.createElement('script');
-                                  s.src = 'https://accounts.google.com/gsi/client';
-                                  s.async = true;
-                                  s.defer = true;
-                                  s.onload = () => {
-                                    console.log('Google Identity Services script loaded successfully');
-                                    resolve();
-                                  };
-                                  s.onerror = () => {
-                                    console.error('Failed to load Google Identity Services script');
-                                    reject(new Error('Failed to load Google script'));
-                                  };
-                                  document.head.appendChild(s);
-                                });
-                              } else {
-                                console.log('Google Identity Services already loaded');
-                              }
-                              // @ts-ignore
-                              console.log('Initializing Google OAuth with client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
-                              window.google.accounts.id.initialize({
-                                client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
-                                callback: async (response: any) => {
-                                  try {
-                                    console.log('Google OAuth callback received:', response);
-                                    const idToken = response?.credential;
-                                    console.log('ID Token:', idToken ? `${idToken.substring(0, 20)}...` : 'NONE');
-                                    if (!idToken) throw new Error('No id_token');
-                                    const res = await api.auth.oauthGoogle(idToken);
-                                    console.log('Backend response:', res);
-                                    if (res?.success) {
-                                      setAuthTokens(res.accessToken, res.refreshToken);
-                                      toast.success('Signed in with Google');
-                                      router.push('/social');
-                                    } else {
-                                      throw new Error(res?.message || 'Google sign-in failed');
-                                    }
-                                  } catch (err: any) {
-                                    console.error('Google OAuth error:', err);
-                                    toast.error(err.message || 'Google sign-in failed');
-                                  }
-                                },
-                              });
-                              // @ts-ignore
-                              window.google.accounts.id.prompt();
-                            } catch (err: any) {
-                              toast.error(err.message || 'Google sign-in failed');
-                            }
-                          }}
-                          startIcon={<Box sx={{ width: 18, height: 18, borderRadius: '3px', bgcolor: '#fff', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)' }} />}
-                          sx={{
-                            py: 1,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: '0.85rem',
-                            fontWeight: 700,
-                            borderColor: alpha(theme.palette.text.primary, 0.2),
-                            '&:hover': { bgcolor: alpha(theme.palette.text.primary, 0.04) },
-                          }}
-                        >
-                          Continue with Google
-                        </Button>
+                        <Box sx={{ width: '100%' }}>
+                          <div id="google-signin-button" style={{ width: '100%', display: 'flex', justifyContent: 'center' }} />
+                        </Box>
                         <Button
                           fullWidth
                           variant="outlined"
