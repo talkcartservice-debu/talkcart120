@@ -29,6 +29,7 @@ interface ForwardMessageDialogProps {
     onForward: (conversationIds: string[], message?: string) => Promise<boolean>;
     conversations: Conversation[];
     loading?: boolean;
+    fullScreen?: boolean;
 }
 
 const ForwardMessageDialog: React.FC<ForwardMessageDialogProps> = ({
@@ -36,7 +37,8 @@ const ForwardMessageDialog: React.FC<ForwardMessageDialogProps> = ({
     onClose,
     onForward,
     conversations,
-    loading = false
+    loading = false,
+    fullScreen = false
 }) => {
     const [selectedConversations, setSelectedConversations] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -134,8 +136,14 @@ const ForwardMessageDialog: React.FC<ForwardMessageDialogProps> = ({
             onClose={onClose}
             maxWidth="sm"
             fullWidth
+            fullScreen={fullScreen}
             PaperProps={{
-                sx: { height: '80vh', maxHeight: 600 }
+                sx: { 
+                    height: fullScreen ? '100vh' : '80vh', 
+                    maxHeight: fullScreen ? '100vh' : 600,
+                    margin: fullScreen ? 0 : undefined,
+                    borderRadius: fullScreen ? 0 : undefined
+                }
             }}
         >
             <DialogTitle key="dialog-title">

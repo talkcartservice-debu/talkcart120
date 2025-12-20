@@ -27,6 +27,7 @@ import {
   Slider,
   useTheme,
   alpha,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Search,
@@ -72,6 +73,7 @@ import debounce from 'lodash.debounce';
 
 const MessagesPage: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const {
     conversations,
@@ -692,28 +694,50 @@ const MessagesPage: React.FC = () => {
 
   return (
     <Layout>
-      <Container maxWidth="lg" sx={{ py: 4, height: 'calc(100vh - 64px)' }}>
+      <Container 
+        maxWidth="lg" 
+        sx={{ 
+          py: { xs: 0, sm: 4 }, 
+          height: 'calc(100vh - 64px)',
+          px: { xs: 0, sm: 3 }
+        }}
+      >
         <Paper
           elevation={0}
           sx={{
             height: '100%',
             display: 'flex',
-            borderRadius: 3,
+            borderRadius: { xs: 0, sm: 3 },
             overflow: 'hidden',
-            border: `1px solid ${theme.palette.divider}`,
+            border: { sm: `1px solid ${theme.palette.divider}` },
+            flexDirection: { xs: 'column', sm: 'row' },
+            backgroundColor: theme.palette.background.paper,
+            minHeight: 0
           }}
         >
           {/* Conversations List */}
           <Box
             sx={{
-              width: 320,
-              borderRight: `1px solid ${theme.palette.divider}`,
+              width: { xs: '100%', sm: 320 },
+              borderRight: { sm: `1px solid ${theme.palette.divider}` },
+              borderBottom: { xs: `1px solid ${theme.palette.divider}`, sm: 'none' },
               display: 'flex',
               flexDirection: 'column',
+              height: { xs: '40%', sm: 'auto' },
+              backgroundColor: theme.palette.background.paper,
+              flexShrink: 0
             }}
           >
-            <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
+            <Box sx={{ p: { xs: 1, sm: 2 }, borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.background.paper }}>
+              <Typography 
+                variant="h6" 
+                fontWeight={600} 
+                gutterBottom
+                sx={{ 
+                  fontSize: { xs: '1.125rem', sm: '1.25rem' },
+                  mb: { xs: 1, sm: 1.5 }
+                }}
+              >
                 Messages
               </Typography>
               <TextField
@@ -725,19 +749,22 @@ const MessagesPage: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Search size={18} />
+                      <Search size={isMobile ? 16 : 18} />
                     </InputAdornment>
                   ),
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
-                  }
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  },
+                  mb: { xs: 1, sm: 0 }
                 }}
               />
             </Box>
+            <Divider sx={{ display: { xs: 'block', sm: 'none' } }} />
 
-            <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+            <Box sx={{ flexGrow: 1, overflow: 'auto', minHeight: 0 }}>
               {loading && !activeConversation ? (
                 <Box sx={{ p: 2 }}>
                   <CircularProgress size={24} />
@@ -779,8 +806,8 @@ const MessagesPage: React.FC = () => {
                       alignItems="flex-start"
                       onClick={() => handleSelectConversation(conversation)}
                       sx={{
-                        px: 2,
-                        py: 1.5,
+                        px: { xs: 1, sm: 2 },
+                        py: { xs: 1, sm: 1.5 },
                         borderBottom: `1px solid ${theme.palette.divider}`,
                         backgroundColor: activeConversation?.id === conversation.id
                           ? alpha(theme.palette.primary.main, 0.08)
@@ -791,10 +818,15 @@ const MessagesPage: React.FC = () => {
                         border: 'none',
                         width: '100%',
                         textAlign: 'left',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        minHeight: { xs: 64, sm: 72 },
+                        flexShrink: 0,
+                        overflow: 'hidden',
+                        minWidth: 0,
+                        display: 'flex'
                       }}
                     >
-                      <ListItemAvatar>
+                      <ListItemAvatar sx={{ minWidth: 0, flexShrink: 0 }}>
                         <Badge
                           overlap="circular"
                           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -805,7 +837,11 @@ const MessagesPage: React.FC = () => {
                           <Avatar
                             src={getConversationAvatar(conversation)}
                             alt={getConversationName(conversation)}
-                            sx={{ width: 48, height: 48 }}
+                            sx={{ 
+                              width: { xs: 40, sm: 48 }, 
+                              height: { xs: 40, sm: 48 },
+                              minWidth: { xs: 40, sm: 48 }
+                            }}
                           />
                         </Badge>
                       </ListItemAvatar>
@@ -816,10 +852,29 @@ const MessagesPage: React.FC = () => {
                             variant="subtitle1"
                             fontWeight={600}
                             noWrap
-                            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                            sx={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              alignItems: 'center',
+                              fontSize: { xs: '0.9rem', sm: '1rem' },
+                              minWidth: 0,
+                              flexShrink: 1,
+                              overflow: 'hidden',
+                              whiteSpace: 'nowrap',
+                              textOverflow: 'ellipsis'
+                            }}
                           >
-                            <span>{getConversationName(conversation)}</span>
-                            <Typography component="span" variant="caption" color="text.secondary">
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 }}>{getConversationName(conversation)}</span>
+                            <Typography 
+                              component="span" 
+                              variant="caption" 
+                              color="text.secondary"
+                              sx={{ 
+                                fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                                flexShrink: 0,
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
                               {conversation.lastMessage ? formatConversationDate(conversation.lastMessage.createdAt) : 'Never'}
                             </Typography>
                           </Typography>
@@ -828,7 +883,16 @@ const MessagesPage: React.FC = () => {
                           <Typography
                             component="div"
                             variant="body2"
-                            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                            sx={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              alignItems: 'center',
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                              minWidth: 0,
+                              flexShrink: 1,
+                              overflow: 'hidden',
+                              whiteSpace: 'nowrap'
+                            }}
                           >
                             <Typography
                               component="span"
@@ -836,9 +900,14 @@ const MessagesPage: React.FC = () => {
                               color="text.secondary"
                               noWrap
                               sx={{
-                                maxWidth: 180,
+                                maxWidth: { xs: 120, sm: 180 },
                                 fontWeight: conversation.unreadCount > 0 ? 600 : 400,
                                 color: conversation.unreadCount > 0 ? 'text.primary' : 'text.secondary',
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                flexShrink: 1,
+                                whiteSpace: 'nowrap'
                               }}
                             >
                               {conversation.lastMessage ? conversation.lastMessage.content || 'Message' : 'No messages yet'}
@@ -849,16 +918,22 @@ const MessagesPage: React.FC = () => {
                                 color="primary"
                                 size="small"
                                 sx={{
-                                  height: 20,
-                                  minWidth: 20,
-                                  fontSize: '0.75rem',
+                                  height: { xs: 18, sm: 20 },
+                                  minWidth: { xs: 18, sm: 20 },
+                                  fontSize: { xs: '0.65rem', sm: '0.75rem' },
                                   fontWeight: 600,
                                 }}
                               />
                             )}
                           </Typography>
                         }
-                        sx={{ ml: 1 }}
+                        sx={{ 
+                          ml: { xs: 0.5, sm: 1 },
+                          minWidth: 0,
+                          overflow: 'hidden',
+                          flexShrink: 1,
+                          display: 'flex'
+                        }}
                       />
                     </ListItem>
                   ))}
@@ -866,13 +941,17 @@ const MessagesPage: React.FC = () => {
               )}
             </Box>
 
-            <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+            <Box sx={{ p: { xs: 1, sm: 2 }, borderTop: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.background.paper }}>
               <Button
                 fullWidth
                 variant="contained"
-                startIcon={<Plus size={18} />}
+                startIcon={<Plus size={isMobile ? 16 : 18} />}
                 onClick={() => setNewConversationOpen(true)}
-                sx={{ borderRadius: 2 }}
+                sx={{ 
+                  borderRadius: 2,
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  py: { xs: 1, sm: 1.5 }
+                }}
               >
                 New Conversation
               </Button>
@@ -881,15 +960,27 @@ const MessagesPage: React.FC = () => {
 
           {/* Messages Area */}
           {activeConversation ? (
-            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+            <Box 
+              sx={{ 
+                flexGrow: 1, 
+                display: 'flex', 
+                flexDirection: 'column',
+                height: { xs: '60%', sm: 'auto' },
+                backgroundColor: theme.palette.background.paper,
+                minHeight: 0
+              }}
+            >
               {/* Conversation Header */}
               <Box
                 sx={{
-                  p: 2,
+                  p: { xs: 1, sm: 2 },
                   borderBottom: `1px solid ${theme.palette.divider}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  minHeight: { xs: 56, sm: 64 },
+                  backgroundColor: theme.palette.background.paper,
+                  flexShrink: 0
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -903,14 +994,32 @@ const MessagesPage: React.FC = () => {
                     <Avatar
                       src={getConversationAvatar(activeConversation)}
                       alt={getConversationName(activeConversation)}
-                      sx={{ width: 40, height: 40 }}
+                      sx={{ width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                     />
                   </Badge>
-                  <Box sx={{ ml: 2 }}>
-                    <Typography variant="subtitle1" fontWeight={600}>
+                  <Box sx={{ ml: { xs: 1, sm: 2 }, minWidth: 0 }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      fontWeight={600}
+                      sx={{
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
                       {getConversationName(activeConversation)}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
                       {(() => {
                         const typingUsersList = (typingUsers?.[activeConversation.id] || [])
                           .map(userId => {
@@ -928,16 +1037,16 @@ const MessagesPage: React.FC = () => {
                     </Typography>
                   </Box>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {/* Sound toggle */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+                  {/* Sound toggle - hide on mobile */}
+                  <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', mr: 1 }}>
                     <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5 }}>
                       Sounds
                     </Typography>
                     <Switch size="small" checked={!!soundsEnabled} onChange={toggleSounds} />
                   </Box>
-                  {/* Volume */}
-                  <Box sx={{ width: 120, display: 'flex', alignItems: 'center' }}>
+                  {/* Volume - hide on mobile */}
+                  <Box sx={{ width: { xs: 80, sm: 120 }, display: { xs: 'none', sm: 'flex' }, alignItems: 'center' }}>
                     <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
                       Vol
                     </Typography>
@@ -951,7 +1060,7 @@ const MessagesPage: React.FC = () => {
                       min={0}
                       max={100}
                       step={5}
-                      sx={{ width: 80 }}
+                      sx={{ width: { xs: 60, sm: 80 } }}
                     />
                   </Box>
                   <IconButton
@@ -959,26 +1068,28 @@ const MessagesPage: React.FC = () => {
                     disabled={isCallActive}
                     sx={{
                       color: theme.palette.success.main,
-                      '&:hover': { backgroundColor: alpha(theme.palette.success.main, 0.1) }
+                      '&:hover': { backgroundColor: alpha(theme.palette.success.main, 0.1) },
+                      p: { xs: 0.5, sm: 1 }
                     }}
                   >
-                    <Phone size={20} />
+                    <Phone size={isMobile ? 16 : 20} />
                   </IconButton>
                   <IconButton
                     onClick={handleVideoCall}
                     disabled={isCallActive}
                     sx={{
                       color: theme.palette.primary.main,
-                      '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.1) }
+                      '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.1) },
+                      p: { xs: 0.5, sm: 1 }
                     }}
                   >
-                    <Video size={20} />
+                    <Video size={isMobile ? 16 : 20} />
                   </IconButton>
-                  <IconButton>
-                    <Info size={20} />
+                  <IconButton sx={{ p: { xs: 0.5, sm: 1 } }}>
+                    <Info size={isMobile ? 16 : 20} />
                   </IconButton>
-                  <IconButton>
-                    <MoreVertical size={20} />
+                  <IconButton sx={{ p: { xs: 0.5, sm: 1 } }}>
+                    <MoreVertical size={isMobile ? 16 : 20} />
                   </IconButton>
                 </Box>
               </Box>
@@ -987,11 +1098,17 @@ const MessagesPage: React.FC = () => {
               <Box
                 sx={{
                   flexGrow: 1,
-                  p: 3,
+                  p: { xs: 1, sm: 3 },
                   overflow: 'auto',
                   display: 'flex',
                   flexDirection: 'column',
                   bgcolor: alpha(theme.palette.background.default, 0.5),
+                  height: '100%',
+                  minHeight: 0,
+                  pt: { xs: 1, sm: 2 },
+                  pb: { xs: 1, sm: 2 },
+                  backgroundColor: theme.palette.background.paper,
+                  flexShrink: 1
                 }}
               >
                 {loading ? (
@@ -1025,7 +1142,8 @@ const MessagesPage: React.FC = () => {
                         sx={{
                           display: 'flex',
                           justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
-                          mb: 2,
+                          mb: { xs: 1, sm: 2 },
+                          flexShrink: 0
                         }}
                       >
                         <EnhancedMessageBubbleV2
@@ -1092,11 +1210,16 @@ const MessagesPage: React.FC = () => {
               {/* Message Input */}
               <Box
                 sx={{
-                  p: 2,
+                  p: { xs: 0.5, sm: 2 },
+                  pt: { xs: 0.5, sm: 2 },
+                  pb: { xs: 0.5, sm: 2 },
                   borderTop: `1px solid ${theme.palette.divider}`,
                   display: 'flex',
                   alignItems: 'center',
-                  position: 'relative'
+                  position: 'relative',
+                  minHeight: { xs: 50, sm: 64 },
+                  backgroundColor: theme.palette.background.paper,
+                  flexShrink: 0
                 }}
               >
                 {/* Hidden file inputs */}
@@ -1106,8 +1229,18 @@ const MessagesPage: React.FC = () => {
 
                 {/* Emoji picker (emoji-mart) with simple fallback */}
                 {showEmojiPicker && (
-                  <Paper elevation={3} style={{ position: 'absolute', bottom: 64, right: 64, padding: 8, zIndex: 2 }}>
-                    <Box sx={{ width: 300 }}>
+                  <Paper 
+                    elevation={3} 
+                    style={{ 
+                      position: 'absolute', 
+                      bottom: isMobile ? 40 : 64, 
+                      right: isMobile ? 8 : 64, 
+                      padding: isMobile ? 4 : 8, 
+                      zIndex: 2,
+                      maxWidth: isMobile ? '95vw' : 300
+                    }}
+                  >
+                    <Box sx={{ width: isMobile ? '100%' : 300 }}>
                       <TypedPicker
                         data={data}
                         onEmojiSelect={(e: any) => {
@@ -1118,24 +1251,45 @@ const MessagesPage: React.FC = () => {
                         previewPosition="none"
                       />
                       {/* Fallback quick emojis in case Picker fails to render */}
-                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', maxWidth: 240, mt: 1 }}>
+                      <Box sx={{ display: 'flex', gap: isMobile ? 0.5 : 1, flexWrap: 'wrap', maxWidth: isMobile ? '100%' : 240, mt: isMobile ? 0.5 : 1 }}>
                         {commonEmojis.map((e) => (
-                          <Button key={e} size="small" onClick={() => handleAddEmoji(e)}>{e}</Button>
+                          <Button 
+                            key={e} 
+                            size="small" 
+                            onClick={() => handleAddEmoji(e)}
+                            sx={{ 
+                              minWidth: isMobile ? 28 : 36,
+                              width: isMobile ? 28 : 'auto',
+                              height: isMobile ? 28 : 36,
+                              fontSize: isMobile ? '1rem' : '1.25rem',
+                              p: isMobile ? 0 : 'initial'
+                            }}
+                          >
+                            {e}
+                          </Button>
                         ))}
                       </Box>
                     </Box>
                   </Paper>
                 )}
-                <IconButton onClick={() => imageInputRef.current?.click()} disabled={uploadingMedia}>
-                  <Paperclip size={20} />
+                <IconButton 
+                  onClick={() => imageInputRef.current?.click()} 
+                  disabled={uploadingMedia}
+                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
+                >
+                  <Paperclip size={isMobile ? 14 : 20} />
                 </IconButton>
-                <IconButton onClick={() => videoInputRef.current?.click()} disabled={uploadingMedia}>
-                  <Image size={20} />
+                <IconButton 
+                  onClick={() => videoInputRef.current?.click()} 
+                  disabled={uploadingMedia}
+                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
+                >
+                  <Image size={isMobile ? 14 : 20} />
                 </IconButton>
                 {uploadingMedia && (
-                  <Box sx={{ width: 120, mx: 1 }}>
-                    <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>Uploading {uploadProgress}%</Box>
-                    <Box sx={{ height: 6, borderRadius: 4, bgcolor: 'action.hover', overflow: 'hidden' }}>
+                  <Box sx={{ width: { xs: 100, sm: 120 }, mx: 1 }}>
+                    <Box sx={{ fontSize: { xs: 10, sm: 12 }, color: 'text.secondary', mb: 0.5 }}>Uploading {uploadProgress}%</Box>
+                    <Box sx={{ height: { xs: 4, sm: 6 }, borderRadius: 4, bgcolor: 'action.hover', overflow: 'hidden' }}>
                       <Box sx={{ width: `${uploadProgress}%`, height: '100%', bgcolor: 'primary.main', transition: 'width 120ms linear' }} />
                     </Box>
                   </Box>
@@ -1143,21 +1297,30 @@ const MessagesPage: React.FC = () => {
 
                 {/* Reply Preview */}
                 {replyToMessage && (
-                  <Box sx={{ mx: 2, mb: 1 }}>
+                  <Box sx={{ mx: { xs: 0.5, sm: 2 }, mb: { xs: 0.5, sm: 1 } }}>
                     <Paper
                       sx={{
-                        p: 1.5,
+                        p: { xs: 0.75, sm: 1.5 },
                         bgcolor: alpha(theme.palette.primary.main, 0.1),
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                        borderRadius: 2,
+                        borderRadius: { xs: 1.5, sm: 2 },
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 1
+                        gap: { xs: 0.5, sm: 1 },
+                        minHeight: { xs: 36, sm: 'auto' }
                       }}
                     >
-                      <Reply size={16} color={theme.palette.primary.main} />
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography variant="caption" color="primary" fontWeight={600}>
+                      <Reply size={isMobile ? 12 : 16} color={theme.palette.primary.main} />
+                      <Box sx={{ flex: 1, minWidth: 0, mr: { xs: 0.5, sm: 1 } }}>
+                        <Typography 
+                          variant="caption" 
+                          color="primary" 
+                          fontWeight={600}
+                          sx={{ 
+                            fontSize: { xs: '0.6rem', sm: '0.75rem' },
+                            lineHeight: 1.2
+                          }}
+                        >
                           Replying to {replyToMessage.sender?.displayName || 'Unknown'}
                         </Typography>
                         <Typography
@@ -1167,7 +1330,9 @@ const MessagesPage: React.FC = () => {
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
-                            maxWidth: '100%'
+                            maxWidth: '100%',
+                            fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                            lineHeight: 1.3
                           }}
                         >
                           {replyToMessage.content}
@@ -1176,9 +1341,13 @@ const MessagesPage: React.FC = () => {
                       <IconButton
                         size="small"
                         onClick={handleCancelReply}
-                        sx={{ color: 'text.secondary' }}
+                        sx={{ 
+                          color: 'text.secondary', 
+                          p: { xs: 0.25, sm: 0.5 },
+                          minWidth: { xs: 24, sm: 'auto' }
+                        }}
                       >
-                        <X size={16} />
+                        <X size={isMobile ? 12 : 16} />
                       </IconButton>
                     </Paper>
                   </Box>
@@ -1203,26 +1372,36 @@ const MessagesPage: React.FC = () => {
                   multiline
                   maxRows={4}
                   sx={{
-                    mx: 2,
+                    mx: { xs: 0.5, sm: 2 },
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                    }
+                      borderRadius: { xs: 2, sm: 3 },
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    },
+                    minHeight: { xs: 36, sm: 40 }
                   }}
                 />
-                <IconButton onClick={() => (isRecording ? stopRecording() : startRecording())} disabled={uploadingMedia}>
+                <IconButton 
+                  onClick={() => (isRecording ? stopRecording() : startRecording())} 
+                  disabled={uploadingMedia}
+                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
+                >
                   <Badge color="error" variant={isRecording ? 'dot' : 'standard'} overlap="circular">
-                    <Mic size={20} color={isRecording ? theme.palette.error.main : undefined} />
+                    <Mic size={isMobile ? 14 : 20} color={isRecording ? theme.palette.error.main : undefined} />
                   </Badge>
                 </IconButton>
-                <IconButton onClick={() => setShowEmojiPicker(v => !v)}>
-                  <Smile size={20} />
+                <IconButton 
+                  onClick={() => setShowEmojiPicker(v => !v)}
+                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
+                >
+                  <Smile size={isMobile ? 14 : 20} />
                 </IconButton>
                 <IconButton
                   color="primary"
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim()}
+                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
                 >
-                  <Send size={20} />
+                  <Send size={isMobile ? 14 : 20} />
                 </IconButton>
               </Box>
             </Box>
@@ -1287,6 +1466,7 @@ const MessagesPage: React.FC = () => {
         onClose={() => setNewConversationOpen(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={isMobile}
       >
         <DialogTitle>Start New Conversation</DialogTitle>
         <DialogContent>
@@ -1394,6 +1574,7 @@ const MessagesPage: React.FC = () => {
         onForward={handleForwardSubmit}
         conversations={conversations}
         loading={loading}
+        fullScreen={isMobile}
       />
     </Layout>
   );

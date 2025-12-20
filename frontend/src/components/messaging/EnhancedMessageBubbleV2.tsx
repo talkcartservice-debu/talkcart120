@@ -71,6 +71,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isSmallMobile = useMediaQuery(theme.breakpoints.down('xs'));
+    const isExtraSmall = useMediaQuery(theme.breakpoints.down(400));
     const { user } = useAuth();
     const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
     const [showReactions, setShowReactions] = useState(false);
@@ -743,22 +744,26 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                             className="message-bubble"
                             elevation={0}
                             sx={{
-                                p: message.content ? { xs: 1.5, sm: 2, md: 2.5 } : { xs: 1, sm: 1.5 },
+                                p: message.content ? { xs: 1, sm: 2, md: 2.5 } : { xs: 0.5, sm: 1.5 },
                                 borderRadius: message.isOwn 
-                                    ? { xs: '18px 18px 6px 18px', sm: '24px 24px 8px 24px' } 
-                                    : { xs: '18px 18px 18px 6px', sm: '24px 24px 24px 8px' },
+                                    ? { xs: '16px 16px 4px 16px', sm: '24px 24px 8px 24px' } 
+                                    : { xs: '16px 16px 16px 4px', sm: '24px 24px 24px 8px' },
                                 background: message.isOwn
                                     ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 60%, ${alpha(theme.palette.primary.main, 0.9)} 100%)`
                                     : theme.palette.mode === 'dark'
                                         ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.grey[800], 0.9)} 70%, ${alpha(theme.palette.background.default, 0.8)} 100%)`
                                         : `linear-gradient(135deg, ${theme.palette.common.white} 0%, ${alpha(theme.palette.grey[50], 0.8)} 70%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
-                                backdropFilter: 'blur(24px)',
+                                backdropFilter: isMobile ? 'blur(12px)' : 'blur(24px)',
                                 border: message.isOwn
                                     ? `1px solid ${alpha(theme.palette.primary.light, 0.5)}`
                                     : `1px solid ${alpha(theme.palette.divider, 0.4)}`,
                                 boxShadow: message.isOwn
-                                    ? `0 8px 40px ${alpha(theme.palette.primary.main, 0.2)}, 0 2px 16px ${alpha(theme.palette.primary.dark, 0.15)}, inset 0 1px 0 ${alpha(theme.palette.primary.light, 0.2)}`
-                                    : `0 4px 24px ${alpha(theme.palette.grey[500], 0.12)}, 0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.5)}`,
+                                    ? isMobile 
+                                        ? `0 4px 20px ${alpha(theme.palette.primary.main, 0.15)}, 0 1px 8px ${alpha(theme.palette.primary.dark, 0.1)}, inset 0 1px 0 ${alpha(theme.palette.primary.light, 0.1)}`
+                                        : `0 8px 40px ${alpha(theme.palette.primary.main, 0.2)}, 0 2px 16px ${alpha(theme.palette.primary.dark, 0.15)}, inset 0 1px 0 ${alpha(theme.palette.primary.light, 0.2)}`
+                                    : isMobile 
+                                        ? `0 2px 12px ${alpha(theme.palette.grey[500], 0.08)}, 0 1px 4px ${alpha(theme.palette.common.black, 0.04)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.3)}`
+                                        : `0 4px 24px ${alpha(theme.palette.grey[500], 0.12)}, 0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.5)}`,
                                 color: message.isOwn
                                     ? theme.palette.primary.contrastText
                                     : theme.palette.text.primary,
