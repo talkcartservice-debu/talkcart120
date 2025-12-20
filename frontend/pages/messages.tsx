@@ -315,20 +315,26 @@ const MessagesPage: React.FC = () => {
 
   // Handle sending a message
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !activeConversation) return;
+    const trimmedMessage = newMessage.trim();
+    if (!trimmedMessage || !activeConversation) {
+      if (!trimmedMessage) {
+        alert('Message content is required');
+      }
+      return;
+    }
 
     try {
       // Prepare replyTo parameter if we're replying to a message
       const replyToId = replyToMessage?.id || undefined;
       
-      const success = await sendMessage(newMessage, 'text', undefined, replyToId);
+      const success = await sendMessage(trimmedMessage, 'text', undefined, replyToId);
       if (success) {
         setNewMessage('');
         setReplyToMessage(null);
       }
     } catch (error: any) {
       console.error('Error sending message:', error);
-      alert('Failed to send message');
+      alert('Failed to send message: ' + (error.message || 'Unknown error'));
     }
   };
 

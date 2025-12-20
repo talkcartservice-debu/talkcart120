@@ -165,52 +165,92 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       const currentConversationId = conversationId || activeConversation?.id;
       if (!currentConversationId) return false;
 
-      try {
-        setSending(true);
-        
-        // Send via REST API for persistence (this will also broadcast via sockets on the backend)
-        const res = await client.sendMessage(currentConversationId, {
-          content,
-          type,
-          media,
-          replyTo,
-        });
-        
-        if (res.success) {
-          // Create a complete Message object with all required properties
-          const newMessage: Message = {
-            id: res.id,
-            conversationId: currentConversationId,
-            createdAt: res.createdAt,
-            content,
-            type: (type as 'text' | 'image' | 'video' | 'audio' | 'file' | 'system' | 'post_share') || 'text',
-            senderId: res.sender?.id || '',
-            isEdited: false,
-            isDeleted: false,
-            isForwarded: false,
-            media: media || [],
-            reactions: [],
-            readBy: [],
-            replyTo: replyTo ? { id: replyTo, content: '', senderId: '', type: 'text' } : undefined,
-            sender: res.sender,
-            isOwn: true,
-            isRead: false
-          };
+      // Retry logic for network issues
+      let attempts = 0;
+      const maxAttempts = 3;
+      
+      while (attempts < maxAttempts) {
+        try {
+          setSending(true);
           
-          // Add the message to the local state immediately
-          setMessages((prev) => [
-            ...(prev || []),
-            newMessage,
-          ]);
-          return true;
+          // Send via REST API for persistence (this will also broadcast via sockets on the backend)
+          const res = await client.sendMessage(currentConversationId, {
+            content,
+            type,
+            media,
+            replyTo,
+          });
+          
+          if (res.success) {
+            // Create a complete Message object with all required properties
+            const newMessage: Message = {
+              id: res.data?.id || res.id,
+              conversationId: currentConversationId,
+              createdAt: res.data?.createdAt || res.createdAt || new Date().toISOString(),
+              content,
+              type: (type as 'text' | 'image' | 'video' | 'audio' | 'file' | 'system' | 'post_share') || 'text',
+              senderId: res.data?.senderId || res.sender?.id || '',
+              isEdited: false,
+              isDeleted: false,
+              isForwarded: false,
+              media: media || [],
+              reactions: [],
+              readBy: [],
+              replyTo: replyTo ? { id: replyTo, content: '', senderId: '', type: 'text' } : undefined,
+              sender: res.data?.sender || res.sender,
+              isOwn: true,
+              isRead: false
+            };
+            
+            // Add the message to the local state immediately
+            setMessages((prev) => [
+              ...(prev || []),
+              newMessage,
+            ]);
+            
+            // Update the conversation's last message
+            setConversations(prev => 
+              (prev || []).map(conv => 
+                conv.id === currentConversationId 
+                  ? { ...conv, lastMessage: newMessage } 
+                  : conv
+              )
+            );
+            
+            // Update active conversation's last message
+            if (activeConversation?.id === currentConversationId) {
+              setActiveConversation(prev => prev ? { ...prev, lastMessage: newMessage } : null);
+            }
+            
+            return true;
+          } else {
+            // Handle API error response
+            const errorMessage = res.error || 'Failed to send message';
+            setError(errorMessage);
+            console.error('Send message API error:', errorMessage);
+            return false;
+          }
+        } catch (e: any) {
+          attempts++;
+          
+          // If this is the last attempt or it's not a network error, show the error
+          const isNetworkError = e.networkError || e.timeout || !e.response;
+          
+          if (attempts >= maxAttempts || !isNetworkError) {
+            const errorMessage = e.message || 'Failed to send message. Please check your network connection.';
+            setError(errorMessage);
+            console.error('Send message error:', e);
+            return false;
+          }
+          
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+        } finally {
+          setSending(false);
         }
-        return false;
-      } catch (e) {
-        setError((e as Error).message);
-        return false;
-      } finally {
-        setSending(false);
       }
+      
+      return false;
     },
     [conversationId, activeConversation?.id]
   );
@@ -305,9 +345,17 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         if (activeConversation) {
           setActiveConversation({ ...activeConversation, unreadCount: 0 });
         }
+      } else {
+        // Handle API error response
+        const errorMessage = res.error || 'Failed to mark all messages as read';
+        setError(errorMessage);
+        console.error('Mark all as read API error:', errorMessage);
       }
-    } catch (e) {
-      setError((e as Error).message);
+    } catch (e: any) {
+      // Handle network/timeout errors
+      const errorMessage = e.message || 'Failed to mark all messages as read. Please check your network connection.';
+      setError(errorMessage);
+      console.error('Mark all as read error:', e);
     }
   }, [activeConversation]);
 
@@ -509,73 +557,85 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
   // Listen for new messages via socket
   useEffect(() => {
     const handleNewMessage = (data: any) => {
-      console.log('Received new message via socket:', data);
-      
-      if (data.message) {
-        // Check if this message already exists in our local state to avoid duplicates
-        const messageExists = messages?.some(msg => 
-          msg.id === (data.message._id || data.message.id)
-        );
+      try {
+        console.log('Received new message via socket:', data);
         
-        if (!messageExists) {
-          const newMessage: Message = {
-            id: data.message._id || data.message.id,
-            conversationId: data.conversationId,
-            createdAt: data.message.createdAt,
-            content: data.message.content,
-            type: data.message.type || 'text',
-            senderId: data.message.senderId || data.message.sender?._id || data.message.sender?.id,
-            isEdited: data.message.isEdited || false,
-            isDeleted: data.message.isDeleted || false,
-            isForwarded: data.message.isForwarded || false,
-            media: data.message.media || [],
-            reactions: data.message.reactions || [],
-            readBy: data.message.readBy || [],
-            replyTo: data.message.replyTo ? {
-              id: data.message.replyTo._id || data.message.replyTo.id,
-              content: data.message.replyTo.content,
-              senderId: data.message.replyTo.senderId || data.message.replyTo.sender?._id || data.message.replyTo.sender?.id,
-              type: data.message.replyTo.type || 'text'
-            } : undefined,
-            sender: data.message.sender,
-            isOwn: false, // This is not our own message
-            isRead: false
-          };
-
-          console.log('Processing new message:', newMessage);
-
-          // Only add the message if it's for the current conversation
-          if (activeConversation?.id === data.conversationId) {
-            console.log('Adding message to current conversation');
-            setMessages(prev => [...(prev || []), newMessage]);
-          } else {
-            console.log('Message is for different conversation, not adding to current view');
-          }
-
-          // Update conversations list to show unread count
-          setConversations(prev => 
-            (prev || []).map(conv => 
-              conv.id === data.conversationId 
-                ? { 
-                    ...conv, 
-                    unreadCount: (conv.unreadCount || 0) + 1,
-                    lastMessage: newMessage
-                  } 
-                : conv
-            )
+        if (data.message) {
+          // Check if this message already exists in our local state to avoid duplicates
+          const messageExists = messages?.some(msg => 
+            msg.id === (data.message._id || data.message.id)
           );
-        } else {
-          console.log('Message already exists, skipping duplicate');
+          
+          if (!messageExists) {
+            const newMessage: Message = {
+              id: data.message._id || data.message.id,
+              conversationId: data.conversationId,
+              createdAt: data.message.createdAt,
+              content: data.message.content,
+              type: data.message.type || 'text',
+              senderId: data.message.senderId || data.message.sender?._id || data.message.sender?.id,
+              isEdited: data.message.isEdited || false,
+              isDeleted: data.message.isDeleted || false,
+              isForwarded: data.message.isForwarded || false,
+              media: data.message.media || [],
+              reactions: data.message.reactions || [],
+              readBy: data.message.readBy || [],
+              replyTo: data.message.replyTo ? {
+                id: data.message.replyTo._id || data.message.replyTo.id,
+                content: data.message.replyTo.content,
+                senderId: data.message.replyTo.senderId || data.message.replyTo.sender?._id || data.message.replyTo.sender?.id,
+                type: data.message.replyTo.type || 'text'
+              } : undefined,
+              sender: data.message.sender,
+              isOwn: false, // This is not our own message
+              isRead: false
+            };
+
+            console.log('Processing new message:', newMessage);
+
+            // Only add the message if it's for the current conversation
+            if (activeConversation?.id === data.conversationId) {
+              console.log('Adding message to current conversation');
+              setMessages(prev => [...(prev || []), newMessage]);
+            } else {
+              console.log('Message is for different conversation, not adding to current view');
+            }
+
+            // Update conversations list to show unread count
+            setConversations(prev => 
+              (prev || []).map(conv => 
+                conv.id === data.conversationId 
+                  ? { 
+                      ...conv, 
+                      unreadCount: (conv.unreadCount || 0) + 1,
+                      lastMessage: newMessage
+                    } 
+                  : conv
+              )
+            );
+          } else {
+            console.log('Message already exists, skipping duplicate');
+          }
         }
+      } catch (error) {
+        console.error('Error processing new message from socket:', error);
       }
     };
 
     // Register socket event listener
-    socketService.on('message:new', handleNewMessage);
+    try {
+      socketService.on('message:new', handleNewMessage);
+    } catch (error) {
+      console.error('Error registering socket listener:', error);
+    }
 
     // Cleanup function to remove listener
     return () => {
-      socketService.off('message:new', handleNewMessage);
+      try {
+        socketService.off('message:new', handleNewMessage);
+      } catch (error) {
+        console.error('Error unregistering socket listener:', error);
+      }
     };
   }, [activeConversation?.id, messages]);
 

@@ -154,11 +154,29 @@ export const sendMessage = async (
         replyTo?: string;
     }
 ): Promise<any> => {
+    // Validate required data
+    if (!data.content && (!data.media || data.media.length === 0)) {
+        throw { success: false, error: 'Message content or media is required' };
+    }
+    
     try {
         const response = await messageApi.post(`/conversations/${conversationId}/messages`, data);
         return response.data;
     } catch (error: any) {
         console.error('Send message error:', error);
+        
+        // Handle network timeout errors specifically
+        if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+            console.error('Request timeout when sending message:', error.config?.url);
+            throw { success: false, error: 'Request timeout. Please check your network connection and try again.', timeout: true };
+        }
+        
+        // Handle network errors
+        if (!error.response) {
+            console.error('Network error when sending message:', error.config?.url);
+            throw { success: false, error: 'Network error. Please check your connection and try again.', networkError: true };
+        }
+        
         throw error.response?.data || { success: false, error: 'Failed to send message' };
     }
 };
@@ -290,6 +308,19 @@ export const markAllAsRead = async (conversationId: string): Promise<any> => {
         return response.data;
     } catch (error: any) {
         console.error('Mark all as read error:', error);
+        
+        // Handle network timeout errors specifically
+        if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+            console.error('Request timeout when marking all as read:', error.config?.url);
+            throw { success: false, error: 'Request timeout. Please check your network connection and try again.', timeout: true };
+        }
+        
+        // Handle network errors
+        if (!error.response) {
+            console.error('Network error when marking all as read:', error.config?.url);
+            throw { success: false, error: 'Network error. Please check your connection and try again.', networkError: true };
+        }
+        
         throw error.response?.data || { success: false, error: 'Failed to mark all messages as read' };
     }
 };
