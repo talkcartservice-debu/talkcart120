@@ -80,6 +80,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
 
     const isOwnProfile = currentUser?.username === username;
 
+    // Debug logging
+    useEffect(() => {
+        console.log('Rendering profile page - isOwnProfile:', isOwnProfile, 'editProfileOpen:', editProfileOpen, 'user:', user);
+    }, [isOwnProfile, editProfileOpen, user]);
+
     // Fetch user profile
     useEffect(() => {
         const fetchUser = async () => {
@@ -404,7 +409,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
                     onProfileUpdated={handleProfileUpdated}
                 />
             )}
-            {console.log('Rendering profile page - isOwnProfile:', isOwnProfile, 'editProfileOpen:', editProfileOpen, 'user:', user)}
 
             {/* Content Tabs */}
             <Paper elevation={0} sx={{ borderRadius: 3 }}>
