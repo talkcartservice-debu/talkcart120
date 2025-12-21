@@ -37,12 +37,12 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       // cancel any outgoing refetches
       await queryClient.cancelQueries();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast.success(`Following ${user.displayName}`);
       
       // Extract counts from the response data
-      const followerCount = data?.followerCount || 0;
-      const followingCount = data?.followingCount || 0;
+      const followerCount = data?.data?.followerCount || 0;
+      const followingCount = data?.data?.followingCount || 0;
       
       // Dispatch events to update follower/following counts across the platform
       window.dispatchEvent(new CustomEvent('user:followers-update', {
@@ -72,7 +72,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         });
       }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       // rollback
       setIsFollowing(false);
       onFollowChange?.(false);
@@ -92,12 +92,12 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       onFollowChange?.(false);
       await queryClient.cancelQueries();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast.success(`Unfollowed ${user.displayName}`);
       
       // Extract counts from the response data
-      const followerCount = data?.followerCount || 0;
-      const followingCount = data?.followingCount || 0;
+      const followerCount = data?.data?.followerCount || 0;
+      const followingCount = data?.data?.followingCount || 0;
       
       // Dispatch events to update follower/following counts across the platform
       window.dispatchEvent(new CustomEvent('user:followers-update', {
@@ -127,7 +127,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         });
       }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       setIsFollowing(true);
       onFollowChange?.(true);
       toast.error(error.message || 'Failed to unfollow user');
