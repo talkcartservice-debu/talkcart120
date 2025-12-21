@@ -24,7 +24,7 @@ import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
 const UserAvatar = dynamic(() => import('../common/UserAvatar'), { ssr: false });
 import ReactCrop, { type Crop } from 'react-image-crop';
-import { User } from '@/types/social';
+import { User } from '@/types';
 import { UploadErrorBoundary } from '../common/UploadErrorBoundary';
 
 interface ProfilePictureUploadProps {

@@ -18,7 +18,7 @@ import { Image as ImageIcon, Upload, X, ZoomIn, ZoomOut, RefreshCw, Trash2 } fro
 import toast from 'react-hot-toast';
 import ReactCrop, { Crop } from 'react-image-crop';
 import { api } from '@/lib/api';
-import { User } from '@/types/social';
+import { User } from '@/types';
 
 interface CoverPhotoUploadProps {
   user: User | null;
