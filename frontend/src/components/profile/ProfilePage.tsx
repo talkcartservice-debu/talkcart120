@@ -321,11 +321,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
     };
 
     const handleEditProfile = () => {
+        console.log('Edit profile button clicked');
         setEditProfileOpen(true);
     };
 
     const handleSettings = () => {
         // Navigate to settings page
+        console.log('Settings button clicked');
         router.push('/settings');
     };
 
@@ -394,11 +396,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
             {isOwnProfile && (
                 <EditProfileDialog
                     open={editProfileOpen}
-                    onClose={() => setEditProfileOpen(false)}
+                    onClose={() => {
+                        console.log('EditProfileDialog onClose called');
+                        setEditProfileOpen(false);
+                    }}
                     user={user}
                     onProfileUpdated={handleProfileUpdated}
                 />
             )}
+            {console.log('Rendering profile page - isOwnProfile:', isOwnProfile, 'editProfileOpen:', editProfileOpen, 'user:', user)}
 
             {/* Content Tabs */}
             <Paper elevation={0} sx={{ borderRadius: 3 }}>

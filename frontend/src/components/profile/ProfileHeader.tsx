@@ -145,13 +145,19 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                             <Button
                                 variant="outlined"
                                 startIcon={<Edit size={16} />}
-                                onClick={onEditProfile}
+                                onClick={() => {
+                                    console.log('Edit Profile button clicked in ProfileHeader');
+                                    onEditProfile?.();
+                                }}
                                 size="small"
                             >
                                 Edit Profile
                             </Button>
                             <IconButton
-                                onClick={onSettings}
+                                onClick={() => {
+                                    console.log('Settings icon clicked in ProfileHeader');
+                                    onSettings?.();
+                                }}
                                 size="small"
                                 sx={{
                                     border: `1px solid ${theme.palette.divider}`,
