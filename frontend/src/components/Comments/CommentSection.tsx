@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Box,
   Card,
@@ -77,6 +78,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const isValidPostId = typeof postId === 'string' && /^[0-9a-fA-F]{24}$/.test(postId.trim());
 
   const { user, isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
