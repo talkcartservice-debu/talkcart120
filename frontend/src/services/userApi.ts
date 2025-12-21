@@ -212,13 +212,16 @@ class UserService {
   }
 
   // Follow a user
-  async followUser(userId: string): Promise<void> {
+  async followUser(userId: string): Promise<{ followerCount: number; followingCount: number } | null> {
     try {
       const response = await userApi.post(`/${userId}/follow`);
       
       if (!response.data.success) {
         throw new Error(response.data.error || 'Failed to follow user');
       }
+      
+      // Return the counts from the response data
+      return response.data.data || null;
     } catch (error) {
       console.error('Follow user error:', error);
       throw error;
@@ -226,13 +229,16 @@ class UserService {
   }
 
   // Unfollow a user
-  async unfollowUser(userId: string): Promise<void> {
+  async unfollowUser(userId: string): Promise<{ followerCount: number; followingCount: number } | null> {
     try {
       const response = await userApi.delete(`/${userId}/follow`);
       
       if (!response.data.success) {
         throw new Error(response.data.error || 'Failed to unfollow user');
       }
+      
+      // Return the counts from the response data
+      return response.data.data || null;
     } catch (error) {
       console.error('Unfollow user error:', error);
       throw error;

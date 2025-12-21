@@ -40,18 +40,22 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     onSuccess: (data) => {
       toast.success(`Following ${user.displayName}`);
       
+      // Extract counts from the response data
+      const followerCount = data?.followerCount || 0;
+      const followingCount = data?.followingCount || 0;
+      
       // Dispatch events to update follower/following counts across the platform
       window.dispatchEvent(new CustomEvent('user:followers-update', {
-        detail: { userId: user.id, followerCount: data?.data?.followerCount }
+        detail: { userId: user.id, followerCount }
       }));
       
       window.dispatchEvent(new CustomEvent('user:following-update', {
-        detail: { userId: user.id, followingCount: data?.data?.followingCount }
+        detail: { userId: user.id, followingCount }
       }));
       
       // Dispatch event for current user's following count update
       window.dispatchEvent(new CustomEvent('user:following-count-update', {
-        detail: { delta: 1, followingCount: data?.data?.followingCount }
+        detail: { delta: 1, followingCount }
       }));
       
       // Also emit socket event for real-time updates
@@ -59,12 +63,12 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       if (socket) {
         socket.emit('user:followers-update', {
           userId: user.id,
-          followerCount: data?.data?.followerCount
+          followerCount
         });
         
         socket.emit('user:following-update', {
           userId: user.id,
-          followingCount: data?.data?.followingCount
+          followingCount
         });
       }
     },
@@ -91,18 +95,22 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     onSuccess: (data) => {
       toast.success(`Unfollowed ${user.displayName}`);
       
+      // Extract counts from the response data
+      const followerCount = data?.followerCount || 0;
+      const followingCount = data?.followingCount || 0;
+      
       // Dispatch events to update follower/following counts across the platform
       window.dispatchEvent(new CustomEvent('user:followers-update', {
-        detail: { userId: user.id, followerCount: data?.data?.followerCount }
+        detail: { userId: user.id, followerCount }
       }));
       
       window.dispatchEvent(new CustomEvent('user:following-update', {
-        detail: { userId: user.id, followingCount: data?.data?.followingCount }
+        detail: { userId: user.id, followingCount }
       }));
       
       // Dispatch event for current user's following count update
       window.dispatchEvent(new CustomEvent('user:following-count-update', {
-        detail: { delta: -1, followingCount: data?.data?.followingCount }
+        detail: { delta: -1, followingCount }
       }));
       
       // Also emit socket event for real-time updates
@@ -110,12 +118,12 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       if (socket) {
         socket.emit('user:followers-update', {
           userId: user.id,
-          followerCount: data?.data?.followerCount
+          followerCount
         });
         
         socket.emit('user:following-update', {
           userId: user.id,
-          followingCount: data?.data?.followingCount
+          followingCount
         });
       }
     },
