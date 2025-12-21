@@ -369,7 +369,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
           {/* Avatar */}
           {showAvatar && !message.isOwn && (
             <UserAvatar
-              src={message.sender.avatar}
+              src={message.sender.avatar || undefined}
               alt={message.sender.displayName}
               size={{ xs: 28, sm: 32 }}
             />
@@ -554,7 +554,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                 {/* Avatar */}
                 {showAvatar && !message.isOwn && (
                     <UserAvatar
-                        src={message.sender.avatar}
+                        src={message.sender.avatar || undefined}
                         alt={message.sender.displayName}
                         size={32}
                     />
@@ -653,7 +653,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                 {/* Avatar */}
                 {showAvatar && !message.isOwn && (
                     <UserAvatar
-                        src={message.sender.avatar}
+                        src={message.sender.avatar || undefined}
                         alt={message.sender.displayName}
                         size={{ xs: 28, sm: 32 }}
                     />
