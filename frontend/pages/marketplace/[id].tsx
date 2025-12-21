@@ -56,8 +56,9 @@ import { SessionExpiredError } from '@/lib/api';
 import BuyModal from '@/components/marketplace/BuyModal';
 import VendorPaymentInfo from '@/components/marketplace/VendorPaymentInfo';
 import ReviewEditModal from '@/components/marketplace/ReviewEditModal';
-import RelatedProducts from '@/components/marketplace/RelatedProducts';
 import ProductReviews from '@/components/marketplace/ProductReviews';
+import RelatedProducts from '@/components/marketplace/RelatedProducts';
+import UserAvatar from '@/components/common/UserAvatar';
 import RecommendedProducts from '@/components/marketplace/RecommendedProducts';
 import { api } from '@/lib/api';
 
@@ -518,19 +519,11 @@ const ProductPage: React.FC<ProductPageProps> = () => {
                 <Box>
                   {/* Vendor Info */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                    <Avatar 
-                      src={product.vendor?.avatar || '/images/default-avatar.png'} 
-                      sx={{ width: 32, height: 32 }}
-                      imgProps={{
-                        onError: (e: any) => {
-                          if (e.currentTarget.src !== '/images/default-avatar.png') {
-                            e.currentTarget.src = '/images/default-avatar.png';
-                          }
-                        }
-                      }}
-                    >
-                      {product.vendor?.displayName?.charAt(0) || product.vendor?.username?.charAt(0)}
-                    </Avatar>
+                    <UserAvatar 
+                      src={product.vendor?.avatar}
+                      alt={product.vendor?.displayName || product.vendor?.username}
+                      size={32}
+                    />
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Box>
                         <Typography variant="body2" fontWeight={600}>

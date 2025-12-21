@@ -41,6 +41,7 @@ import { useMediaMute } from '@/hooks/useMediaMute'; // Import the new hook
 import UnifiedVideoMedia from '@/components/media/UnifiedVideoMedia';
 import UnifiedImageMedia from '@/components/media/UnifiedImageMedia';
 import { isKnownMissingFile } from '@/utils/mediaUtils';
+import UserAvatar from '@/components/common/UserAvatar';
 
 // Placeholder VoiceMessageBubble component if not exists
 const VoiceMessageBubblePlaceholder: React.FC<any> = (props) => (
@@ -367,12 +368,11 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
         >
           {/* Avatar */}
           {showAvatar && !message.isOwn && (
-            <Avatar
-              src={message.sender.avatar || undefined}
-              sx={{ width: { xs: 28, sm: 32 }, height: { xs: 28, sm: 32 } }}
-            >
-              {message.sender.displayName.charAt(0).toUpperCase()}
-            </Avatar>
+            <UserAvatar
+              src={message.sender.avatar}
+              alt={message.sender.displayName}
+              size={{ xs: 28, sm: 32 }}
+            />
           )}
           {!showAvatar && !message.isOwn && (
             <Box sx={{ width: { xs: 28, sm: 32 } }} />
@@ -553,12 +553,11 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
             >
                 {/* Avatar */}
                 {showAvatar && !message.isOwn && (
-                    <Avatar
-                        src={message.sender.avatar || undefined}
-                        sx={{ width: 32, height: 32 }}
-                    >
-                        {message.sender.displayName.charAt(0).toUpperCase()}
-                    </Avatar>
+                    <UserAvatar
+                        src={message.sender.avatar}
+                        alt={message.sender.displayName}
+                        size={32}
+                    />
                 )}
                 {!showAvatar && !message.isOwn && (
                     <Box sx={{ width: 32 }} />
@@ -653,12 +652,11 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
             >
                 {/* Avatar */}
                 {showAvatar && !message.isOwn && (
-                    <Avatar
-                        src={message.sender.avatar || undefined}
-                        sx={{ width: { xs: 28, sm: 32 }, height: { xs: 28, sm: 32 } }}
-                    >
-                        {message.sender.displayName.charAt(0).toUpperCase()}
-                    </Avatar>
+                    <UserAvatar
+                        src={message.sender.avatar}
+                        alt={message.sender.displayName}
+                        size={{ xs: 28, sm: 32 }}
+                    />
                 )}
                 {!showAvatar && !message.isOwn && (
                     <Box sx={{ width: { xs: 28, sm: 32 } }} />
