@@ -82,10 +82,10 @@ export const PAGINATION = {
 
 // Timeout Configuration
 export const TIMEOUTS = {
-  API_REQUEST: 0, // No timeout for API requests
-  AUTH_REQUEST: 0, // No timeout for auth requests
-  UPLOAD: 0, // No timeout for uploads
-  WEBSOCKET_CONNECT: 0, // No timeout for WebSocket connections
+  API_REQUEST: 30000, // 30 seconds for API requests
+  AUTH_REQUEST: 30000, // 30 seconds for auth requests
+  UPLOAD: 300000, // 5 minutes for uploads
+  WEBSOCKET_CONNECT: 10000, // 10 seconds for WebSocket connections
 };
 
 // Media Configuration

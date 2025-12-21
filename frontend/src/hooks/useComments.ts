@@ -83,11 +83,17 @@ export const useComments = (options: UseCommentsOptions) => {
       if (!isValidPostId) {
         throw new Error('Invalid post ID');
       }
-      return api.comments.getByPostId(postId, {
-        page: pageParam as number,
-        limit,
-        sortBy,
-      });
+      try {
+        return await api.comments.getByPostId(postId, {
+          page: pageParam as number,
+          limit,
+          sortBy,
+        });
+      } catch (err: any) {
+        // Enhance error message with more context
+        const errorMessage = err?.message || 'Failed to load comments';
+        throw new Error(`Comments loading failed: ${errorMessage}`);
+      }
     },
     getNextPageParam: (lastPage: any) => {
       const { pagination } = lastPage.data;
@@ -97,6 +103,7 @@ export const useComments = (options: UseCommentsOptions) => {
     staleTime: 30000, // 30 seconds
     gcTime: 300000, // 5 minutes
     initialPageParam: 1,
+    retry: 1, // Retry once on failure
   });
 
   // Flatten paginated comments

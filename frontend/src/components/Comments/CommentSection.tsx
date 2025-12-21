@@ -179,6 +179,21 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     realTimeUpdates: enableRealTime,
   });
 
+  // Auto-retry on error once to handle transient network issues
+  const [retryCount, setRetryCount] = useState(0);
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    if (error && retryCount < 1) {
+      timer = setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        refetch();
+      }, 2000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [error, retryCount, refetch]);
+
   // Debug component mounting/unmounting (always call useEffect)
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -782,8 +797,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
           {error && (
             <Alert severity="error" sx={{ mb: 1, py: 0.5, px: 1 }}>
-              Failed to load comments. Please try again.
-              <Button onClick={() => refetch()} sx={{ ml: 1, fontSize: '0.7rem' }}>
+              Failed to load comments. {error.message || 'Please try again.'}
+              <Button onClick={() => {
+                // Clear any cached error state and retry
+                queryClient.invalidateQueries({ queryKey: ['comments', postId, sortBy] });
+                refetch();
+              }} sx={{ ml: 1, fontSize: '0.7rem' }}>
                 Retry
               </Button>
             </Alert>

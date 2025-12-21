@@ -440,16 +440,5 @@ const PostDetailPage: React.FC = () => {
 
 export default PostDetailPage;
 
-// Add getStaticPaths and getStaticProps to fix prerendering errors
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: 'blocking'
-  };
-}
-
-export async function getStaticProps() {
-  return {
-    props: {}
-  };
-}
+// Using client-side data fetching with react-query instead of static generation
+// This prevents hydration errors with dynamic post data

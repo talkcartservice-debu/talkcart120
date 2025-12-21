@@ -326,7 +326,7 @@ class ApiService {
       method: 'GET',
       headers: this.getAuthHeaders(),
       ...options,
-    });
+    }, TIMEOUTS.API_REQUEST);
   }
 
   async post(endpoint: string, data?: any, options: RequestInit = {}) {
@@ -335,7 +335,7 @@ class ApiService {
       headers: this.getAuthHeaders(),
       body: data ? JSON.stringify(data) : undefined,
       ...options,
-    });
+    }, TIMEOUTS.API_REQUEST);
   }
 
   async put(endpoint: string, data?: any, options: RequestInit = {}) {
@@ -344,7 +344,7 @@ class ApiService {
       headers: this.getAuthHeaders(),
       body: data ? JSON.stringify(data) : undefined,
       ...options,
-    });
+    }, TIMEOUTS.API_REQUEST);
   }
 
   async delete(endpoint: string, options: RequestInit = {}) {
@@ -352,7 +352,7 @@ class ApiService {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
       ...options,
-    });
+    }, TIMEOUTS.API_REQUEST);
   }
 
   // Auth API
@@ -603,7 +603,7 @@ class ApiService {
         return await this.request(`${API_URL}/users/profile/${encodeURIComponent(username)}`, {
           method: 'GET',
           headers: this.getAuthHeaders(),
-        });
+        }, TIMEOUTS.API_REQUEST);
       } catch (error: any) {
         // For profile requests, we want to handle errors gracefully
         // and return a structured response instead of throwing
@@ -652,21 +652,21 @@ class ApiService {
         method: 'PUT',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(data),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     follow: async (userId: string) => {
       return this.request(`${API_URL}/users/${userId}/follow`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     unfollow: async (userId: string) => {
       return this.request(`${API_URL}/users/${userId}/follow`, {
         method: 'DELETE',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     getRelationship: async (userId: string) => {
@@ -696,14 +696,14 @@ class ApiService {
       return this.request(`${API_URL}/users/${id}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     getByUsername: async (username: string) => {
       return this.request(`${API_URL}/users/profile/${encodeURIComponent(username)}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
   };
 
@@ -722,7 +722,7 @@ class ApiService {
       return this.request(`${API_URL}/marketplace/orders?${queryParams}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     // Get specific order details
@@ -730,7 +730,7 @@ class ApiService {
       return this.request(`${API_URL}/orders/${orderId}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     // Cancel an order
@@ -738,7 +738,7 @@ class ApiService {
       return this.request(`${API_URL}/orders/${orderId}/cancel`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     // Get tracking information for an order
@@ -746,7 +746,7 @@ class ApiService {
       return this.request(`${API_URL}/orders/${orderId}/track`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     // Download invoice for an order
@@ -754,7 +754,7 @@ class ApiService {
       return this.request(`${API_URL}/orders/${orderId}/invoice`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
   };
 
@@ -1086,7 +1086,7 @@ class ApiService {
 
       return this.request(`${API_URL}/comments/${postId}?${queryParams}`, {
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     create: async (data: {
@@ -1098,28 +1098,28 @@ class ApiService {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(data),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     like: async (commentId: string) => {
       return this.request(`${API_URL}/comments/${commentId}/like`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     unlike: async (commentId: string) => {
       return this.request(`${API_URL}/comments/${commentId}/like`, {
         method: 'DELETE',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     delete: async (commentId: string) => {
       return this.request(`${API_URL}/comments/${commentId}`, {
         method: 'DELETE',
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     edit: async (commentId: string, content: string) => {
@@ -1127,7 +1127,7 @@ class ApiService {
         method: 'PUT',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({ content }),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     report: async (commentId: string, reason: string, description?: string) => {
@@ -1135,7 +1135,7 @@ class ApiService {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({ reason, description }),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     getThread: async (commentId: string, params?: {
@@ -1146,7 +1146,7 @@ class ApiService {
 
       return this.request(`${API_URL}/comments/${commentId}/thread?${queryParams}`, {
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     search: async (query: string, params?: {
@@ -1162,7 +1162,7 @@ class ApiService {
 
       return this.request(`${API_URL}/comments/search?${queryParams}`, {
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
   };
 
@@ -1184,7 +1184,7 @@ class ApiService {
 
       return this.request(`${API_URL}/search?${queryParams}`, {
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     users: async (query: string, limit = 20) => {
@@ -1194,7 +1194,7 @@ class ApiService {
       
       return this.request(`${API_URL}/search/users?${queryParams}`, {
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     posts: async (query: string, limit = 20) => {
@@ -1204,7 +1204,7 @@ class ApiService {
       
       return this.request(`${API_URL}/search/posts?${queryParams}`, {
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
 
     hashtags: async (query: string, limit = 20) => {
@@ -1214,7 +1214,7 @@ class ApiService {
       
       return this.request(`${API_URL}/search/hashtags?${queryParams}`, {
         headers: this.getAuthHeaders(),
-      });
+      }, TIMEOUTS.API_REQUEST);
     },
   };
 
