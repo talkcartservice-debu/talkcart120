@@ -402,23 +402,64 @@ class ApiService {
     },
 
     oauthGoogle: async (idToken: string) => {
-      const response = await this.fetchWithTimeout(`${API_URL}/auth/oauth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      }, TIMEOUTS.AUTH_REQUEST);
+      try {
+        const response = await this.fetchWithTimeout(`${API_URL}/auth/oauth/google`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        }, TIMEOUTS.AUTH_REQUEST);
 
-      const data = await this.safeJsonParse(response);
+        const data = await this.safeJsonParse(response);
 
-      if (!response.ok) {
+        if (!response.ok) {
+          // Provide more specific error messages based on status codes
+          let errorMessage = data?.message || data?.error || 'Google authentication failed';
+          
+          if (response.status === 400) {
+            errorMessage = data?.message || 'Invalid Google token. Please try again.';
+          } else if (response.status === 401) {
+            errorMessage = data?.message || 'Authentication failed. Please try again.';
+          } else if (response.status === 504) {
+            errorMessage = 'Google verification service timeout. Please check your connection and try again.';
+          } else if (response.status >= 500) {
+            errorMessage = 'Server error during Google authentication. Please try again later.';
+          }
+          
+          return {
+            success: false,
+            message: errorMessage,
+            status: response.status,
+            ...data
+          };
+        }
+
+        return data;
+      } catch (error: any) {
+        console.error('Google OAuth API error:', error);
+        
+        // Handle network errors specifically
+        if (error?.name === 'AbortError' || error?.message?.includes('timeout')) {
+          return {
+            success: false,
+            message: 'Request timeout. Please check your connection and try again.',
+            error: 'TIMEOUT'
+          };
+        }
+        
+        if (error?.message?.includes('network') || error?.message?.includes('failed to fetch')) {
+          return {
+            success: false,
+            message: 'Network error. Please check your connection and try again.',
+            error: 'NETWORK_ERROR'
+          };
+        }
+        
         return {
           success: false,
-          message: data?.message || data?.error || 'Google authentication failed',
-          ...data
+          message: error?.message || 'Failed to authenticate with Google. Please try again.',
+          error: error?.name || 'UNKNOWN_ERROR'
         };
       }
-
-      return data;
     },
 
     oauthApple: async (identityToken: string) => {

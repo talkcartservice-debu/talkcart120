@@ -475,56 +475,75 @@ router.post('/oauth/google', async (req, res) => {
     // Verify id_token via Google tokeninfo
     const verifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`;
     console.log('Verifying token with URL:', verifyUrl);
-    const { data } = await axios.get(verifyUrl);
-    console.log('Google token data received:', data ? 'YES' : 'NO');
     
-    // Log comparison data
-    console.log('Audience comparison:');
-    console.log('  Token audience (data.aud):', data?.aud);
-    console.log('  Expected client ID (GOOGLE_CLIENT_ID):', GOOGLE_CLIENT_ID);
-    console.log('  Match:', data?.aud === GOOGLE_CLIENT_ID);
+    try {
+      const { data } = await axios.get(verifyUrl, { timeout: 5000 });
+      console.log('Google token data received:', data ? 'YES' : 'NO');
+      
+      // Log comparison data
+      console.log('Audience comparison:');
+      console.log('  Token audience (data.aud):', data?.aud);
+      console.log('  Expected client ID (GOOGLE_CLIENT_ID):', GOOGLE_CLIENT_ID);
+      console.log('  Match:', data?.aud === GOOGLE_CLIENT_ID);
 
-    // Expect audience to match our client id
-    if (!data || data.aud !== GOOGLE_CLIENT_ID) {
-      return res.status(401).json({ success: false, message: 'Invalid Google token (aud mismatch)' });
+      // Expect audience to match our client id
+      if (!data || data.aud !== GOOGLE_CLIENT_ID) {
+        return res.status(401).json({ success: false, message: 'Invalid Google token (aud mismatch)' });
+      }
+      
+      // Continue with the rest of the OAuth flow...
+      const googleId = data.sub;
+      const email = (data.email || '').toLowerCase();
+      const displayName = data.name || (email ? email.split('@')[0] : undefined);
+
+      if (!googleId) {
+        return res.status(400).json({ success: false, message: 'Invalid Google token payload' });
+      }
+
+      // Upsert user
+      let user = await User.findOne({ googleId });
+      if (!user && email) {
+        user = await User.findOne({ email });
+      }
+
+      if (!user) {
+        const username = await createUniqueUsername(displayName || `google_${googleId.slice(-6)}`);
+        user = new User({
+          username,
+          displayName: displayName || username,
+          email: email || `${username}@users.noreply.talkcart.local`,
+          password: Math.random().toString(36).slice(2), // will be hashed, not used for social
+          isVerified: true,
+          googleId,
+        });
+        await user.save();
+      } else if (!user.googleId) {
+        user.googleId = googleId;
+        if (email && !user.email) user.email = email;
+        await user.save();
+      }
+
+      const accessToken = generateAccessToken(user._id);
+      const refreshToken = generateRefreshToken(user._id);
+      const { password: _pw, ...userWithoutPassword } = user.toObject();
+
+      return res.json({ success: true, accessToken, refreshToken, user: userWithoutPassword });
+    } catch (verificationError) {
+      console.error('Google OAuth verification error:', verificationError?.response?.data || verificationError.message || verificationError);
+      
+      // Handle specific error cases
+      if (verificationError?.response?.status === 400) {
+        return res.status(400).json({ success: false, message: 'Invalid Google token' });
+      }
+      
+      if (verificationError?.code === 'ECONNABORTED' || verificationError?.message?.includes('timeout')) {
+        return res.status(504).json({ success: false, message: 'Google verification service timeout. Please try again.' });
+      }
+      
+      return res.status(502).json({ success: false, message: 'Failed to verify Google token. Please try again.' });
     }
 
-    const googleId = data.sub;
-    const email = (data.email || '').toLowerCase();
-    const displayName = data.name || (email ? email.split('@')[0] : undefined);
 
-    if (!googleId) {
-      return res.status(400).json({ success: false, message: 'Invalid Google token payload' });
-    }
-
-    // Upsert user
-    let user = await User.findOne({ googleId });
-    if (!user && email) {
-      user = await User.findOne({ email });
-    }
-
-    if (!user) {
-      const username = await createUniqueUsername(displayName || `google_${googleId.slice(-6)}`);
-      user = new User({
-        username,
-        displayName: displayName || username,
-        email: email || `${username}@users.noreply.talkcart.local`,
-        password: Math.random().toString(36).slice(2), // will be hashed, not used for social
-        isVerified: true,
-        googleId,
-      });
-      await user.save();
-    } else if (!user.googleId) {
-      user.googleId = googleId;
-      if (email && !user.email) user.email = email;
-      await user.save();
-    }
-
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
-    const { password: _pw, ...userWithoutPassword } = user.toObject();
-
-    return res.json({ success: true, accessToken, refreshToken, user: userWithoutPassword });
   } catch (error) {
     console.error('Google OAuth error:', error?.response?.data || error.message || error);
     return res.status(401).json({ success: false, message: 'Google authentication failed' });

@@ -115,6 +115,8 @@ export default function LoginPage() {
 
   // Initialize Google Sign-In button
   useEffect(() => {
+    let isMounted = true;
+    
     const initializeGoogleSignIn = async () => {
       try {
         // Load Google Identity Services
@@ -140,6 +142,9 @@ export default function LoginPage() {
           console.log('Google Identity Services already loaded');
         }
 
+        // Only proceed if component is still mounted
+        if (!isMounted) return;
+
         console.log('Initializing Google OAuth with client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
 
         // Initialize Google Sign-In
@@ -151,6 +156,16 @@ export default function LoginPage() {
               const idToken = response?.credential;
               console.log('ID Token:', idToken ? `${idToken.substring(0, 20)}...` : 'NONE');
               if (!idToken) throw new Error('No id_token');
+              
+              // Prevent multiple rapid clicks
+              const now = Date.now();
+              const lastClick = (window as any).lastGoogleSignInClick || 0;
+              if (now - lastClick < 1000) {
+                // Ignore clicks within 1 second
+                return;
+              }
+              (window as any).lastGoogleSignInClick = now;
+              
               const res = await api.auth.oauthGoogle(idToken);
               console.log('Backend response:', res);
               if (res?.success) {
@@ -158,7 +173,24 @@ export default function LoginPage() {
                 toast.success('Signed in with Google');
                 router.push('/social');
               } else {
-                throw new Error(res?.message || 'Google sign-in failed');
+                // Handle specific error cases
+                let errorMessage = res?.message || 'Google sign-in failed';
+                
+                if (res?.status === 400) {
+                  errorMessage = res?.message || 'Invalid Google token. Please try again.';
+                } else if (res?.status === 401) {
+                  errorMessage = res?.message || 'Authentication failed. Please try again.';
+                } else if (res?.status === 504) {
+                  errorMessage = 'Google verification service timeout. Please check your connection and try again.';
+                } else if (res?.status >= 500) {
+                  errorMessage = 'Server error during Google authentication. Please try again later.';
+                } else if (res?.error === 'NETWORK_ERROR') {
+                  errorMessage = 'Network error. Please check your connection and try again.';
+                } else if (res?.error === 'TIMEOUT') {
+                  errorMessage = 'Request timeout. Please check your connection and try again.';
+                }
+                
+                throw new Error(errorMessage);
               }
             } catch (err: any) {
               console.error('Google OAuth error:', err);
@@ -168,8 +200,10 @@ export default function LoginPage() {
         });
 
         // Render the Google Sign-In button
-        // Wait a bit for the DOM to be ready
-        setTimeout(() => {
+        // Use requestAnimationFrame to defer rendering and reduce INP
+        requestAnimationFrame(() => {
+          if (!isMounted) return;
+          
           const googleButtonContainer = document.getElementById('google-signin-button');
           if (googleButtonContainer) {
             (window as any).google.accounts.id.renderButton(
@@ -187,7 +221,7 @@ export default function LoginPage() {
           } else {
             console.warn('Google Sign-In button container not found');
           }
-        }, 100);
+        });
       } catch (err: any) {
         console.error('Google sign-in initialization error:', err);
         toast.error(err.message || 'Failed to initialize Google Sign-In');
@@ -196,7 +230,17 @@ export default function LoginPage() {
 
     // Initialize Google Sign-In when component mounts
     if (typeof window !== 'undefined') {
-      initializeGoogleSignIn();
+      // Add a small delay to reduce INP impact
+      const timer = setTimeout(() => {
+        if (isMounted) {
+          initializeGoogleSignIn();
+        }
+      }, 50);
+      
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+      };
     }
   }, [router, setAuthTokens]);
 
