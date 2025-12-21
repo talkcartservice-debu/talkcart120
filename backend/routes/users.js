@@ -345,19 +345,23 @@ router.post('/:id/follow', authenticateTokenStrict, async (req, res) => {
       console.error('Error creating follow notification:', notificationError);
     }
 
+    // Get updated counts
+    const updatedTargetUser = await User.findById(targetUserId);
+    const updatedCurrentUser = await User.findById(currentUserId);
+    
     // Emit real-time update via Socket.IO
     const io = req.app.get('io');
     if (io) {
       // Update follower count for the followed user
       io.to(`user_${targetUserId}`).emit('user:followers-update', {
         userId: targetUserId,
-        followerCount: (await User.findById(targetUserId)).followerCount
+        followerCount: updatedTargetUser.followerCount
       });
 
       // Update following count for the follower
       io.to(`user_${currentUserId}`).emit('user:following-update', {
         userId: currentUserId,
-        followingCount: (await User.findById(currentUserId)).followingCount
+        followingCount: updatedCurrentUser.followingCount
       });
     }
 
@@ -365,7 +369,11 @@ router.post('/:id/follow', authenticateTokenStrict, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'User followed successfully'
+      message: 'User followed successfully',
+      data: {
+        followerCount: updatedTargetUser.followerCount,
+        followingCount: updatedCurrentUser.followingCount
+      }
     });
   } catch (error) {
     console.error('Follow user error:', error);
@@ -422,19 +430,23 @@ router.delete('/:id/follow', authenticateTokenStrict, async (req, res) => {
     await User.findByIdAndUpdate(targetUserId, { $inc: { followerCount: -1 } });
     await User.findByIdAndUpdate(currentUserId, { $inc: { followingCount: -1 } });
 
+    // Get updated counts
+    const updatedTargetUser = await User.findById(targetUserId);
+    const updatedCurrentUser = await User.findById(currentUserId);
+    
     // Emit real-time update via Socket.IO
     const io = req.app.get('io');
     if (io) {
       // Update follower count for the unfollowed user
       io.to(`user_${targetUserId}`).emit('user:followers-update', {
         userId: targetUserId,
-        followerCount: (await User.findById(targetUserId)).followerCount
+        followerCount: updatedTargetUser.followerCount
       });
 
       // Update following count for the unfollower
       io.to(`user_${currentUserId}`).emit('user:following-update', {
         userId: currentUserId,
-        followingCount: (await User.findById(currentUserId)).followingCount
+        followingCount: updatedCurrentUser.followingCount
       });
     }
 
@@ -442,7 +454,11 @@ router.delete('/:id/follow', authenticateTokenStrict, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'User unfollowed successfully'
+      message: 'User unfollowed successfully',
+      data: {
+        followerCount: updatedTargetUser.followerCount,
+        followingCount: updatedCurrentUser.followingCount
+      }
     });
   } catch (error) {
     console.error('Unfollow user error:', error);

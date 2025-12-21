@@ -37,28 +37,42 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       // cancel any outgoing refetches
       await queryClient.cancelQueries();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success(`Following ${user.displayName}`);
       
       // Dispatch events to update follower/following counts across the platform
       window.dispatchEvent(new CustomEvent('user:followers-update', {
-        detail: { userId: user.id }
+        detail: { userId: user.id, followerCount: data?.data?.followerCount }
       }));
       
       window.dispatchEvent(new CustomEvent('user:following-update', {
-        detail: { userId: user.id }
+        detail: { userId: user.id, followingCount: data?.data?.followingCount }
       }));
       
       // Dispatch event for current user's following count update
       window.dispatchEvent(new CustomEvent('user:following-count-update', {
-        detail: { delta: 1 }
+        detail: { delta: 1, followingCount: data?.data?.followingCount }
       }));
+      
+      // Also emit socket event for real-time updates
+      const socket = (window as any).socket;
+      if (socket) {
+        socket.emit('user:followers-update', {
+          userId: user.id,
+          followerCount: data?.data?.followerCount
+        });
+        
+        socket.emit('user:following-update', {
+          userId: user.id,
+          followingCount: data?.data?.followingCount
+        });
+      }
     },
-    onError: () => {
+    onError: (error) => {
       // rollback
       setIsFollowing(false);
       onFollowChange?.(false);
-      toast.error('Failed to follow user');
+      toast.error(error.message || 'Failed to follow user');
     },
     onSettled: () => {
       // invalidate possibly affected queries
@@ -74,27 +88,41 @@ const FollowButton: React.FC<FollowButtonProps> = ({
       onFollowChange?.(false);
       await queryClient.cancelQueries();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success(`Unfollowed ${user.displayName}`);
       
       // Dispatch events to update follower/following counts across the platform
       window.dispatchEvent(new CustomEvent('user:followers-update', {
-        detail: { userId: user.id }
+        detail: { userId: user.id, followerCount: data?.data?.followerCount }
       }));
       
       window.dispatchEvent(new CustomEvent('user:following-update', {
-        detail: { userId: user.id }
+        detail: { userId: user.id, followingCount: data?.data?.followingCount }
       }));
       
       // Dispatch event for current user's following count update
       window.dispatchEvent(new CustomEvent('user:following-count-update', {
-        detail: { delta: -1 }
+        detail: { delta: -1, followingCount: data?.data?.followingCount }
       }));
+      
+      // Also emit socket event for real-time updates
+      const socket = (window as any).socket;
+      if (socket) {
+        socket.emit('user:followers-update', {
+          userId: user.id,
+          followerCount: data?.data?.followerCount
+        });
+        
+        socket.emit('user:following-update', {
+          userId: user.id,
+          followingCount: data?.data?.followingCount
+        });
+      }
     },
-    onError: () => {
+    onError: (error) => {
       setIsFollowing(true);
       onFollowChange?.(true);
-      toast.error('Failed to unfollow user');
+      toast.error(error.message || 'Failed to unfollow user');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['user', user.id] });

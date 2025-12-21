@@ -106,9 +106,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
 
     // Listen for real-time follow updates
     useEffect(() => {
-        if (!socket || !isConnected || isOwnProfile || !user) return;
+        if (isOwnProfile || !user) return;
 
-        const handleFollowersUpdate = (data: any) => {
+        const handleFollowersUpdate = (event: CustomEvent) => {
+            const data = event.detail;
             // Update follower count when someone follows/unfollows this user
             if (data.userId === user._id) {
                 setUser(prev => prev ? {
@@ -118,9 +119,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
             }
         };
 
-        const handleFollowingUpdate = (data: any) => {
+        const handleFollowingUpdate = (event: CustomEvent) => {
+            const data = event.detail;
             // Update following status when current user follows/unfollows someone
-            if (data.userId === currentUser?.id) {
+            if (data.userId === user._id) {
                 // Refresh user data to get updated following status
                 api.users.getByUsername(username).then((response: any) => {
                     if (response && response.success && response.user) {
@@ -133,12 +135,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
             }
         };
 
-        socket.on('user:followers-update', handleFollowersUpdate);
-        socket.on('user:following-update', handleFollowingUpdate);
+        // Listen for custom events
+        window.addEventListener('user:followers-update', handleFollowersUpdate as EventListener);
+        window.addEventListener('user:following-update', handleFollowingUpdate as EventListener);
+
+        // Also listen for socket events if socket is available
+        if (socket && isConnected) {
+            socket.on('user:followers-update', handleFollowersUpdate);
+            socket.on('user:following-update', handleFollowingUpdate);
+        }
 
         return () => {
-            socket.off('user:followers-update', handleFollowersUpdate);
-            socket.off('user:following-update', handleFollowingUpdate);
+            window.removeEventListener('user:followers-update', handleFollowersUpdate as EventListener);
+            window.removeEventListener('user:following-update', handleFollowingUpdate as EventListener);
+            
+            if (socket) {
+                socket.off('user:followers-update', handleFollowersUpdate);
+                socket.off('user:following-update', handleFollowingUpdate);
+            }
         };
     }, [socket, isConnected, user, currentUser, isOwnProfile, username]);
 
@@ -171,15 +185,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
 
             if (response && response.success) {
                 setIsFollowing(true);
+                const newFollowerCount = response.data?.followerCount || (user.followerCount || 0) + 1;
                 setUser(prev => prev ? {
                     ...prev,
-                    followerCount: (prev.followerCount || 0) + 1
+                    followerCount: newFollowerCount
                 } : null);
                 
                 // Dispatch event to update current user's following count
                 window.dispatchEvent(new CustomEvent('user:following-count-update', {
-                    detail: { delta: 1 }
+                    detail: { delta: 1, followingCount: response.data?.followingCount }
                 }));
+                
+                // Dispatch events to update follower/following counts across the platform
+                window.dispatchEvent(new CustomEvent('user:followers-update', {
+                    detail: { userId: user._id, followerCount: newFollowerCount }
+                }));
+                
+                window.dispatchEvent(new CustomEvent('user:following-update', {
+                    detail: { userId: user._id, followingCount: response.data?.followingCount }
+                }));
+                
                 toast.success(`You are now following ${user.displayName || user.username}`);
             }
         } catch (err: any) {
@@ -199,15 +224,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
 
             if (response && response.success) {
                 setIsFollowing(false);
+                const newFollowerCount = response.data?.followerCount || Math.max((user.followerCount || 0) - 1, 0);
                 setUser(prev => prev ? {
                     ...prev,
-                    followerCount: Math.max((prev.followerCount || 0) - 1, 0)
+                    followerCount: newFollowerCount
                 } : null);
                 
                 // Dispatch event to update current user's following count
                 window.dispatchEvent(new CustomEvent('user:following-count-update', {
-                    detail: { delta: -1 }
+                    detail: { delta: -1, followingCount: response.data?.followingCount }
                 }));
+                
+                // Dispatch events to update follower/following counts across the platform
+                window.dispatchEvent(new CustomEvent('user:followers-update', {
+                    detail: { userId: user._id, followerCount: newFollowerCount }
+                }));
+                
+                window.dispatchEvent(new CustomEvent('user:following-update', {
+                    detail: { userId: user._id, followingCount: response.data?.followingCount }
+                }));
+                
                 toast.success(`You unfollowed ${user.displayName || user.username}`);
             }
         } catch (err: any) {
