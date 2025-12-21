@@ -371,7 +371,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
             <UserAvatar
               src={message.sender.avatar || undefined}
               alt={message.sender.displayName}
-              size={{ xs: 28, sm: 32 }}
+              size={32}
             />
           )}
           {!showAvatar && !message.isOwn && (
@@ -655,7 +655,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                     <UserAvatar
                         src={message.sender.avatar || undefined}
                         alt={message.sender.displayName}
-                        size={{ xs: 28, sm: 32 }}
+                        size={32}
                     />
                 )}
                 {!showAvatar && !message.isOwn && (
