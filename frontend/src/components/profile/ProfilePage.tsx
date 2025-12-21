@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import {
     Box,
     Container,
@@ -59,6 +60,7 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, ...other })
 };
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
+    const router = useRouter();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { user: currentUser } = useAuth();
@@ -310,11 +312,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
         }
     };
 
-    // Handle profile update
-    const handleProfileUpdated = (updatedUser: User) => {
-        setUser(updatedUser);
-        toast.success('Profile updated successfully!');
-    };
+
 
     const handleUserUpdate = (updatedFields: Partial<User>) => {
         if (user) {
@@ -328,7 +326,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
 
     const handleSettings = () => {
         // Navigate to settings page
-        window.location.href = '/settings';
+        router.push('/settings');
     };
 
     const handleProfileUpdated = (updatedUser: User) => {
