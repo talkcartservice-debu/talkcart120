@@ -278,7 +278,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
 
         try {
             setFollowersLoading(true);
-            const response: any = await api.users.getFollowers(user._id as string, 50, 0);
+            const response: any = await api.users.getFollowers(user._id as string, 1, 50);
             if (response && response.success && response.data) {
                 setFollowers(response.data.followers || []);
             }
@@ -296,7 +296,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
 
         try {
             setFollowingLoading(true);
-            const response: any = await api.users.getFollowing(user._id as string, 50, 0);
+            const response: any = await api.users.getFollowing(user._id as string, 1, 50);
             if (response && response.success && response.data) {
                 setFollowing(response.data.following || []);
             }
