@@ -30,7 +30,7 @@ import {
     Camera,
     Image as ImageIcon,
 } from '@mui/icons-material';
-import { User } from '@/types/social';
+import { User } from '@/types';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 import ProfilePictureUpload from './ProfilePictureUpload';
