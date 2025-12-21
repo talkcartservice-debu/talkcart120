@@ -30,6 +30,7 @@ import ProfileHeader from './ProfileHeader';
 import PostGrid from '../posts/PostGrid';
 import MediaGrid from '../media/MediaGrid';
 import UserCard from './UserCard';
+import EditProfileDialog from './EditProfileDialog';
 import toast from 'react-hot-toast';
 
 interface ProfilePageProps {
@@ -73,6 +74,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
     const [following, setFollowing] = useState<any[]>([]);
     const [followersLoading, setFollowersLoading] = useState(false);
     const [followingLoading, setFollowingLoading] = useState(false);
+    const [editProfileOpen, setEditProfileOpen] = useState(false);
 
     const isOwnProfile = currentUser?.username === username;
 
@@ -320,6 +322,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
         }
     };
 
+    const handleEditProfile = () => {
+        setEditProfileOpen(true);
+    };
+
+    const handleSettings = () => {
+        // Navigate to settings page
+        window.location.href = '/settings';
+    };
+
+    const handleProfileUpdated = (updatedUser: User) => {
+        setUser(updatedUser);
+        setEditProfileOpen(false);
+        toast.success('Profile updated successfully!');
+        // Dispatch event to update profile across the app
+        window.dispatchEvent(new CustomEvent('user-profile-updated', { 
+            detail: { user: updatedUser } 
+        }));
+    };
+
     if (loading) {
         return (
             <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -363,11 +384,23 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ username, initialUser }) => {
                 isFollowing={isFollowing}
                 onFollow={handleFollow}
                 onUnfollow={handleUnfollow}
+                onEditProfile={handleEditProfile}
+                onSettings={handleSettings}
                 onUserUpdate={handleUserUpdate}
                 followersCount={user.followerCount}
                 followingCount={user.followingCount}
                 postsCount={user.postCount}
             />
+
+            {/* Edit Profile Dialog */}
+            {isOwnProfile && (
+                <EditProfileDialog
+                    open={editProfileOpen}
+                    onClose={() => setEditProfileOpen(false)}
+                    user={user}
+                    onProfileUpdated={handleProfileUpdated}
+                />
+            )}
 
             {/* Content Tabs */}
             <Paper elevation={0} sx={{ borderRadius: 3 }}>
