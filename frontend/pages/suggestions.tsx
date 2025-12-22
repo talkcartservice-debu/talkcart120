@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Container,
@@ -22,82 +22,11 @@ import {
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import UserAvatar from '@/components/common/UserAvatar';
+import { useUserSuggestions } from '@/hooks/useUserSuggestions';
 
 const SuggestionsPage: React.FC = () => {
   const theme = useTheme();
-  const [loading, setLoading] = useState(false);
-
-  // Mock suggested users
-  const suggestedUsers = [
-    {
-      id: '1',
-      username: 'digital_creator',
-      displayName: 'Digital Creator',
-      avatar: '',
-      isVerified: true,
-      bio: 'Creating amazing NFT art on the blockchain',
-      followerCount: 12500,
-      mutualFriends: 24,
-    },
-    {
-      id: '2',
-      username: 'web3_enthusiast',
-      displayName: 'Web3 Enthusiast',
-      avatar: '',
-      isVerified: false,
-      bio: 'Exploring the future of decentralized technology',
-      followerCount: 8900,
-      mutualFriends: 12,
-    },
-    {
-      id: '3',
-      username: 'nft_collector',
-      displayName: 'NFT Collector',
-      avatar: '',
-      isVerified: true,
-      bio: 'Collecting rare and valuable digital assets',
-      followerCount: 15600,
-      mutualFriends: 18,
-    },
-    {
-      id: '4',
-      username: 'blockchain_dev',
-      displayName: 'Blockchain Developer',
-      avatar: '',
-      isVerified: true,
-      bio: 'Building the future of decentralized applications',
-      followerCount: 9800,
-      mutualFriends: 7,
-    },
-    {
-      id: '5',
-      username: 'metaverse_explorer',
-      displayName: 'Metaverse Explorer',
-      avatar: '',
-      isVerified: false,
-      bio: 'Exploring virtual worlds and digital experiences',
-      followerCount: 6700,
-      mutualFriends: 15,
-    },
-    {
-      id: '6',
-      username: 'crypto_investor',
-      displayName: 'Crypto Investor',
-      avatar: '',
-      isVerified: true,
-      bio: 'Analyzing and investing in promising crypto projects',
-      followerCount: 22400,
-      mutualFriends: 32,
-    },
-  ];
-
-  const handleRefresh = () => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  };
+  const { suggestions, loading, refreshSuggestions: handleRefresh } = useUserSuggestions({ limit: 12 });
 
   // Format large numbers (e.g., 1.2K, 3.4M)
   const formatNumber = (num: number): string => {
@@ -186,7 +115,7 @@ const SuggestionsPage: React.FC = () => {
         
         {/* Suggested Users */}
         <Grid container spacing={3}>
-          {suggestedUsers.map((user) => (
+          {suggestions.map((user) => (
             <Grid item xs={12} sm={6} key={user.id}>
               <Card 
                 sx={{ 
@@ -234,16 +163,18 @@ const SuggestionsPage: React.FC = () => {
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                         @{user.username}
                       </Typography>
-                      <Chip 
-                        label={`${user.mutualFriends} mutual friends`} 
-                        size="small" 
-                        variant="outlined" 
-                        sx={{ 
-                          borderColor: alpha(theme.palette.primary.main, 0.3),
-                          color: 'primary.main',
-                          fontWeight: 500
-                        }} 
-                      />
+                      {user.mutualFollowers > 0 && (
+                        <Chip 
+                          label={`${user.mutualFollowers} mutual friends`} 
+                          size="small" 
+                          variant="outlined" 
+                          sx={{ 
+                            borderColor: alpha(theme.palette.primary.main, 0.3),
+                            color: 'primary.main',
+                            fontWeight: 500
+                          }} 
+                        />
+                      )}
                     </Box>
                   </Box>
                   
