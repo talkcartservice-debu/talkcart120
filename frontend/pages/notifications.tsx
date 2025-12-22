@@ -40,6 +40,7 @@ import {
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -90,6 +91,35 @@ const NotificationsPage: React.FC = () => {
   
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  
+  // Get WebSocket context for real-time notifications
+  const { onNewNotification, onUnreadCountUpdate } = useWebSocket();
+  
+  // Effect to handle real-time notification updates
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    // Listen for new notifications
+    const unsubscribeNewNotification = onNewNotification((newNotification) => {
+      console.log('Received new notification via socket:', newNotification);
+      
+      // Refresh notifications to get the new one
+      fetchNotifications();
+    });
+    
+    // Listen for unread count updates
+    const unsubscribeUnreadCount = onUnreadCountUpdate((data) => {
+      console.log('Received unread count update via socket:', data);
+      // The useNotifications hook should handle this automatically
+      fetchUnreadCount();
+    });
+    
+    // Cleanup listeners
+    return () => {
+      unsubscribeNewNotification();
+      unsubscribeUnreadCount();
+    };
+  }, [isAuthenticated, onNewNotification, onUnreadCountUpdate, fetchNotifications, fetchUnreadCount]);
 
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {

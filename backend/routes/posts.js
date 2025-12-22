@@ -1571,7 +1571,7 @@ router.post('/', authenticateToken, async (req, res) => {
               actionUrl: `/post/${newPost._id}`
             };
             
-            return Notification.createNotification(notificationData)
+            return NotificationService.createNotification(notificationData)
               .then(notification => {
                 // Send real-time notification
                 // Instead of using getIo(req), let's try to access io directly
@@ -1925,6 +1925,28 @@ router.post('/:postId/like', authenticateToken, async (req, res) => {
 
     // Save updated post
     await post.save();
+
+    // Send notification if this is a like action (not unlike)
+    if (action === 'like') {
+      setImmediate(async () => {
+        try {
+          const liker = await User.findById(userId).select('username displayName avatar').lean();
+          const postOwner = await User.findById(post.author).select('username displayName avatar').lean();
+          
+          // Don't send notification to self
+          if (post.author.toString() !== userId.toString()) {
+            await NotificationService.createLikeNotification(
+              userId,
+              post.author.toString(),
+              postId,
+              post.content
+            );
+          }
+        } catch (notificationError) {
+          console.error('Error creating like notification:', notificationError);
+        }
+      });
+    }
 
     res.json({
       success: true,
@@ -2474,6 +2496,28 @@ router.post('/:postId/comments', authenticateToken, async (req, res) => {
 
     // Populate author data
     await newComment.populate('author', 'username displayName avatar isVerified');
+
+    // Send notification if this is not a reply to another comment (top-level comment)
+    if (!parentId) {
+      setImmediate(async () => {
+        try {
+          const commentAuthor = await User.findById(userId).select('username displayName avatar').lean();
+          const post = await Post.findById(postId).select('author').lean();
+          
+          // Don't send notification to self
+          if (post && post.author.toString() !== userId.toString()) {
+            await NotificationService.createCommentNotification(
+              userId,
+              post.author.toString(),
+              postId,
+              content
+            );
+          }
+        } catch (notificationError) {
+          console.error('Error creating comment notification:', notificationError);
+        }
+      });
+    }
 
     res.status(201).json({
       success: true,
