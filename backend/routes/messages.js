@@ -617,6 +617,101 @@ router.post('/conversations/:id/messages', authenticateTokenStrict, async (req, 
   }
 });
 
+// @route   PUT /api/messages/conversations/:id/read
+// @desc    Mark all messages in conversation as read
+// @access  Private
+router.put('/conversations/:id/read', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Validate conversation ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid conversation ID'
+      });
+    }
+
+    // Find conversation and ensure user is participant
+    const conversation = await Conversation.findOne({
+      _id: id,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Update all messages in conversation that belong to other participants as read
+    // by adding the current user to the readBy array for messages not already read by this user
+    await Message.updateMany(
+      {
+        conversationId: id,
+        senderId: { $ne: userId }, // Only update messages from other users
+        'readBy.userId': { $ne: userId } // Only update messages not already read by this user
+      },
+      {
+        $push: {
+          readBy: {
+            userId: userId,
+            readAt: new Date()
+          }
+        }
+      }
+    );
+
+    // Reset unread count for this conversation
+    // Count unread messages for this user (messages from other participants that haven't been read)
+    const unreadCount = await Message.countDocuments({
+      conversationId: id,
+      senderId: { $ne: userId }, // Messages from other users
+      'readBy.userId': { $ne: userId } // Not read by current user
+    });
+    
+    conversation.unreadCount = unreadCount;
+    conversation.updatedAt = new Date();
+    await conversation.save();
+
+    // Get the updated global unread count for all conversations
+    const totalUnread = await Conversation.aggregate([
+      {
+        $match: {
+          participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+          isActive: true
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalUnread: { $sum: "$unreadCount" }
+        }
+      }
+    ]);
+
+    const globalUnreadCount = totalUnread.length > 0 ? totalUnread[0].totalUnread : 0;
+
+    res.json({
+      success: true,
+      data: {
+        conversationId: id,
+        globalUnreadCount
+      },
+      message: 'All messages marked as read successfully'
+    });
+  } catch (error) {
+    console.error('Mark messages as read error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark messages as read'
+    });
+  }
+});
+
 // @route   DELETE /api/messages/messages/:id
 // @desc    Delete message
 // @access  Private

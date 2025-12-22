@@ -36,6 +36,10 @@ const conversationSchema = new mongoose.Schema({
   isEncrypted: {
     type: Boolean,
     default: false
+  },
+  unreadCount: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
