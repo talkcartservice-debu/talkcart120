@@ -26,7 +26,7 @@ import { useUserSuggestions } from '@/hooks/useUserSuggestions';
 
 const SuggestionsPage: React.FC = () => {
   const theme = useTheme();
-  const { suggestions, loading, refreshSuggestions: handleRefresh } = useUserSuggestions({ limit: 12 });
+  const { suggestions, loading, refreshSuggestions: handleRefresh, followUser } = useUserSuggestions({ limit: 12 });
 
   // Format large numbers (e.g., 1.2K, 3.4M)
   const formatNumber = (num: number): string => {
@@ -163,7 +163,7 @@ const SuggestionsPage: React.FC = () => {
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                         @{user.username}
                       </Typography>
-                      {user.mutualFollowers > 0 && (
+                      {user.mutualFollowers && user.mutualFollowers > 0 && (
                         <Chip 
                           label={`${user.mutualFollowers} mutual friends`} 
                           size="small" 
@@ -192,6 +192,7 @@ const SuggestionsPage: React.FC = () => {
                     variant="contained" 
                     fullWidth
                     startIcon={<UserPlus size={18} />}
+                    onClick={() => followUser(user.id)}
                     sx={{ 
                       borderRadius: 2, 
                       py: 1.5,
