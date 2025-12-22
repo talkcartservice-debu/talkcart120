@@ -151,11 +151,11 @@ class ApiService {
     } catch (error) {
       clearTimeout(timeoutId);
       if ((error as any)?.name === 'AbortError') {
-        throw new Error(`Request timeout after ${timeout}ms`);
+        throw new HttpError(408, `Request timeout after ${timeout}ms`);
       }
       // Provide more context about the error
       if ((error as any)?.message?.includes('fetch')) {
-        throw new Error('Network error - please check your internet connection');
+        throw new HttpError(0, 'Network error - please check your internet connection');
       }
       throw error;
     }
@@ -1184,7 +1184,7 @@ class ApiService {
         };
 
         xhr.onerror = () => reject(new Error('Network error during upload'));
-        xhr.ontimeout = () => reject(new Error('Upload timed out'));
+        xhr.ontimeout = () => reject(new HttpError(408, 'Upload timed out'));
 
         xhr.onload = () => {
           const status = xhr.status;

@@ -81,7 +81,7 @@ class ApiService {
     } catch (error) {
       clearTimeout(timeoutId);
       if ((error as any)?.name === 'AbortError') {
-        throw new Error('Request timeout');
+        throw new HttpError(408, 'Request timeout');
       }
       throw error;
     }
@@ -1305,7 +1305,7 @@ class ApiService {
         };
 
         xhr.onerror = () => reject(new Error('Network error during upload'));
-        xhr.ontimeout = () => reject(new Error('Upload timed out'));
+        xhr.ontimeout = () => reject(new HttpError(408, 'Upload timed out'));
 
         xhr.onload = () => {
           const status = xhr.status;
@@ -1403,7 +1403,7 @@ class ApiService {
         };
         
         xhr.onerror = () => reject(new Error('Network error during upload'));
-        xhr.ontimeout = () => reject(new Error('Upload timed out'));
+        xhr.ontimeout = () => reject(new HttpError(408, 'Upload timed out'));
         
         xhr.onload = () => {
           const status = xhr.status;

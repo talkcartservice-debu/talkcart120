@@ -2,6 +2,7 @@ import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 import type { PublicKeyCredentialRequestOptionsJSON, PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/browser';
 import { getAuthHeaders } from './auth';
 import { biometricPlatformService, getPlatformErrorMessage } from './biometric-platform';
+import { HttpError } from './api';
 
 export interface BiometricRegistrationResult {
   success: boolean;
@@ -161,7 +162,7 @@ export const registerBiometric = async (): Promise<BiometricRegistrationResult> 
       const registrationResponse = await Promise.race([
         startRegistration(optimizedOptions),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Registration timed out')), optimizedOptions.timeout || 300000)
+          setTimeout(() => reject(new HttpError(408, 'Registration timed out')), optimizedOptions.timeout || 300000)
         )
       ]) as any;
 
@@ -319,7 +320,7 @@ export const authenticateBiometric = async (userEmail?: string): Promise<Biometr
       const authenticationResponse = await Promise.race([
         startAuthentication(optimizedOptions),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Authentication timed out')), optimizedOptions.timeout || 300000)
+          setTimeout(() => reject(new HttpError(408, 'Authentication timed out')), optimizedOptions.timeout || 300000)
         )
       ]) as any;
 
