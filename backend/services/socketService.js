@@ -894,6 +894,16 @@ class SocketService {
       return;
     }
     try {
+      // Get user to check privacy settings
+      const user = await User.findById(userId).select('settings').lean();
+      const showOnlineStatus = user?.settings?.privacy?.showOnlineStatus ?? true; // Default to true if not set
+      
+      // If user doesn't want to show online status, don't broadcast
+      if (!showOnlineStatus) {
+        console.log(`User ${userId} has disabled online status visibility, skipping broadcast`);
+        return;
+      }
+      
       // Find all conversations where user is a participant
       const conversations = await Conversation.find({
         participants: userId,

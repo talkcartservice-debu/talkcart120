@@ -63,6 +63,7 @@ const TypedPicker = Picker as React.ComponentType<PickerProps>;
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import useMessages from '@/hooks/useMessages';
+import { usePresence } from '@/contexts/PresenceContext';
 import useCall from '@/hooks/useCall';
 import IncomingCallModal from '@/components/calls/IncomingCallModal';
 import CallInterface from '@/components/calls/CallInterface';
@@ -99,6 +100,8 @@ const MessagesPage: React.FC = () => {
     soundVolume,
     setSoundVolume
   } = useMessages();
+  
+  const { isUserOnline: isUserOnlineFromContext } = usePresence();
 
   const {
     currentCall,
@@ -205,7 +208,10 @@ const MessagesPage: React.FC = () => {
     if (!conversation || conversation.isGroup) return false;
 
     const otherParticipant = conversation.participants?.find((p: any) => p.id !== user?.id);
-    return otherParticipant?.isOnline || false;
+    if (!otherParticipant) return false;
+    
+    // Use presence context to check online status
+    return isUserOnlineFromContext(otherParticipant.id);
   };
 
   // Call handlers

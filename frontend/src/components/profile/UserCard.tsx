@@ -18,6 +18,7 @@ import LastSeenDisplay from '@/components/common/LastSeenDisplay';
 import DirectMessageButton from '@/components/common/DirectMessageButton';
 import GroupInviteButton from '@/components/common/GroupInviteButton';
 import FollowButton from '@/components/common/FollowButton';
+import { usePresence } from '@/contexts/PresenceContext';
 
 interface UserCardProps {
   user: ProfileUser;
@@ -37,6 +38,7 @@ const UserCard: React.FC<UserCardProps> = ({
   const router = useRouter();
   const { user: currentUser } = useAuth();
   const { privacySettings } = usePrivacy();
+  const { isUserOnline } = usePresence();
 
   const handleViewProfile = () => {
     router.push(`/profile/${user.username}`);
@@ -57,7 +59,7 @@ const UserCard: React.FC<UserCardProps> = ({
             alt={user.displayName || user.username}
             size={avatarSize}
             isVerified={!!user.isVerified}
-            isOnline={!!(user as any).isOnline}
+            isOnline={isUserOnline(user.id)}
           />
           <Box>
             <Box display="flex" alignItems="center" gap={1}>

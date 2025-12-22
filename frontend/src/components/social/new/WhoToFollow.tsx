@@ -26,6 +26,7 @@ import { useUserSuggestions, UserSuggestion } from '@/hooks/useUserSuggestions';
 import { useRouter } from 'next/router';
 import UserAvatar from '@/components/common/UserAvatar';
 import { useWebSocket } from '@/contexts/WebSocketContext';
+import { usePresence } from '@/contexts/PresenceContext';
 
 interface WhoToFollowProps {
   limit?: number;
@@ -44,6 +45,7 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({
   const router = useRouter();
   const { suggestions, loading, error, followUser, refreshSuggestions } = useUserSuggestions({ limit, search: query });
   const { socket, isConnected } = useWebSocket();
+  const { isUserOnline } = usePresence();
 
   // Apply simple client-side filtering by displayName/username when query provided
   const normalizedQuery = (query || '').trim().toLowerCase();
@@ -173,6 +175,7 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({
                     alt={user.displayName}
                     size={36} // Reduced avatar size
                     isVerified={user.isVerified}
+                    isOnline={isUserOnline(user.id)}
                     onClick={() => handleViewProfile(user.username)}
                   />
 
@@ -210,7 +213,7 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({
                           </Box>
                         </Tooltip>
                       )}
-                      {user.isOnline && (
+                      {isUserOnline(user.id) && (
                         <Tooltip title="Online">
                           <Box
                             sx={{

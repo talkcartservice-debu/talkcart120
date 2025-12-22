@@ -116,14 +116,14 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        return cache.addAll([
-          '/',
-          '/styles/main.css',
-          '/scripts/main.js',
-          OFFLINE_URL
-        ]);
+        // Cache only the offline page to avoid issues with other resources
+        return cache.add(OFFLINE_URL);
       })
       .then(() => self.skipWaiting())
+      .catch((error) => {
+        console.error('Error during installation:', error);
+        self.skipWaiting();
+      })
   );
 });
 
@@ -163,10 +163,16 @@ self.addEventListener('fetch', (event) => {
               // Cache successful responses
               if (response.status === 200) {
                 const responseToCache = response.clone();
-                caches.open(CACHE_NAME)
-                  .then((cache) => {
-                    cache.put(event.request, responseToCache);
-                  });
+                // Only cache responses that can be consumed
+                if (responseToCache.ok && responseToCache.status === 200) {
+                  caches.open(CACHE_NAME)
+                    .then((cache) => {
+                      cache.put(event.request, responseToCache);
+                    })
+                    .catch((error) => {
+                      console.error('Failed to cache response:', error);
+                    });
+                }
               }
               return response;
             })

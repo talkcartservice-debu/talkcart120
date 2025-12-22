@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import socketService from '../services/socketService';
 
 interface PresenceData {
   userId: string;
@@ -41,39 +42,26 @@ export const PresenceProvider: React.FC<PresenceProviderProps> = ({ children }) 
   const [userPresence, setUserPresence] = useState<Map<string, PresenceData>>(new Map());
   const { user, isAuthenticated } = useAuth();
 
-  // Mock presence data for demo
+  // Initialize socket event listeners for user status updates
   useEffect(() => {
-    if (isAuthenticated && user) {
-      // Initialize with some mock presence data
-      const mockPresence = new Map<string, PresenceData>();
-      
-      // Add current user
-      mockPresence.set(user.id, {
-        userId: user.id,
-        isOnline: true,
-        lastSeen: new Date(),
-        status: 'online'
-      });
-
-      // Add some mock users
-      const mockUsers = [
-        { id: 'user1', isOnline: true, lastSeen: new Date() },
-        { id: 'user2', isOnline: false, lastSeen: new Date(Date.now() - 300000) }, // 5 min ago
-        { id: 'user3', isOnline: false, lastSeen: new Date(Date.now() - 3600000) }, // 1 hour ago
-      ];
-
-      mockUsers.forEach(mockUser => {
-        mockPresence.set(mockUser.id, {
-          userId: mockUser.id,
-          isOnline: mockUser.isOnline,
-          lastSeen: mockUser.lastSeen,
-          status: mockUser.isOnline ? 'online' : 'offline'
+    const handleUserStatus = (data: any) => {
+      if (data && data.userId) {
+        updateUserPresence(data.userId, {
+          isOnline: data.isOnline,
+          lastSeen: new Date(data.lastSeen || Date.now()),
+          status: data.isOnline ? 'online' : 'offline'
         });
-      });
+      }
+    };
 
-      setUserPresence(mockPresence);
-    }
-  }, [isAuthenticated, user]);
+    // Register socket event listener
+    socketService.on('user:status', handleUserStatus);
+
+    // Cleanup function to remove listener
+    return () => {
+      socketService.off('user:status', handleUserStatus);
+    };
+  }, []);
 
   const isUserOnline = (userId: string): boolean => {
     const presence = userPresence.get(userId);
@@ -96,7 +84,7 @@ export const PresenceProvider: React.FC<PresenceProviderProps> = ({ children }) 
 
   const canShowUserLastSeen = (userId: string): boolean => {
     // In a real app, this would check the user's privacy settings
-    // For demo purposes, always return true
+    // For now, we'll return true as the backend already handles privacy
     return true;
   };
 

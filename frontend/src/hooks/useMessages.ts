@@ -4,6 +4,7 @@ import { useLocalStorage } from './useLocalStorage';
 import * as client from '../services/messagesApi';
 import * as conversationClient from '../services/conversationApi';
 import socketService from '../services/socketService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface UseMessagesOptions {
   conversationId?: string;
@@ -48,6 +49,7 @@ interface UseMessagesReturn {
 
 const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
   const { conversationId } = options || {};
+  const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -554,7 +556,7 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     setSoundVolumeState(v);
   }, [setSoundVolumeState]);
 
-  // Listen for new messages via socket
+  // Listen for new messages and user status updates via socket
   useEffect(() => {
     const handleNewMessage = (data: any) => {
       try {
@@ -621,23 +623,100 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         console.error('Error processing new message from socket:', error);
       }
     };
+    
+    const handleUserStatus = (data: any) => {
+      try {
+        console.log('Received user status update via socket:', data);
+        
+        if (data && data.userId) {
+          // Update conversations to reflect user's online status
+          setConversations(prev => 
+            (prev || []).map(conv => {
+              const hasParticipant = conv.participants?.some((p: any) => p.id === data.userId);
+              if (hasParticipant) {
+                // Update the participant's online status in the conversation
+                const updatedParticipants = conv.participants?.map((p: any) => 
+                  p.id === data.userId 
+                    ? { ...p, isOnline: data.isOnline } 
+                    : p
+                );
+                return { ...conv, participants: updatedParticipants };
+              }
+              return conv;
+            })
+          );
+          
+          // Update active conversation if it contains the user
+          if (activeConversation && activeConversation.participants?.some((p: any) => p.id === data.userId)) {
+            const updatedParticipants = activeConversation.participants?.map((p: any) => 
+              p.id === data.userId 
+                ? { ...p, isOnline: data.isOnline } 
+                : p
+            );
+            setActiveConversation(prev => 
+              prev ? { ...prev, participants: updatedParticipants } : null
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error processing user status from socket:', error);
+      }
+    };
 
-    // Register socket event listener
+    const handleTyping = (data: any) => {
+      try {
+        console.log('Received typing indicator via socket:', data);
+        
+        if (data && data.conversationId && data.userId !== user?.id) { // Don't show our own typing
+          setTypingUsers(prev => {
+            const currentTyping = prev[data.conversationId] || [];
+            const isTyping = data.isTyping;
+            const userId = data.userId;
+            
+            let newTypingUsers;
+            if (isTyping) {
+              // Add user to typing list if not already there
+              if (!currentTyping.includes(userId)) {
+                newTypingUsers = [...currentTyping, userId];
+              } else {
+                newTypingUsers = currentTyping;
+              }
+            } else {
+              // Remove user from typing list
+              newTypingUsers = currentTyping.filter(id => id !== userId);
+            }
+            
+            return {
+              ...prev,
+              [data.conversationId]: newTypingUsers
+            };
+          });
+        }
+      } catch (error) {
+        console.error('Error processing typing indicator from socket:', error);
+      }
+    };
+
+    // Register socket event listeners
     try {
       socketService.on('message:new', handleNewMessage);
+      socketService.on('user:status', handleUserStatus);
+      socketService.on('typing', handleTyping);
     } catch (error) {
-      console.error('Error registering socket listener:', error);
+      console.error('Error registering socket listeners:', error);
     }
 
-    // Cleanup function to remove listener
+    // Cleanup function to remove listeners
     return () => {
       try {
         socketService.off('message:new', handleNewMessage);
+        socketService.off('user:status', handleUserStatus);
+        socketService.off('typing', handleTyping);
       } catch (error) {
-        console.error('Error unregistering socket listener:', error);
+        console.error('Error unregistering socket listeners:', error);
       }
     };
-  }, [activeConversation?.id, messages]);
+  }, [activeConversation?.id, messages, activeConversation, user]);
 
   return {
     conversations,

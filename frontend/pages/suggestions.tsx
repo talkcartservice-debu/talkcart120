@@ -23,10 +23,12 @@ import {
 import Layout from '@/components/layout/Layout';
 import UserAvatar from '@/components/common/UserAvatar';
 import { useUserSuggestions } from '@/hooks/useUserSuggestions';
+import { usePresence } from '@/contexts/PresenceContext';
 
 const SuggestionsPage: React.FC = () => {
   const theme = useTheme();
   const { suggestions, loading, refreshSuggestions: handleRefresh, followUser } = useUserSuggestions({ limit: 12 });
+  const { isUserOnline } = usePresence();
 
   // Format large numbers (e.g., 1.2K, 3.4M)
   const formatNumber = (num: number): string => {
@@ -137,12 +139,26 @@ const SuggestionsPage: React.FC = () => {
                       alt={user.displayName}
                       size={64}
                       isVerified={user.isVerified}
+                      isOnline={isUserOnline(user.id)}
                     />
                     <Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
                         <Typography variant="h6" fontWeight={600}>
                           {user.displayName}
                         </Typography>
+                        {isUserOnline(user.id) && (
+                          <Box
+                            component="span"
+                            sx={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: '50%',
+                              bgcolor: 'success.main',
+                              border: `2px solid ${theme.palette.background.paper}`,
+                              boxShadow: '0 0 0 2px success.main'
+                            }}
+                          />
+                        )}
                         {user.isVerified && (
                           <Box 
                             component="span" 
