@@ -288,7 +288,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <Card
       sx={{
-        height: { xs: 'auto', sm: 320 },
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         borderRadius: 2,
@@ -309,7 +309,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {/* Product Image - Ensuring rectangular shape */}
       <Box sx={{ 
         position: 'relative', 
-        height: { xs: 180, sm: 200 },
+        height: { xs: 160, sm: 180, md: 200 },
         backgroundColor: '#f8f8f8',
         display: 'flex',
         alignItems: 'center',

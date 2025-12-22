@@ -378,13 +378,38 @@ const SocialPage: React.FC = () => {
         <meta name="description" content="Connect with friends and discover trending content" />
       </Head>
       
-      {/* Mobile Header */}
-      <Box className="social-mobile-header">
-        <Box className="social-mobile-brand">
-          <Box className="social-brand-logo">
-            <Box component="span" className="social-brand-initial">T</Box>
+      {/* Mobile Header - Hidden on desktop */}
+      <Box 
+        sx={{
+          display: { xs: 'flex', md: 'none' },
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 2,
+          py: 1.5,
+          bgcolor: 'primary.main',
+          color: 'white',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box 
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              bgcolor: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'primary.main',
+              fontWeight: 'bold',
+            }}
+          >
+            T
           </Box>
-          <Typography variant="h6" className="social-brand-text">
+          <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
             TalkCart
           </Typography>
         </Box>
@@ -402,10 +427,10 @@ const SocialPage: React.FC = () => {
         </IconButton>
       </Box>
       
-      <Container maxWidth="lg" sx={{ py: 2 }}>
-        <Grid container spacing={2}>
+      <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 } }}>
+        <Grid container spacing={{ xs: 1, sm: 2 }}>
           {/* Left Sidebar - Hidden on mobile */}
-          <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 3, md: 1 } }}>
             <Paper 
               sx={{ 
                 p: 2, 
@@ -464,18 +489,18 @@ const SocialPage: React.FC = () => {
                 </IconButton>
               </Box>
               
-              <Box display="flex" justifyContent="space-around" textAlign="center" mt={2}>
+              <Box display="flex" justifyContent="space-around" textAlign="center" mt={2} flexWrap="wrap" gap={1}>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{userStats.postCount}</Typography>
-                  <Typography variant="body2" color="text.secondary">Posts</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.25rem' } }}>{userStats.postCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Posts</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{userStats.followerCount}</Typography>
-                  <Typography variant="body2" color="text.secondary">Followers</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.25rem' } }}>{userStats.followerCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Followers</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{userStats.followingCount}</Typography>
-                  <Typography variant="body2" color="text.secondary">Following</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.25rem' } }}>{userStats.followingCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Following</Typography>
                 </Box>
               </Box>
             </Paper>
@@ -495,7 +520,7 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Main feed area */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
             
             {/* Feed tabs */}
             <Paper 
@@ -622,7 +647,7 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Right Sidebar - Hidden on mobile */}
-          <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 } }}>
             <Paper 
               sx={{ 
                 p: 2, 

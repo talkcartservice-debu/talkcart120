@@ -729,7 +729,8 @@ const MessagesPage: React.FC = () => {
               borderBottom: { xs: `1px solid ${theme.palette.divider}`, sm: 'none' },
               display: 'flex',
               flexDirection: 'column',
-              height: { xs: '40%', sm: 'auto' },
+              height: { xs: 'auto', sm: '100%' },
+              maxHeight: { xs: '40vh', sm: 'none' },
               backgroundColor: theme.palette.background.paper,
               flexShrink: 0
             }}
@@ -971,8 +972,7 @@ const MessagesPage: React.FC = () => {
                 flexGrow: 1, 
                 display: 'flex', 
                 flexDirection: 'column',
-                height: { xs: '60%', sm: 'auto' },
-                backgroundColor: theme.palette.background.paper,
+                height: { xs: 'auto', sm: '100%' },
                 minHeight: 0
               }}
             >

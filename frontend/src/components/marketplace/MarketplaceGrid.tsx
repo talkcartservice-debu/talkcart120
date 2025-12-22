@@ -59,13 +59,14 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
   if (loading) {
     return (
       <Box sx={{ mb: 4 }}>
-        <Grid container spacing={isMobile ? 1 : 2}>
-          {Array.from(new Array(isMobile ? 6 : 12)).map((_, index) => (
+        <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
+          {Array.from(new Array(8)).map((_, index) => (
             <Grid 
               item 
-              xs={isMobile ? 6 : 6} 
-              sm={isMobile ? 6 : 4} 
-              md={isMobile ? 6 : 3} 
+              xs={12} 
+              sm={6} 
+              md={4} 
+              lg={3}
               key={index}
             >
               <ProductCard loading={true} />
@@ -78,14 +79,15 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
 
   return (
     <Box sx={{ mb: 4 }}>
-      <Grid container spacing={isMobile ? 1 : 2}>
+      <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
         {products && products.length > 0 ? (
           products.map((product) => (
             <Grid 
               item 
-              xs={isMobile ? 12 : 6} 
-              sm={isMobile ? 12 : 4} 
-              md={isMobile ? 12 : 3} 
+              xs={12} 
+              sm={6} 
+              md={4} 
+              lg={3}
               key={product.id}
             >
               <ProductCard
