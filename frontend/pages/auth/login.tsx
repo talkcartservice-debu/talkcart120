@@ -242,7 +242,12 @@ export default function LoginPage() {
         clearTimeout(timer);
       };
     }
-  }, [router, setAuthTokens]);
+    
+    // Add explicit return for TypeScript
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
