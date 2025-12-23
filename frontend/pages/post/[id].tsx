@@ -34,6 +34,7 @@ import toast from 'react-hot-toast';
 import UnifiedVideoMedia from '@/components/media/UnifiedVideoMedia';
 import UnifiedImageMedia from '@/components/media/UnifiedImageMedia';
 import { isKnownMissingFile } from '@/utils/mediaUtils';
+import Layout from '@/components/layout/Layout';
 
 const PostDetailPage: React.FC = () => {
   const router = useRouter();
@@ -350,6 +351,7 @@ const PostDetailPage: React.FC = () => {
   };
 
   return (
+    <Layout>
     <Container maxWidth="md" sx={{ py: 4 }}>
       {/* Back Button */}
       <Box mb={3}>
@@ -435,6 +437,7 @@ const PostDetailPage: React.FC = () => {
         />
       </Box>
     </Container>
+    </Layout>
   );
 };
 

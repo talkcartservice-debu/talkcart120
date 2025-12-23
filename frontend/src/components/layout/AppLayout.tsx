@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { VideoFeedProvider } from '@/components/video';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -105,6 +106,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           })
         }}
       >
+        <VideoFeedProvider>
         {router.pathname === '/social' ? (
           // For social page, render children directly without Container
           children
@@ -122,6 +124,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             {children}
           </Container>
         )}
+        </VideoFeedProvider>
       </Box>
     </Box>
   );

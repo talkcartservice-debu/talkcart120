@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import ModernProfilePage from './modern';
 import { ProfileProvider } from '@/contexts/ProfileContext'; // Add this import
+import Layout from '@/components/layout/Layout';
 
 export default function UserProfilePage() {
   const router = useRouter();
@@ -8,9 +9,11 @@ export default function UserProfilePage() {
 
   // This is another user's profile page
   return (
-    <ProfileProvider>
-      <ModernProfilePage />
-    </ProfileProvider>
+    <Layout>
+      <ProfileProvider>
+        <ModernProfilePage />
+      </ProfileProvider>
+    </Layout>
   );
 }
 

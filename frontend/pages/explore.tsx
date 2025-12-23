@@ -7,7 +7,7 @@ import WhoToFollow from '@/components/social/new/WhoToFollow';
 import { useRouter } from 'next/router';
 import useDebounce from '@/hooks/useDebounce';
 import PostCard from '@/components/social/new/PostCard';
-// Removed VideoFeedProvider as PostCard doesn't need it
+import Layout from '@/components/layout/Layout';
 import api from '@/lib/api';
 import { Post } from '@/types/social';
 
@@ -68,7 +68,7 @@ const ExplorePage: NextPage = () => {
   };
 
   return (
-    <>
+    <Layout>
       <Head>
         <title>Explore Public Posts - TalkCart</title>
         <meta 
@@ -235,7 +235,7 @@ const ExplorePage: NextPage = () => {
           </Paper>
         </Container>
       </Box>
-    </>
+    </Layout>
   );
 };
 

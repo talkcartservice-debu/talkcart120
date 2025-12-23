@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileProvider } from '@/contexts/ProfileContext'; // Add this import
+import Layout from '@/components/layout/Layout';
 
 // Dynamically import the profile page to reduce initial bundle size
 const ModernProfilePage = dynamic(() => import('./modern'), {
@@ -44,8 +45,10 @@ export default function ProfilePage() {
 
   // This is the user's own profile page
   return (
-    <ProfileProvider>
-      <ModernProfilePage />
-    </ProfileProvider>
+    <Layout>
+      <ProfileProvider>
+        <ModernProfilePage />
+      </ProfileProvider>
+    </Layout>
   );
 }
