@@ -183,7 +183,19 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         reactions: [],
         readBy: [],
         replyTo: replyTo ? { id: replyTo, content: '', senderId: '', type: 'text' } : undefined,
-        sender: user,
+        sender: user ? {
+          id: user.id,
+          username: user.username,
+          displayName: user.displayName,
+          avatar: user.avatar || null, // Convert undefined to null
+          isVerified: user.isVerified || false
+        } : {
+          id: '',
+          username: 'unknown',
+          displayName: 'Unknown',
+          avatar: null,
+          isVerified: false
+        },
         isOwn: true,
         isRead: false,
         isOptimistic: true // Flag to identify optimistic updates
@@ -241,7 +253,19 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
               reactions: [],
               readBy: [],
               replyTo: replyTo ? { id: replyTo, content: '', senderId: '', type: 'text' } : undefined,
-              sender: res.data?.sender || res.sender,
+              sender: res.data?.sender || res.sender ? {
+                id: (res.data?.sender || res.sender)?.id || '',
+                username: (res.data?.sender || res.sender)?.username || 'unknown',
+                displayName: (res.data?.sender || res.sender)?.displayName || 'Unknown',
+                avatar: (res.data?.sender || res.sender)?.avatar || null, // Convert undefined to null
+                isVerified: (res.data?.sender || res.sender)?.isVerified || false
+              } : {
+                id: '',
+                username: 'unknown',
+                displayName: 'Unknown',
+                avatar: null,
+                isVerified: false
+              },
               isOwn: true,
               isRead: false,
               isOptimistic: false // Remove the optimistic flag
@@ -639,7 +663,19 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
                 senderId: data.message.replyTo.senderId || data.message.replyTo.sender?._id || data.message.replyTo.sender?.id,
                 type: data.message.replyTo.type || 'text'
               } : undefined,
-              sender: data.message.sender,
+              sender: data.message.sender ? {
+                id: data.message.sender.id,
+                username: data.message.sender.username,
+                displayName: data.message.sender.displayName,
+                avatar: data.message.sender.avatar || null, // Convert undefined to null
+                isVerified: data.message.sender.isVerified || false
+              } : {
+                id: '',
+                username: 'unknown',
+                displayName: 'Unknown',
+                avatar: null,
+                isVerified: false
+              },
               isOwn: false, // This is not our own message
               isRead: false
             };
