@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import UnifiedVideoMedia from '@/components/media/UnifiedVideoMedia';
 import UnifiedImageMedia from '@/components/media/UnifiedImageMedia';
-import { VideoFeedProvider } from '@/components/video/VideoFeedManager';
+
 import { 
   Home, 
   Users, 
@@ -562,22 +562,6 @@ const SocialPage: React.FC = () => {
             </Paper>
 
             {/* Feed content */}
-            <VideoFeedProvider
-              initialSettings={{
-                enabled: true,
-                threshold: 0.6,
-                pauseOnScroll: true,
-                muteByDefault: true,
-                preloadStrategy: 'metadata',
-                maxConcurrentVideos: 1,
-                scrollPauseDelay: 150,
-                viewTrackingThreshold: 2,
-                autoplayOnlyOnWifi: false,
-                respectReducedMotion: true,
-              }}
-              showControls={false}
-              showStats={false}
-            >
               <Box>
                 {loading && posts.length === 0 ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -643,7 +627,6 @@ const SocialPage: React.FC = () => {
                   </Box>
                 )}
               </Box>
-            </VideoFeedProvider>
           </Grid>
 
           {/* Right Sidebar - Hidden on mobile */}
