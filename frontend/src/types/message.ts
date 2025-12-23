@@ -66,6 +66,7 @@ export interface Message {
   sender: Participant;
   isOwn: boolean;
   isRead: boolean;
+  isOptimistic?: boolean;
 }
 
 export interface Conversation {

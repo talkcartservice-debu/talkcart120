@@ -746,13 +746,17 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                                 borderRadius: message.isOwn 
                                     ? { xs: '16px 16px 4px 16px', sm: '24px 24px 8px 24px' } 
                                     : { xs: '16px 16px 16px 4px', sm: '24px 24px 24px 8px' },
-                                background: message.isOwn
+                                background: message.isOptimistic
+                                    ? `linear-gradient(135deg, ${alpha(theme.palette.grey[400], 0.3)} 0%, ${alpha(theme.palette.grey[500], 0.2)} 100%)`
+                                    : message.isOwn
                                     ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 60%, ${alpha(theme.palette.primary.main, 0.9)} 100%)`
                                     : theme.palette.mode === 'dark'
                                         ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.grey[800], 0.9)} 70%, ${alpha(theme.palette.background.default, 0.8)} 100%)`
                                         : `linear-gradient(135deg, ${theme.palette.common.white} 0%, ${alpha(theme.palette.grey[50], 0.8)} 70%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
                                 backdropFilter: isMobile ? 'blur(12px)' : 'blur(24px)',
-                                border: message.isOwn
+                                border: message.isOptimistic
+                                    ? `1px solid ${alpha(theme.palette.grey[500], 0.3)}`
+                                    : message.isOwn
                                     ? `1px solid ${alpha(theme.palette.primary.light, 0.5)}`
                                     : `1px solid ${alpha(theme.palette.divider, 0.4)}`,
                                 boxShadow: message.isOwn
@@ -762,7 +766,9 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                                     : isMobile 
                                         ? `0 2px 12px ${alpha(theme.palette.grey[500], 0.08)}, 0 1px 4px ${alpha(theme.palette.common.black, 0.04)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.3)}`
                                         : `0 4px 24px ${alpha(theme.palette.grey[500], 0.12)}, 0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.5)}`,
-                                color: message.isOwn
+                                color: message.isOptimistic
+                                    ? alpha(theme.palette.text.primary, 0.7)
+                                    : message.isOwn
                                     ? theme.palette.primary.contrastText
                                     : theme.palette.text.primary,
                                 position: 'relative',
@@ -833,7 +839,9 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                                         sx={{
                                             fontStyle: 'italic',
                                             fontSize: { xs: '0.75rem', sm: '0.85rem' },
-                                            color: message.isOwn
+                                            color: message.isOptimistic
+                                                ? alpha(theme.palette.text.secondary, 0.5)
+                                                : message.isOwn
                                                 ? alpha(theme.palette.primary.contrastText, 0.7)
                                                 : theme.palette.text.secondary
                                         }}
@@ -961,7 +969,9 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                                                 opacity: 0.9,
                                                 fontSize: { xs: '0.6rem', sm: '0.7rem' },
                                                 fontWeight: 600,
-                                                color: theme.palette.text.secondary,
+                                                color: message.isOptimistic
+                                                    ? alpha(theme.palette.text.secondary, 0.5)
+                                                    : theme.palette.text.secondary,
                                                 letterSpacing: 0.2
                                             }}
                                         >
@@ -976,7 +986,9 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                                                     opacity: 0.9,
                                                     fontSize: { xs: '0.6rem', sm: '0.7rem' },
                                                     fontWeight: 600,
-                                                    color: alpha(theme.palette.primary.contrastText, 0.8),
+                                                    color: message.isOptimistic
+                                                        ? alpha(theme.palette.text.secondary, 0.5)
+                                                        : alpha(theme.palette.primary.contrastText, 0.8),
                                                     letterSpacing: 0.2
                                                 }}
                                             >
@@ -1222,7 +1234,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                         >
                             {getMessageTime()}
                         </Typography>
-                        <Box sx={{ color: theme.palette.text.secondary }}>
+                        <Box sx={{ color: message.isOptimistic ? alpha(theme.palette.text.secondary, 0.5) : theme.palette.text.secondary }}>
                             {getReadStatus()}
                         </Box>
                     </Box>

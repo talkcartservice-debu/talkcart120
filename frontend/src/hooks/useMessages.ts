@@ -167,6 +167,48 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       const currentConversationId = conversationId || activeConversation?.id;
       if (!currentConversationId) return false;
 
+      // Create a temporary message with a temporary ID
+      const tempId = `temp-${Date.now()}-${Math.random()}`;
+      const tempMessage: Message = {
+        id: tempId,
+        conversationId: currentConversationId,
+        createdAt: new Date().toISOString(),
+        content,
+        type: (type as 'text' | 'image' | 'video' | 'audio' | 'file' | 'system' | 'post_share') || 'text',
+        senderId: user?.id || '',
+        isEdited: false,
+        isDeleted: false,
+        isForwarded: false,
+        media: media || [],
+        reactions: [],
+        readBy: [],
+        replyTo: replyTo ? { id: replyTo, content: '', senderId: '', type: 'text' } : undefined,
+        sender: user,
+        isOwn: true,
+        isRead: false,
+        isOptimistic: true // Flag to identify optimistic updates
+      };
+      
+      // Add the temporary message to the UI immediately (optimistic update)
+      setMessages((prev) => [
+        ...(prev || []),
+        tempMessage,
+      ]);
+      
+      // Update the conversation's last message with the temp message
+      setConversations(prev => 
+        (prev || []).map(conv => 
+          conv.id === currentConversationId 
+            ? { ...conv, lastMessage: tempMessage } 
+            : conv
+        )
+      );
+      
+      // Update active conversation's last message
+      if (activeConversation?.id === currentConversationId) {
+        setActiveConversation(prev => prev ? { ...prev, lastMessage: tempMessage } : null);
+      }
+      
       // Retry logic for network issues
       let attempts = 0;
       const maxAttempts = 3;
@@ -184,7 +226,7 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
           });
           
           if (res.success) {
-            // Create a complete Message object with all required properties
+            // Create the final Message object with server data
             const newMessage: Message = {
               id: res.data?.id || res.id,
               conversationId: currentConversationId,
@@ -201,16 +243,18 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
               replyTo: replyTo ? { id: replyTo, content: '', senderId: '', type: 'text' } : undefined,
               sender: res.data?.sender || res.sender,
               isOwn: true,
-              isRead: false
+              isRead: false,
+              isOptimistic: false // Remove the optimistic flag
             };
             
-            // Add the message to the local state immediately
-            setMessages((prev) => [
-              ...(prev || []),
-              newMessage,
-            ]);
+            // Update the temporary message with the server message
+            setMessages((prev) => 
+              (prev || []).map(msg => 
+                msg.id === tempId ? newMessage : msg
+              )
+            );
             
-            // Update the conversation's last message
+            // Update the conversation's last message with the server message
             setConversations(prev => 
               (prev || []).map(conv => 
                 conv.id === currentConversationId 
@@ -226,7 +270,9 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
             
             return true;
           } else {
-            // Handle API error response
+            // Handle API error response - remove the temp message
+            setMessages((prev) => (prev || []).filter(msg => msg.id !== tempId));
+            
             const errorMessage = res.error || 'Failed to send message';
             setError(errorMessage);
             console.error('Send message API error:', errorMessage);
@@ -235,10 +281,13 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         } catch (e: any) {
           attempts++;
           
-          // If this is the last attempt or it's not a network error, show the error
+          // If this is the last attempt or it's not a network error, remove the temp message and show the error
           const isNetworkError = e.networkError || e.timeout || !e.response;
           
           if (attempts >= maxAttempts || !isNetworkError) {
+            // Remove the temporary message since the send failed
+            setMessages((prev) => (prev || []).filter(msg => msg.id !== tempId));
+            
             const errorMessage = e.message || 'Failed to send message. Please check your network connection.';
             setError(errorMessage);
             console.error('Send message error:', e);
@@ -252,9 +301,11 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         }
       }
       
+      // If we exhausted all attempts, remove the temp message
+      setMessages((prev) => (prev || []).filter(msg => msg.id !== tempId));
       return false;
     },
-    [conversationId, activeConversation?.id]
+    [conversationId, activeConversation?.id, user]
   );
 
   const handleEditMessage = useCallback(
