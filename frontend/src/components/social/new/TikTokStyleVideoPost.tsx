@@ -332,28 +332,6 @@ const TikTokStyleVideoPost: React.FC<TikTokStyleVideoPostProps> = ({
         </Box>
       </Box>
 
-      {/* Volume Control */}
-      <Box sx={{
-        position: 'absolute',
-        right: 16,
-        top: 16,
-        zIndex: 20
-      }}>
-        <IconButton 
-          onClick={toggleMute}
-          sx={{ 
-            width: 40,
-            height: 40,
-            bgcolor: 'rgba(0,0,0,0.3)',
-            backdropFilter: 'blur(10px)',
-            '&:hover': {
-              bgcolor: 'rgba(0,0,0,0.5)'
-            }
-          }}
-        >
-          {isMuted ? <VolumeX size={20} color="white" /> : <Volume2 size={20} color="white" />}
-        </IconButton>
-      </Box>
 
       {/* More Options */}
       <Box sx={{

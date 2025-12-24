@@ -81,7 +81,18 @@ class ApiService {
     } catch (error) {
       clearTimeout(timeoutId);
       if ((error as any)?.name === 'AbortError') {
-        throw new HttpError(408, 'Request timeout');
+        // Determine a more specific error message based on the URL or request type
+        let errorMessage = 'Request timeout';
+        if (url.includes('/upload') || url.includes('/media') || url.includes('/avatar')) {
+          errorMessage = 'Upload request timeout. The file may be too large or network is slow.';
+        } else if (url.includes('/auth') || url.includes('/login') || url.includes('/register')) {
+          errorMessage = 'Authentication request timeout. Please check your connection and try again.';
+        } else if (url.includes('/posts') || url.includes('/feed')) {
+          errorMessage = 'Content request timeout. Please check your connection and try again.';
+        } else {
+          errorMessage = 'Request timeout. Please check your connection and try again.';
+        }
+        throw new HttpError(408, errorMessage);
       }
       throw error;
     }
@@ -130,11 +141,12 @@ class ApiService {
     const method = (init.method || 'GET').toUpperCase();
     let response: Response;
     let attempt = 0;
-    const maxRetries = method === 'GET' ? 2 : 0; // retry GETs only
+    // Increase retry attempts for timeout errors, but still limit to prevent infinite loops
+    const maxRetries = method === 'GET' ? 3 : 1; // Allow more retries for GET requests, at least 1 for others
     let currentTimeout = timeout;
     // Simple retry loop for transient network/timeout errors
     // Attempts: 0 (original), then up to maxRetries with backoff
-    // Backoff: +5s per retry
+    // Backoff: +5s per retry, max 2x the original timeout
     // Do not retry non-timeout HTTP errors
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -146,8 +158,11 @@ class ApiService {
         const isNetwork = typeof err?.message === 'string' && err.message.toLowerCase().includes('network');
         if (attempt < maxRetries && (isTimeout || isNetwork)) {
           attempt += 1;
+          // Increase timeout for retries to allow for slower responses
           currentTimeout = Math.min(currentTimeout + 5000, TIMEOUTS.API_REQUEST * 2);
           console.warn(`API transient error (${isTimeout ? 'timeout' : 'network'}), retrying ${attempt}/${maxRetries} in-flight for ${url}`);
+          // Add a small delay before retrying to allow network to recover
+          await new Promise(resolve => setTimeout(resolve, attempt * 1000)); // 1s, 2s, 3s etc
           continue;
         }
         throw err;
@@ -1305,7 +1320,7 @@ class ApiService {
         };
 
         xhr.onerror = () => reject(new Error('Network error during upload'));
-        xhr.ontimeout = () => reject(new HttpError(408, 'Upload timed out'));
+        xhr.ontimeout = () => reject(new HttpError(408, 'Upload request timed out. The file may be too large or network connection is slow.'));
 
         xhr.onload = () => {
           const status = xhr.status;
@@ -1403,7 +1418,7 @@ class ApiService {
         };
         
         xhr.onerror = () => reject(new Error('Network error during upload'));
-        xhr.ontimeout = () => reject(new HttpError(408, 'Upload timed out'));
+        xhr.ontimeout = () => reject(new HttpError(408, 'Upload request timed out. The file may be too large or network connection is slow.'));
         
         xhr.onload = () => {
           const status = xhr.status;
@@ -2017,6 +2032,143 @@ class ApiService {
     getOrder: async (orderId: string) => {
       return this.get(`/orders/${orderId}`);
     }
+  };
+
+  // Ads API
+  ads = {
+    // Get targeted ads for a user
+    getTargetedAds: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/targeted?${queryParams}`);
+    },
+
+    // Get product posts
+    getProductPosts: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/product-posts?${queryParams}`);
+    },
+
+    // Create a new product post
+    createProductPost: async (postData: {
+      postId: string;
+      productId: string;
+      productPosition?: string;
+      placementData?: any;
+      currentPrice?: number;
+      originalPrice?: number;
+      availableStock?: number;
+      showPrice?: boolean;
+      showProductTag?: boolean;
+      isFeatured?: boolean;
+      isPromoted?: boolean;
+      promotionDiscount?: number;
+    }) => {
+      return this.post(`/ads/product-posts`, postData);
+    },
+
+    // Get a specific product post
+    getProductPost: async (id: string) => {
+      return this.get(`/ads/product-posts/${id}`);
+    },
+
+    // Update a product post
+    updateProductPost: async (id: string, updateData: any) => {
+      return this.put(`/ads/product-posts/${id}`, updateData);
+    },
+
+    // Get vendor's product posts
+    getVendorProductPosts: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/product-posts?${queryParams}`);
+    },
+
+    // Record ad impression
+    recordAdImpression: async (adId: string) => {
+      return this.post(`/ads/${adId}/impressions`, {});
+    },
+
+    // Record ad click
+    recordAdClick: async (adId: string) => {
+      return this.post(`/ads/${adId}/clicks`, {});
+    },
+
+    // Record product post view
+    recordProductPostView: async (productPostId: string) => {
+      return this.post(`/ads/product-posts/${productPostId}/views`, {});
+    },
+
+    // Record product post interaction
+    recordProductPostInteraction: async (productPostId: string, interactionType: string) => {
+      return this.post(`/ads/product-posts/${productPostId}/interactions`, {
+        type: interactionType
+      });
+    },
+
+    // Get ad campaigns
+    getAdCampaigns: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/campaigns?${queryParams}`);
+    },
+
+    // Get ad analytics
+    getAdAnalytics: async (adId: string = 'all', params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      // If adId is 'all', we want to get overall analytics
+      if (adId === 'all') {
+        return this.get(`/ads/analytics?${queryParams}`);
+      }
+      // Otherwise, get analytics for a specific ad
+      queryParams.append('adId', adId);
+      return this.get(`/ads/analytics?${queryParams}`);
+    },
+
+    // Get campaign analytics
+    getCampaignAnalytics: async (campaignId: string, params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/campaigns/${campaignId}/analytics?${queryParams}`);
+    },
   };
 
   // Streams API

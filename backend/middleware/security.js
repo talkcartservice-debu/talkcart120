@@ -61,8 +61,8 @@ const securityHeaders = helmet({
   // Cross-Origin Embedder Policy
   crossOriginEmbedderPolicy: false,
   
-  // Cross-Origin Opener Policy
-  crossOriginOpenerPolicy: { policy: "same-origin" },
+  // Cross-Origin Opener Policy - Changed from 'same-origin' to 'same-origin-allow-popups' to allow postMessage
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   
   // Cross-Origin Resource Policy
   crossOriginResourcePolicy: { policy: "cross-origin" },

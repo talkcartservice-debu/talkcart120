@@ -15,6 +15,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { lightTheme, darkTheme } from '@/theme';
 import { ThemeProvider, useCustomTheme } from '@/contexts/ThemeContext';
 import { InteractionProvider } from '@/contexts/InteractionContext';
+import { AdTrackingProvider } from '@/contexts/AdTrackingContext';
 import { Toaster, toast } from 'react-hot-toast';
 import '@/styles/globals.css';
 import 'react-image-crop/dist/ReactCrop.css'; // global import for cropper styles
@@ -114,7 +115,9 @@ function MyApp({ Component, pageProps }: AppProps) {
                         <WebSocketProvider>
                           <InteractionProvider>
                             <ProfileCacheProvider>
-                              <Component {...pageProps} />
+                              <AdTrackingProvider>
+                                <Component {...pageProps} />
+                              </AdTrackingProvider>
                               <Toaster
                                 position="top-right"
                                 toastOptions={{

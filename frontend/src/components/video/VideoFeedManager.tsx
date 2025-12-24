@@ -12,7 +12,7 @@ import { useVideoAutoscroll, VideoAutoscrollSettings } from '@/hooks/useVideoAut
 import { getSmoothScrollVideoManager } from '@/utils/smoothScrollVideoManager';
 import { getVolumeIcon, getVolumeTooltip } from '@/utils/videoUtils';
 import toast from 'react-hot-toast';
-import VideoPerformanceMonitor from './VideoPerformanceMonitor'; // Import performance monitor
+
 
 interface VideoFeedContextValue {
   registerVideo: (videoId: string, element: HTMLVideoElement, container: HTMLElement) => () => void;
@@ -504,8 +504,6 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
     <VideoFeedContext.Provider value={contextValue}>
       {children}
       
-      {/* Video Performance Monitor */}
-      <VideoPerformanceMonitor />
       
       {/* Floating Controls - Always rendered but visually hidden when not needed */}
       {FloatingControls}

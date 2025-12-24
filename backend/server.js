@@ -688,6 +688,7 @@ app.use('/api/search', require('./routes/search'));
 // Remove the separate product comparison route as it should be part of marketplace
 // app.use('/api/products', require('./routes/productComparison'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/ads', require('./routes/ads'));
 // AI routes removed as part of AI functionality removal
 // Admin routes
 const adminRouter = require('./routes/admin');

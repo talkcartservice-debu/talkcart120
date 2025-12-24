@@ -42,6 +42,9 @@ import toast from 'react-hot-toast';
 import TrendingProducts from '@/components/social/new/TrendingProducts';
 import WhoToFollow from '@/components/social/new/WhoToFollow';
 import { usePosts } from '@/hooks/usePosts';
+import { useAdBlending } from '@/components/ads/AdBlendingService';
+import AdCard from '@/components/ads/AdCard';
+import ProductPostCard from '@/components/ads/ProductPostCard';
 import { CreatePostDialog } from '@/components/social/new/CreatePostDialog';
 import ShareDialog from '@/components/share/ShareDialog';
 import api from '@/lib/api';
@@ -67,9 +70,45 @@ const SocialPage: React.FC = () => {
     followingCount: 0
   });
   
-  // Use the real posts hook to fetch posts from the database
-  const { posts, loading, error, fetchPosts, likePost, bookmarkPost } = usePosts({
-    feedType: 'for-you',
+  // State to manage feed type
+  const [currentFeedType, setCurrentFeedType] = useState<'for-you' | 'following' | 'recent' | 'trending' | 'bookmarks'>('for-you');
+  
+  // Use the ad blending service to fetch posts with integrated ads and product posts
+  const { feedItems, loading, error, refreshFeed } = useAdBlending({
+    userId: user?.id,
+    feedType: currentFeedType,
+    limit: 20
+  });
+  
+  // Fallback: Also fetch regular posts in case ad blending fails
+  const useRegularPostsFeedType: 'for-you' | 'following' | 'recent' | 'trending' = 
+    currentFeedType === 'bookmarks' ? 'for-you' : currentFeedType as 'for-you' | 'following' | 'recent' | 'trending';
+  
+  const { fetchPosts: fetchRegularPosts, posts: regularPosts } = usePosts({
+    feedType: useRegularPostsFeedType,
+    limit: 20
+  });
+  
+  // Use regular posts as fallback if ad blending returns no items or has an error
+  const displayFeedItems = (error || feedItems.length === 0) && regularPosts.length > 0 
+    ? regularPosts.map(post => ({ id: post.id, type: 'post', data: post }))
+    : feedItems;
+  
+  // Debug logging to help troubleshoot
+  useEffect(() => {
+    console.log('Social Page - Ad Blending Service:', { feedItems: feedItems.length, loading, error });
+    console.log('Social Page - Regular Posts Service:', { regularPosts: regularPosts.length });
+    console.log('Social Page - Display Items:', displayFeedItems.length);
+    console.log('Social Page - Current Feed Type:', currentFeedType);
+    console.log('Social Page - User:', user);
+  }, [feedItems.length, regularPosts.length, displayFeedItems.length, loading, error, currentFeedType, user]);
+
+  // For backward compatibility with existing post functions (use a supported feed type)
+  const usePostsFeedType: 'for-you' | 'following' | 'recent' | 'trending' = 
+    currentFeedType === 'bookmarks' ? 'for-you' : currentFeedType;
+  
+  const { fetchPosts, likePost, bookmarkPost } = usePosts({
+    feedType: usePostsFeedType,
     limit: 20
   });
 
@@ -105,27 +144,36 @@ const SocialPage: React.FC = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
     
-    // Refresh posts with the appropriate feed type
+    // Set the appropriate feed type
     switch (newValue) {
       case 0: // For You
-        typedFetchPosts({ feedType: 'for-you', reset: true });
+        setCurrentFeedType('for-you');
         break;
       case 1: // Following
-        typedFetchPosts({ feedType: 'following', reset: true });
+        setCurrentFeedType('following');
         break;
       case 2: // Recent
-        typedFetchPosts({ feedType: 'recent', reset: true });
+        setCurrentFeedType('recent');
         break;
       case 3: // Bookmarks
-        typedFetchPosts({ feedType: 'bookmarks', reset: true });
+        // For bookmarks, we need to handle this differently
+        // The AdBlendingService will handle the feed type properly
+        setCurrentFeedType('bookmarks');
         break;
       default:
-        typedFetchPosts({ feedType: 'for-you', reset: true });
+        setCurrentFeedType('for-you');
     }
+    
+    // Refresh the feed to show the new content
+    setTimeout(() => {
+      refreshFeed();
+    }, 100);
   };
 
   const handleRefresh = () => {
     typedFetchPosts({ reset: true });
+    refreshFeed();
+    fetchRegularPosts({ reset: true });
   };
 
   const handleNavigation = (path: string) => {
@@ -163,212 +211,245 @@ const SocialPage: React.FC = () => {
   };
 
   const handleSharePost = (postId: string) => {
-    // Find the post in the posts array
-    const post = posts.find(p => p.id === postId || p._id === postId);
-    if (post) {
-      setSelectedPost(post);
+    // Find the post in the feedItems array
+    const feedItem = feedItems.find(item => item.data.id === postId || item.data._id === postId);
+    if (feedItem && feedItem.type === 'post') {
+      setSelectedPost(feedItem.data);
       setShareDialogOpen(true);
     }
   };
 
-  // Render a single post
-  const renderPost = (post: any) => {
-    return (
-      <Card 
-        sx={{ 
-          mb: 2, 
-          borderRadius: 3, 
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-          border: '1px solid rgba(0, 0, 0, 0.05)',
-          transition: 'box-shadow 0.2s',
-          '&:hover': {
-            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-          }
-        }}
-      >
-        <CardContent sx={{ pb: 1 }}>
-          {/* Post header */}
-          <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
-            <Box 
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
-                bgcolor: theme.palette.primary.main,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '1rem',
-                cursor: 'pointer'
-              }}
-              onClick={() => handleNavigation(`/profile/${post.author?.username}`)}
-            >
-              {post.author?.displayName?.charAt(0) || post.author?.username?.charAt(0) || 'U'}
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ fontWeight: 600, cursor: 'pointer' }}
-                onClick={() => handleNavigation(`/profile/${post.author?.username}`)}
-              >
-                {post.author?.displayName || post.author?.username || 'Unknown User'}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                @{post.author?.username || 'unknown'} · Just now
-              </Typography>
-            </Box>
-            <IconButton size="small" sx={{ ml: 'auto' }}>
-              <MoreHorizontal size={18} />
-            </IconButton>
-          </Box>
-          
-          {/* Post content */}
-          <Box sx={{ mb: 1.5 }}>
-            <Typography variant="body1" sx={{ lineHeight: 1.5 }}>
-              {post.content}
-            </Typography>
-          </Box>
-          
-          {/* Post media */}
-          {post.media && post.media.length > 0 && (
-            <Box 
-              sx={{ 
-                borderRadius: 2, 
-                overflow: 'hidden', 
-                mb: 1.5,
-                maxHeight: 400,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {post.media[0]?.resource_type === 'video' ? (
-                <UnifiedVideoMedia 
-                  src={post.media[0]?.url || post.media[0]?.secure_url} 
-                  alt="Post media" 
-                  style={{ 
-                    width: '100%', 
-                    height: 'auto', 
-                    maxHeight: 'inherit',
-                    objectFit: 'cover',
-                    display: 'block'
-                  }} 
-                />
-              ) : (
-                <UnifiedImageMedia 
-                  src={post.media[0]?.url || post.media[0]?.secure_url} 
-                  alt="Post media" 
-                  style={{ 
-                    width: '100%', 
-                    height: 'auto', 
-                    maxHeight: 'inherit',
-                    objectFit: 'cover',
-                    display: 'block'
-                  }} 
-                />
+  // Render a single feed item (post, ad, or product post)
+  const renderFeedItem = (item: any) => {
+    switch (item.type) {
+      case 'ad':
+        return (
+          <AdCard 
+            ad={item.data}
+            onAdInteraction={(adId, type) => {
+              // Handle ad interaction
+              console.log(`Ad interaction: ${type} for ad ${adId}`);
+            }}
+            onDismiss={(adId) => {
+              // Handle ad dismissal
+              console.log(`Ad dismissed: ${adId}`);
+            }}
+          />
+        );
+      case 'product-post':
+        return (
+          <ProductPostCard
+            productPost={item.data}
+            onProductInteraction={(productPostId, type) => {
+              // Handle product post interaction
+              console.log(`Product post interaction: ${type} for product post ${productPostId}`);
+            }}
+            onDismiss={(productPostId) => {
+              // Handle product post dismissal
+              console.log(`Product post dismissed: ${productPostId}`);
+            }}
+          />
+        );
+      case 'post':
+      default:
+        const post = item.data;
+        return (
+          <Card 
+            sx={{ 
+              mb: 2, 
+              borderRadius: 3, 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+              border: '1px solid rgba(0, 0, 0, 0.05)',
+              transition: 'box-shadow 0.2s',
+              '&:hover': {
+                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+              }
+            }}
+          >
+            <CardContent sx={{ pb: 1 }}>
+              {/* Post header */}
+              <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
+                <Box 
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    bgcolor: theme.palette.primary.main,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => handleNavigation(`/profile/${post.author?.username}`)}
+                >
+                  {post.author?.displayName?.charAt(0) || post.author?.username?.charAt(0) || 'U'}
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="subtitle2" 
+                    sx={{ fontWeight: 600, cursor: 'pointer' }}
+                    onClick={() => handleNavigation(`/profile/${post.author?.username}`)}
+                  >
+                    {post.author?.displayName || post.author?.username || 'Unknown User'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    @{post.author?.username || 'unknown'} · Just now
+                  </Typography>
+                </Box>
+                <IconButton size="small" sx={{ ml: 'auto' }}>
+                  <MoreHorizontal size={18} />
+                </IconButton>
+              </Box>
+              
+              {/* Post content */}
+              <Box sx={{ mb: 1.5 }}>
+                <Typography variant="body1" sx={{ lineHeight: 1.5 }}>
+                  {post.content}
+                </Typography>
+              </Box>
+              
+              {/* Post media */}
+              {post.media && post.media.length > 0 && (
+                <Box 
+                  sx={{ 
+                    borderRadius: 2, 
+                    overflow: 'hidden', 
+                    mb: 1.5,
+                    maxHeight: 400,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {post.media[0]?.resource_type === 'video' ? (
+                    <UnifiedVideoMedia 
+                      src={post.media[0]?.url || post.media[0]?.secure_url} 
+                      alt="Post media" 
+                      style={{ 
+                        width: '100%', 
+                        height: 'auto', 
+                        maxHeight: 'inherit',
+                        objectFit: 'cover',
+                        display: 'block'
+                      }} 
+                    />
+                  ) : (
+                    <UnifiedImageMedia 
+                      src={post.media[0]?.url || post.media[0]?.secure_url} 
+                      alt="Post media" 
+                      style={{ 
+                        width: '100%', 
+                        height: 'auto', 
+                        maxHeight: 'inherit',
+                        objectFit: 'cover',
+                        display: 'block'
+                      }} 
+                    />
+                  )}
+                </Box>
               )}
-            </Box>
-          )}
-          
-          {/* Post stats */}
-          <Box display="flex" alignItems="center" gap={1} mb={1}>
-            <Typography variant="caption" color="text.secondary">
-              {post.likeCount || 0} likes
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              ·
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {post.commentCount || 0} comments
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              ·
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {post.shareCount || 0} shares
-            </Typography>
-          </Box>
-          
-          <Divider sx={{ mb: 1 }} />
-          
-          {/* Post actions */}
-          <Box display="flex" justifyContent="space-around" sx={{ py: 0.5 }}>
-            <Button 
-              startIcon={<Heart size={18} />}
-              onClick={async () => await handleLikePost(post.id)}
-              sx={{ 
-                textTransform: 'none', 
-                fontWeight: 600, 
-                color: post.isLiked ? theme.palette.error.main : 'inherit',
-                flex: 1,
-                justifyContent: 'flex-start',
-                px: 1.5,
-                minWidth: 0,
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                }
-              }}
-            >
-              Like
-            </Button>
-            <Button 
-              startIcon={<MessageSquare size={18} />}
-              onClick={() => handleCommentClick(post.id)}
-              sx={{ 
-                textTransform: 'none', 
-                fontWeight: 600, 
-                flex: 1,
-                justifyContent: 'flex-start',
-                px: 1.5,
-                minWidth: 0,
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                }
-              }}
-            >
-              Comment
-            </Button>
-            <Button 
-              startIcon={<Bookmark size={18} />}
-              onClick={async () => await handleBookmarkPost(post.id)}
-              sx={{ 
-                textTransform: 'none', 
-                fontWeight: 600, 
-                color: post.isBookmarked ? theme.palette.primary.main : 'inherit',
-                flex: 1,
-                justifyContent: 'flex-start',
-                px: 1.5,
-                minWidth: 0,
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                }
-              }}
-            >
-              Bookmark
-            </Button>
-            <Button 
-              startIcon={<ShareIcon size={18} />}
-              onClick={() => handleSharePost(post.id)}
-              sx={{ 
-                textTransform: 'none', 
-                fontWeight: 600, 
-                flex: 1,
-                justifyContent: 'flex-start',
-                px: 1.5,
-                minWidth: 0,
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                }
-              }}
-            >
-              Share
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
-    );
+              
+              {/* Post stats */}
+              <Box display="flex" alignItems="center" gap={1} mb={1}>
+                <Typography variant="caption" color="text.secondary">
+                  {post.likeCount || 0} likes
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  ·
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {post.commentCount || 0} comments
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  ·
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {post.shareCount || 0} shares
+                </Typography>
+              </Box>
+              
+              <Divider sx={{ mb: 1 }} />
+              
+              {/* Post actions */}
+              <Box display="flex" justifyContent="space-around" sx={{ py: 0.5 }}>
+                <Button 
+                  startIcon={<Heart size={18} />}
+                  onClick={async () => await handleLikePost(post.id)}
+                  sx={{ 
+                    textTransform: 'none', 
+                    fontWeight: 600, 
+                    color: post.isLiked ? theme.palette.error.main : 'inherit',
+                    flex: 1,
+                    justifyContent: 'flex-start',
+                    px: 1.5,
+                    minWidth: 0,
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                    }
+                  }}
+                >
+                  Like
+                </Button>
+                <Button 
+                  startIcon={<MessageSquare size={18} />}
+                  onClick={() => handleCommentClick(post.id)}
+                  sx={{ 
+                    textTransform: 'none', 
+                    fontWeight: 600, 
+                    flex: 1,
+                    justifyContent: 'flex-start',
+                    px: 1.5,
+                    minWidth: 0,
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                    }
+                  }}
+                >
+                  Comment
+                </Button>
+                <Button 
+                  startIcon={<Bookmark size={18} />}
+                  onClick={async () => await handleBookmarkPost(post.id)}
+                  sx={{ 
+                    textTransform: 'none', 
+                    fontWeight: 600, 
+                    color: post.isBookmarked ? theme.palette.primary.main : 'inherit',
+                    flex: 1,
+                    justifyContent: 'flex-start',
+                    px: 1.5,
+                    minWidth: 0,
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                    }
+                  }}
+                >
+                  Bookmark
+                </Button>
+                <Button 
+                  startIcon={<ShareIcon size={18} />}
+                  onClick={() => handleSharePost(post.id)}
+                  sx={{ 
+                    textTransform: 'none', 
+                    fontWeight: 600, 
+                    flex: 1,
+                    justifyContent: 'flex-start',
+                    px: 1.5,
+                    minWidth: 0,
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                    }
+                  }}
+                >
+                  Share
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        );
+    }
   };
 
   return (
@@ -563,7 +644,7 @@ const SocialPage: React.FC = () => {
 
             {/* Feed content */}
               <Box>
-                {loading && posts.length === 0 ? (
+                {loading && feedItems.length === 0 ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                     <CircularProgress size={32} />
                   </Box>
@@ -591,7 +672,7 @@ const SocialPage: React.FC = () => {
                       Try Again
                     </Button>
                   </Paper>
-                ) : posts.length === 0 ? (
+                ) : displayFeedItems.length === 0 ? (
                   <Paper 
                     sx={{ 
                       p: 4, 
@@ -619,9 +700,9 @@ const SocialPage: React.FC = () => {
                   </Paper>
                 ) : (
                   <Box>
-                    {posts.map((post) => (
-                      <Box key={post.id}>
-                        {renderPost(post)}
+                    {displayFeedItems.map((item) => (
+                      <Box key={item.id}>
+                        {renderFeedItem(item)}
                       </Box>
                     ))}
                   </Box>
@@ -672,6 +753,16 @@ const SocialPage: React.FC = () => {
         onPostCreated={() => {
           // Refresh posts after creating a new one
           typedFetchPosts({ reset: true });
+          refreshFeed(); // Also refresh the ad-blended feed
+          
+          // Additionally, dispatch the events to ensure all components update
+          try {
+            // Dispatch refresh event to ensure ad-blended feed is updated
+            const refreshEvent = new CustomEvent('posts:refresh', { detail: { feedType: currentFeedType } });
+            window.dispatchEvent(refreshEvent);
+          } catch (e) {
+            console.error('Error dispatching refresh event:', e);
+          }
         }}
       />
 

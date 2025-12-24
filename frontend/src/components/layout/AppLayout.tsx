@@ -30,7 +30,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [sidebarOpen, setSidebarOpen] = useState(false);  // Start with sidebar closed on all devices
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -71,9 +71,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       {/* Sidebar */}
       {shouldShowSidebar && (
         <Sidebar
-          open={sidebarOpen && (isMobile || isTablet)}
+          open={sidebarOpen}
           onClose={handleSidebarClose}
-          variant={isMobile ? 'temporary' : 'persistent'}
+          variant={isMobile ? 'temporary' : 'persistent'}  // Use persistent for desktop but allow collapsible behavior
           width={sidebarWidth}
         />
       )}
@@ -85,7 +85,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           flexGrow: 1,
           bgcolor: 'background.default',
           minHeight: '120vh',
-          marginLeft: 0,
+          marginLeft: sidebarOpen && !isMobile ? `${sidebarWidth}px` : 0,
           marginTop: shouldShowTopBar ? '64px' : 0,
           transition: theme.transitions.create(['margin'], {
             easing: theme.transitions.easing.sharp,

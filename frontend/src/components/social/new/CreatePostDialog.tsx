@@ -232,10 +232,41 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
               post: postResponse
             });
           }
+          
+          // Ensure post has proper structure before dispatching
+          const normalizedPost = {
+            ...postResponse,
+            id: postResponse.id || postResponse._id,
+            _id: postResponse._id || postResponse.id,
+            // Ensure media has proper structure
+            media: Array.isArray(postResponse.media) ? postResponse.media : (postResponse.media ? [postResponse.media] : []),
+            // Ensure author is properly structured
+            author: postResponse.author || {
+              id: postResponse.authorId || (response.data?.post?.authorId || response.data?.post?.author?._id || response.data?.post?.author?.id),
+              username: response.data?.post?.author?.username || 'Unknown User',
+              displayName: response.data?.post?.author?.displayName || response.data?.post?.author?.username || 'Unknown User',
+              avatar: response.data?.post?.author?.avatar,
+            },
+            // Ensure counts are properly set
+            likeCount: postResponse.likeCount || 0,
+            commentCount: postResponse.commentCount || 0,
+            shareCount: postResponse.shareCount || 0,
+            bookmarkCount: postResponse.bookmarkCount || 0,
+            // Ensure timestamps are properly set
+            createdAt: postResponse.createdAt || new Date().toISOString(),
+            updatedAt: postResponse.updatedAt || new Date().toISOString(),
+            // Ensure privacy and other fields
+            privacy: postResponse.privacy || 'public',
+            type: postResponse.type || postType,
+            isLiked: postResponse.isLiked || false,
+            isBookmarked: postResponse.isBookmarked || false,
+            isShared: postResponse.isShared || false,
+          };
+          
           // Dispatch a custom event that feeds can listen to, to prepend the post immediately
           try {
-            console.log('Dispatching posts:new event with post:', postResponse);
-            const event = new CustomEvent('posts:new', { detail: { post: postResponse } });
+            console.log('Dispatching posts:new event with normalized post:', normalizedPost);
+            const event = new CustomEvent('posts:new', { detail: { post: normalizedPost } });
             window.dispatchEvent(event);
           } catch (e) {
             console.error('Error dispatching posts:new event:', e);

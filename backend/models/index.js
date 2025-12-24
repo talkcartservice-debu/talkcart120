@@ -29,6 +29,13 @@ const WebhookEvent = require('./WebhookEvent');
 const SupportTicket = require('./SupportTicket');
 const SupportTicketMessage = require('./SupportTicketMessage');
 
+// Ad System Models
+const Ad = require('./Ad');
+const AdCampaign = require('./AdCampaign');
+const AdSet = require('./AdSet');
+const ProductPost = require('./ProductPost');
+const TrackingEvent = require('./TrackingEvent');
+
 module.exports = {
   User,
   Post,
@@ -56,5 +63,11 @@ module.exports = {
   EmailLog,
   WebhookEvent,
   SupportTicket,
-  SupportTicketMessage
+  SupportTicketMessage,
+  // Ad System Models
+  Ad,
+  AdCampaign,
+  AdSet,
+  ProductPost,
+  TrackingEvent
 };
