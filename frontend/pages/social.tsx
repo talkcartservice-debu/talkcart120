@@ -46,6 +46,7 @@ import { useAdBlending } from '@/components/ads/AdBlendingService';
 import AdCard from '@/components/ads/AdCard';
 import ProductPostCard from '@/components/ads/ProductPostCard';
 import { CreatePostDialog } from '@/components/social/new/CreatePostDialog';
+import VendorProductPostCreator from '@/components/ads/VendorProductPostCreator';
 import ShareDialog from '@/components/share/ShareDialog';
 import api from '@/lib/api';
 
@@ -216,6 +217,18 @@ const SocialPage: React.FC = () => {
     if (feedItem && feedItem.type === 'post') {
       setSelectedPost(feedItem.data);
       setShareDialogOpen(true);
+    }
+  };
+
+  const handleCreateProductPost = (postId: string) => {
+    // Find the post in the feedItems array
+    const feedItem = feedItems.find(item => item.data.id === postId || item.data._id === postId);
+    if (feedItem && feedItem.type === 'post') {
+      // Open the CreatePostDialog with the VendorProductPostCreator functionality
+      // This will be handled by the enhanced CreatePostDialog
+      setCreatePostOpen(true);
+      // We'll pass the postId to the dialog to link a product to it
+      // The dialog will handle this in a special mode
     }
   };
 

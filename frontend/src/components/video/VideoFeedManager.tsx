@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { Box, Fab, Tooltip, Badge } from '@mui/material';
 import { 
-  Pause, 
-  Play, 
   Settings,
   BarChart3,
   Wifi,
@@ -10,7 +8,6 @@ import {
 } from 'lucide-react';
 import { useVideoAutoscroll, VideoAutoscrollSettings } from '@/hooks/useVideoAutoscroll';
 import { getSmoothScrollVideoManager } from '@/utils/smoothScrollVideoManager';
-import { getVolumeIcon, getVolumeTooltip } from '@/utils/videoUtils';
 import toast from 'react-hot-toast';
 
 
@@ -68,18 +65,10 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
   });
 
   const [isOnline, setIsOnline] = useState(true);
-  const [globalMuted, setGlobalMuted] = useState(false);
+
   const [isMobile, setIsMobile] = useState(false);
 
-  // Update globalMuted when settings change
-  useEffect(() => {
-    setGlobalMuted(settings.muteByDefault);
-  }, [settings.muteByDefault]);
 
-  // Ensure globalMuted stays in sync with settings
-  useEffect(() => {
-    setGlobalMuted(settings.muteByDefault);
-  }, [settings]);
 
   const [scrollVideoManager] = useState(() => getSmoothScrollVideoManager({
     scrollThreshold: 30,
@@ -110,8 +99,7 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
               muteByDefault: true,
             };
             
-            // Update globalMuted state when settings change
-            setGlobalMuted(newSettings.muteByDefault);
+
             
             return newSettings;
           });
@@ -337,21 +325,7 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
     }
   }, []);
 
-  // Handle global mute toggle
-  const toggleGlobalMute = useCallback(() => {
-    const newMutedState = !globalMuted;
-    setGlobalMuted(newMutedState);
-    
-    // Apply to all video elements
-    videos.forEach((video) => {
-      if (video.element) {
-        video.element.muted = newMutedState;
-      }
-    });
-    
-    updateSettings({ muteByDefault: newMutedState });
-    toast.success(newMutedState ? 'Videos muted' : 'Videos unmuted');
-  }, [globalMuted, videos, updateSettings]);
+
 
   // Handle pause all videos
   const handlePauseAll = useCallback(() => {
@@ -359,17 +333,7 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
     toast.success('All videos paused');
   }, [pauseAllVideos]);
 
-  // Handle autoplay toggle
-  const toggleAutoplay = useCallback(() => {
-    const newEnabled = !settings.enabled;
-    updateSettings({ enabled: newEnabled });
-    
-    if (!newEnabled) {
-      pauseAllVideos();
-    }
-    
-    toast.success(newEnabled ? 'Autoplay enabled' : 'Autoplay disabled');
-  }, [settings.enabled, updateSettings, pauseAllVideos]);
+
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue: VideoFeedContextValue = useMemo(() => ({
@@ -448,56 +412,17 @@ export const VideoFeedProvider: React.FC<VideoFeedProviderProps> = ({
         </Tooltip>
       )}
 
-      {/* Global Mute Toggle */}
-      <Tooltip title={getVolumeTooltip(globalMuted ? 0 : 1)}>
-        <Fab
-          size="small"
-          color={globalMuted ? "default" : "primary"}
-          onClick={toggleGlobalMute}
-          sx={{ opacity: 0.8 }}
-        >
-          {getVolumeIcon(globalMuted ? 0 : 1, globalMuted)}
-        </Fab>
-      </Tooltip>
 
-      {/* Pause All */}
-      {stats.playingVideos > 0 && (
-        <Tooltip title="Pause all videos">
-          <Fab
-            size="small"
-            color="secondary"
-            onClick={handlePauseAll}
-            sx={{ opacity: 0.8 }}
-          >
-            <Pause size={20} />
-          </Fab>
-        </Tooltip>
-      )}
 
-      {/* Autoplay Toggle */}
-      <Tooltip title={settings.enabled ? 'Disable autoplay' : 'Enable autoplay'}>
-        <Fab
-          size="small"
-          color={settings.enabled ? "primary" : "default"}
-          onClick={toggleAutoplay}
-          sx={{ opacity: 0.8 }}
-        >
-          {settings.enabled ? <Play size={20} /> : <Pause size={20} />}
-        </Fab>
-      </Tooltip>
+
+
+
     </Box>
   ), [
     showControls,
     showStats,
     isOnline,
-    stats,
-    globalMuted,
-    settings.enabled,
-    toggleGlobalMute,
-    handlePauseAll,
-    toggleAutoplay,
-    getVolumeTooltip,
-    getVolumeIcon
+    stats
   ]);
 
   return (

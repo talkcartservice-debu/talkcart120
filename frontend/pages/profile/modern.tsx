@@ -87,39 +87,37 @@ const StatsCard: React.FC<{ label: string; value: number; icon: React.ReactNode;
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+    const cardBackground = `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.primary.main, 0.05)})`;
+    const cardBorder = `1px solid ${alpha(theme.palette.primary.main, 0.2)}`;
+
     return (
-        <Paper
-            elevation={0}
+        <div
             onClick={onClick}
-            sx={{
-                p: { xs: 1, sm: 2.5 },
+            style={{
+                padding: isMobile ? '4px' : '20px',
                 textAlign: 'center',
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.primary.main, 0.05)})`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                borderRadius: 2,
+                background: cardBackground,
+                border: cardBorder,
+                borderRadius: '16px',
                 transition: 'all 0.3s ease',
                 cursor: onClick ? 'pointer' : 'default',
-                '&:hover': {
-                    transform: onClick ? 'translateY(-2px)' : 'none',
-                    boxShadow: onClick ? `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}` : 'none',
-                    border: onClick ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}` : `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                },
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center'
             }}
+            className="stats-card"
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
-                <Box sx={{ color: 'primary.main', mr: 0.5 }}>{icon}</Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
+                <Box sx={{ color: theme.palette.primary.main, marginRight: '4px' }}>{icon}</Box>
                 <Typography variant={isMobile ? "h6" : "h4"} fontWeight="bold" color="primary.main">
                     {value.toLocaleString()}
                 </Typography>
             </Box>
-            <Typography variant="body2" color="text.secondary" fontWeight="medium" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>
+            <Typography variant="body2" color="text.secondary" fontWeight="medium" style={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>
                 {label}
             </Typography>
-        </Paper>
+        </div>
     );
 };
 
@@ -143,39 +141,39 @@ const ProfileHeader: React.FC<{
         }
     }, [onAvatarUpdate]);
 
+    // Use a simple div instead of Paper component to avoid parsing issues entirely
     return (
-        <Paper
-            elevation={isMobile ? 0 : 1}
-            sx={{
+        <div 
+            className="profile-header-paper"
+            style={{
                 position: 'relative',
                 overflow: 'hidden',
-                borderRadius: isMobile ? 0 : 3,
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
-                border: isMobile ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                borderRadius: isMobile ? 0 : 24,
+                background: '#f5f5f5',
+                border: isMobile ? 'none' : '1px solid #e0e0e0',
+                boxShadow: isMobile ? 'none' : '0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)',
             }}
         >
-
-
             {/* Profile Content */}
-            <Box sx={{ p: { xs: 1, sm: 3 }, pt: 0 }}>
+            <Box sx={{ p: { xs: 0.5, sm: 1.5, md: 3 }, pt: 0 }}>
                 {/* Avatar and Basic Info */}
                 <Box sx={{ 
                     display: 'flex', 
                     alignItems: { xs: 'center', sm: 'flex-end' }, 
                     flexDirection: { xs: 'column', sm: 'row' },
                     mb: 2, 
-                    mt: -4,
+                    mt: { xs: -2, sm: -4 },
                     textAlign: { xs: 'center', sm: 'left' }
                 }}>
                     <Box sx={{ position: 'relative', mr: { xs: 0, sm: 3 }, mb: { xs: 2, sm: 0 } }}>
                         <Avatar
                             src={profile.avatar}
                             sx={{
-                                width: { xs: 60, sm: 120 },
-                                height: { xs: 60, sm: 120 },
-                                border: `4px solid ${theme.palette.background.paper}`,
+                                width: { xs: 56, sm: 90, md: 120 },
+                                height: { xs: 56, sm: 90, md: 120 },
+                                border: '4px solid ' + theme.palette.background.paper,
                                 boxShadow: theme.shadows[8],
-                                fontSize: { xs: '1.2rem', sm: '2.5rem' },
+                                fontSize: { xs: '1rem', sm: '1.5rem', md: '2.5rem' },
                                 fontWeight: 'bold',
                             }}
                         >
@@ -195,7 +193,7 @@ const ProfileHeader: React.FC<{
                                         cover: undefined
                                     } as any}
                                     onUploadSuccess={handleAvatarUploadSuccess}
-                                    size={isMobile ? 60 : 120}
+                                    size={isMobile ? 56 : 120}
                                     showUploadButton={true}
                                     allowRemove={true}
                                     disabled={false}
@@ -218,7 +216,7 @@ const ProfileHeader: React.FC<{
                             justifyContent: { xs: 'center', sm: 'flex-start' },
                             flexWrap: 'wrap'
                         }}>
-                            <Typography variant={isMobile ? "h6" : "h4"} fontWeight="bold">
+                        <Typography variant={isMobile ? "h6" : "h5"} fontWeight="bold" noWrap sx={{ maxWidth: '100%' }}>
                                 {profile.displayName || profile.username}
                             </Typography>
                             {profile.isVerified && (
@@ -239,7 +237,8 @@ const ProfileHeader: React.FC<{
                             color="text.secondary" 
                             sx={{ 
                                 mb: 1.5,
-                                fontSize: { xs: '0.8rem', sm: '1rem' }
+                                fontSize: { xs: '0.65rem', sm: '0.75rem', md: '1rem' },
+                                wordBreak: 'break-word'
                             }}
                         >
                             @{profile.username}
@@ -249,42 +248,35 @@ const ProfileHeader: React.FC<{
                         <Box sx={{ 
                             display: 'flex', 
                             flexDirection: { xs: 'column', sm: 'row' },
-                            gap: 1,
+                            gap: { xs: 1, sm: 1.5 },
                             width: '100%'
                         }}>
+                        <Box sx={{ 
+                            display: 'flex', 
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
+                            gap: { xs: 0.5, sm: 1 },
+                            width: '100%',
+                            justifyContent: { xs: 'center', sm: 'flex-start' }
+                        }}>
                             {isOwnProfile ? (
-                                <>
-                                    <Button
-                                        variant="contained"
-                                        startIcon={<Edit />}
-                                        onClick={onEditProfile}
-                                        size={isMobile ? "small" : "medium"}
-                                        sx={{ 
-                                            borderRadius: 2,
-                                            mb: { xs: 1, sm: 0 },
-                                            width: { xs: '100%', sm: 'auto' },
-                                            fontSize: isMobile ? '0.8rem' : '1rem',
-                                            py: isMobile ? 0.5 : 1
-                                        }}
-                                    >
-                                        {isMobile ? "Edit" : "Edit Profile"}
-                                    </Button>
-                                    <IconButton 
-                                        sx={{ 
-                                            bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                            width: { xs: '100%', sm: 'auto' }
-                                        }}
-                                    >
-                                        <Settings />
-                                    </IconButton>
-                                </>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<Edit />}
+                                    onClick={onEditProfile}
+                                    size={isMobile ? "small" : "medium"}
+                                    sx={{ 
+                                        borderRadius: 2,
+                                        mb: { xs: 0, sm: 0 },
+                                        minWidth: { xs: '40%', sm: 'auto' },
+                                        fontSize: { xs: '0.7rem', sm: '0.8rem', md: '1rem' },
+                                        py: isMobile ? 0.5 : 1
+                                    }}
+                                >
+                                    {isMobile ? "Edit" : "Edit Profile"}
+                                </Button>
                             ) : (
-                                <Box sx={{ 
-                                    display: 'flex', 
-                                    flexDirection: { xs: 'column', sm: 'row' },
-                                    gap: 1,
-                                    width: '100%'
-                                }}>
+                                <>
                                     <Button
                                         variant="contained"
                                         startIcon={profile.isFollowing ? <PersonRemove /> : <PersonAdd />}
@@ -293,9 +285,9 @@ const ProfileHeader: React.FC<{
                                         size={isMobile ? "small" : "medium"}
                                         sx={{ 
                                             borderRadius: 2,
-                                            mb: { xs: 1, sm: 0 },
-                                            width: { xs: '100%', sm: 'auto' },
-                                            fontSize: isMobile ? '0.8rem' : '1rem',
+                                            mb: { xs: 0, sm: 0 },
+                                            minWidth: { xs: '40%', sm: 'auto' },
+                                            fontSize: { xs: '0.7rem', sm: '0.8rem', md: '1rem' },
                                             py: isMobile ? 0.5 : 1
                                         }}
                                     >
@@ -308,31 +300,18 @@ const ProfileHeader: React.FC<{
                                         size={isMobile ? "small" : "medium"}
                                         sx={{ 
                                             borderRadius: 2,
-                                            mb: { xs: 1, sm: 0 },
-                                            width: { xs: '100%', sm: 'auto' },
-                                            fontSize: isMobile ? '0.8rem' : '1rem',
+                                            mb: { xs: 0, sm: 0 },
+                                            minWidth: { xs: '40%', sm: 'auto' },
+                                            fontSize: { xs: '0.7rem', sm: '0.8rem', md: '1rem' },
                                             py: isMobile ? 0.5 : 1
                                         }}
                                     >
                                         {isMobile ? "Message" : "Message"}
                                     </Button>
-                                    <IconButton sx={{ 
-                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                        width: { xs: '100%', sm: 'auto' }
-                                    }}>
-                                        <Share />
-                                    </IconButton>
-                                    <IconButton sx={{ 
-                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                        width: { xs: '100%', sm: 'auto' }
-                                    }}>
-                                        <MoreVert />
-                                    </IconButton>
-                                </Box>
+                                </>
                             )}
                         </Box>
                     </Box>
-                </Box>
 
                 {/* Bio */}
                 {profile.bio && (
@@ -342,7 +321,8 @@ const ProfileHeader: React.FC<{
                             mb: 2, 
                             lineHeight: 1.5,
                             textAlign: { xs: 'center', sm: 'left' },
-                            fontSize: isMobile ? '0.85rem' : '1rem'
+                            fontSize: { xs: '0.75rem', sm: '0.85rem', md: '1rem' },
+                            wordBreak: 'break-word'
                         }}
                     >
                         {profile.bio}
@@ -355,7 +335,7 @@ const ProfileHeader: React.FC<{
                     display: 'flex',
                     flexDirection: { xs: 'column', sm: 'row' },
                     alignItems: { xs: 'center', sm: 'flex-start' },
-                    gap: 1
+                    gap: { xs: 0.5, sm: 1 }
                 }}>
                     <Box sx={{ 
                         display: 'flex', 
@@ -363,8 +343,8 @@ const ProfileHeader: React.FC<{
                         gap: 0.5,
                         mb: { xs: 0.5, sm: 0 }
                     }}>
-                        <LocationOn sx={{ fontSize: isMobile ? 14 : 18, color: 'text.secondary' }} />
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
+                        <LocationOn sx={{ fontSize: { xs: 12, sm: 14, md: 18 }, color: 'text.secondary' }} />
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' }, wordBreak: 'break-word' }}>
                             {profile.location}
                         </Typography>
                     </Box>
@@ -376,7 +356,7 @@ const ProfileHeader: React.FC<{
                             gap: 0.5,
                             mb: { xs: 0.5, sm: 0 }
                         }}>
-                            <LinkIcon sx={{ fontSize: isMobile ? 14 : 18, color: 'text.secondary' }} />
+                            <LinkIcon sx={{ fontSize: { xs: 12, sm: 14, md: 18 }, color: 'text.secondary' }} />
                             <Typography
                                 variant="body2"
                                 color="primary"
@@ -387,11 +367,11 @@ const ProfileHeader: React.FC<{
                                     textDecoration: 'none', 
                                     '&:hover': { textDecoration: 'underline' },
                                     wordBreak: 'break-all',
-                                    fontSize: isMobile ? '0.75rem' : '0.875rem'
+                                    fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' }
                                 }}
                             >
-                                {profile.website.replace(/^https?:\/\//, '').substring(0, isMobile ? 20 : 30)}
-                                {profile.website.replace(/^https?:\/\//, '').length > (isMobile ? 20 : 30) ? '...' : ''}
+                                {profile.website.replace(/^https?:\/\//, '').substring(0, isMobile ? 15 : 30)}
+                                {profile.website.replace(/^https?:\/\//, '').length > (isMobile ? 15 : 30) ? '...' : ''}
                             </Typography>
                         </Box>
                     )}
@@ -401,8 +381,8 @@ const ProfileHeader: React.FC<{
                         alignItems: 'center', 
                         gap: 0.5
                     }}>
-                        <CalendarToday sx={{ fontSize: isMobile ? 14 : 18, color: 'text.secondary' }} />
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
+                        <CalendarToday sx={{ fontSize: { xs: 12, sm: 14, md: 18 }, color: 'text.secondary' }} />
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}>
                             Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', {
                                 month: 'short',
                                 year: 'numeric'
@@ -412,7 +392,7 @@ const ProfileHeader: React.FC<{
                 </Box>
 
                 {/* Stats - Responsive grid */}
-                <Grid container spacing={0.5}>
+                <Grid container spacing={1}>
                     <Grid item xs={6} sm={3}>
                         <StatsCard
                             label="Posts"
@@ -449,7 +429,9 @@ const ProfileHeader: React.FC<{
                     </Grid>
                 </Grid>
             </Box>
-        </Paper>
+        </Box>
+    </Box>
+</div>
     );
 };
 
@@ -474,13 +456,13 @@ const ContentTabs: React.FC<{
     ];
 
     return (
-        <Paper
-            elevation={isMobile ? 0 : 1}
-            sx={{
-                borderRadius: isMobile ? 0 : 2,
-                border: isMobile ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        <div
+            style={{
+                borderRadius: isMobile ? '0px' : '16px',
+                border: isMobile ? 'none' : '1px solid ' + alpha(theme.palette.divider, 0.1),
                 overflow: 'hidden',
             }}
+            className="content-tabs"
         >
             <Tabs
                 value={value}
@@ -523,7 +505,7 @@ const ContentTabs: React.FC<{
                     />
                 ))}
             </Tabs>
-        </Paper>
+        </div>
     );
 };
 
@@ -671,15 +653,15 @@ const ModernProfilePage: React.FC = () => {
     if (error) {
         return (
             <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 } }}>
-                <Paper
-                    elevation={0}
-                    sx={{
-                        p: { xs: 2, sm: 4 },
+                <div
+                    style={{
+                        padding: isMobile ? '8px' : '16px',
                         textAlign: 'center',
-                        borderRadius: 3,
+                        borderRadius: '24px',
                         border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
-                        bgcolor: alpha(theme.palette.error.main, 0.05),
+                        backgroundColor: alpha(theme.palette.error.main, 0.05),
                     }}
+                    className="error-container"
                 >
                     <Typography variant="h5" color="error" gutterBottom>
                         Profile Not Found
@@ -694,7 +676,7 @@ const ModernProfilePage: React.FC = () => {
                     >
                         Go Home
                     </Button>
-                </Paper>
+                </div>
             </Container>
         );
     }
@@ -702,7 +684,7 @@ const ModernProfilePage: React.FC = () => {
     if (!profile) return null;
 
     return (
-        <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 4 } }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 0.5, sm: 2, md: 4 } }}>
             <Box>
                 {/* Profile Header */}
                 <ProfileHeader
@@ -717,24 +699,24 @@ const ModernProfilePage: React.FC = () => {
                 />
 
                 {/* Content Tabs */}
-                <Box sx={{ mt: { xs: 1, sm: 4 } }}>
+                <Box sx={{ mt: { xs: 0.5, sm: 2, md: 4 } }}>
                     <ContentTabs
                         value={tab}
                         onChange={handleTabChange}
                         isOwnProfile={isOwnProfile}
                         profile={profile}
                     />
-
+                
                     {/* Tab Content */}
-                    <Paper
-                        elevation={isMobile ? 0 : 1}
-                        sx={{
-                            mt: 0,
-                            borderRadius: isMobile ? 0 : '0 0 12px 12px',
+                    <div
+                        style={{
+                            marginTop: 0,
+                            borderRadius: isMobile ? '0px' : '0 0 12px 12px',
                             border: isMobile ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                             borderTop: 'none',
-                            minHeight: 400,
+                            minHeight: isMobile ? '250px' : '400px',
                         }}
+                        className="tab-content"
                     >
                         <TabPanel value={tab} index={0}>
                             <UserPosts 
@@ -742,7 +724,7 @@ const ModernProfilePage: React.FC = () => {
                               isOwnProfile={isOwnProfile} 
                             />
                         </TabPanel>
-
+                    
                         <TabPanel value={tab} index={1}>
                             <Box p={isMobile ? 1 : 3}>
                                 <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
@@ -753,7 +735,7 @@ const ModernProfilePage: React.FC = () => {
                                 </Typography>
                             </Box>
                         </TabPanel>
-
+                    
                         <TabPanel value={tab} index={2}>
                             <Box p={isMobile ? 1 : 3}>
                                 <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
@@ -764,19 +746,19 @@ const ModernProfilePage: React.FC = () => {
                                 </Typography>
                             </Box>
                         </TabPanel>
-
+                    
                         <TabPanel value={tab} index={3}>
                             {profile && (
                                 <FollowersList userId={profile.id} />
                             )}
                         </TabPanel>
-
+                    
                         <TabPanel value={tab} index={4}>
                             {profile && (
                                 <FollowingList userId={profile.id} />
                             )}
                         </TabPanel>
-
+                    
                         <TabPanel value={tab} index={5}>
                             <Box p={isMobile ? 1 : 3}>
                                 <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
@@ -787,7 +769,7 @@ const ModernProfilePage: React.FC = () => {
                                 </Typography>
                             </Box>
                         </TabPanel>
-
+                    
                         <TabPanel value={tab} index={6}>
                             <Box p={isMobile ? 1 : 3}>
                                 <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
@@ -798,7 +780,7 @@ const ModernProfilePage: React.FC = () => {
                                 </Typography>
                             </Box>
                         </TabPanel>
-                    </Paper>
+                    </div>
                 </Box>
             </Box>
         </Container>

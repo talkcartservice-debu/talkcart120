@@ -325,22 +325,28 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
   }));
 
   // Format customer location data
-  const locationData = Object.entries(analytics.customerDemographics.locations).map(([location, count]) => ({
-    name: location,
-    value: count
-  }));
+  const locationData = analytics.customerDemographics.locations 
+    ? Object.entries(analytics.customerDemographics.locations).map(([location, count]) => ({
+        name: location,
+        value: typeof count === 'number' ? count : 0
+      }))
+    : [];
 
   // Format spending range data
-  const spendingRangeData = Object.entries(analytics.customerDemographics.spendingRanges).map(([range, count]) => ({
-    name: range,
-    value: count
-  }));
+  const spendingRangeData = analytics.customerDemographics.spendingRanges 
+    ? Object.entries(analytics.customerDemographics.spendingRanges).map(([range, count]) => ({
+        name: range,
+        value: typeof count === 'number' ? count : 0
+      }))
+    : [];
 
   // Format inventory category distribution
-  const categoryData = Object.entries(analytics.inventory.categoryDistribution).map(([category, data]) => ({
-    name: category,
-    value: data.value
-  }));
+  const categoryData = analytics.inventory.categoryDistribution 
+    ? Object.entries(analytics.inventory.categoryDistribution).map(([category, data]) => ({
+        name: category,
+        value: data && typeof data === 'object' && 'value' in data ? data.value : 0
+      }))
+    : [];
 
   return (
     <Box sx={{ mb: 4 }}>
@@ -350,7 +356,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
           fontWeight: 600, 
           mb: { xs: 2, sm: 3 }, 
           color: theme.palette.primary.main,
-          fontSize: { xs: '1.25rem', sm: '1.5rem' }
+          fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' }
         }}
       >
         Enhanced Vendor Analytics Dashboard
@@ -367,8 +373,9 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             borderBottom: 1, 
             borderColor: 'divider',
             '& .MuiTab-root': {
-              minHeight: 48,
-              fontSize: { xs: '0.875rem', sm: '1rem' }
+              minHeight: { xs: 40, sm: 48 },
+              fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+              minWidth: { xs: 60, sm: 72 }
             }
           }}
         >
@@ -384,15 +391,15 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
       {activeTab === 0 && (
         <Box>
           {/* Summary Cards */}
-          <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 4 } }}>
-            <Grid item xs={12} sm={6} md={3}>
+          <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: { xs: 2, sm: 4 } }}>
+            <Grid item xs={6} sm={6} md={3}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1.125rem' } }}
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                   >
                     Total Revenue
                   </Typography>
@@ -401,7 +408,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.success.main,
-                      fontSize: { xs: '1.5rem', sm: '2.125rem' }
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
                     }}
                   >
                     ${analytics.overview.totalRevenue.toFixed(2)}
@@ -410,14 +417,14 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1.125rem' } }}
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                   >
                     Total Sales
                   </Typography>
@@ -426,7 +433,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.info.main,
-                      fontSize: { xs: '1.5rem', sm: '2.125rem' }
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
                     }}
                   >
                     {analytics.overview.totalSales}
@@ -435,14 +442,14 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1.125rem' } }}
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                   >
                     Total Orders
                   </Typography>
@@ -451,7 +458,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.warning.main,
-                      fontSize: { xs: '1.5rem', sm: '2.125rem' }
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
                     }}
                   >
                     {analytics.overview.totalOrders}
@@ -460,39 +467,40 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1.125rem' } }}
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                   >
                     Average Rating
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column', gap: 0.5 }}>
                     <Typography 
                       variant="h4" 
                       sx={{ 
                         fontWeight: 700, 
                         color: theme.palette.secondary.main,
-                        fontSize: { xs: '1.5rem', sm: '2.125rem' }
+                        fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
                       }}
                     >
                       {analytics.overview.averageRating.toFixed(1)}
                     </Typography>
-                    <Chip 
-                      label={`${analytics.overview.totalReviews} reviews`} 
-                      size="small" 
-                      sx={{ 
-                        ml: 1, 
-                        bgcolor: theme.palette.secondary.light, 
-                        color: 'white',
-                        fontSize: { xs: '0.6rem', sm: '0.75rem' },
-                        height: { xs: 20, sm: 24 }
-                      }} 
-                    />
+                    <Box component="span" sx={{ display: 'inline-block' }}>
+                      <Chip 
+                        label={`${analytics.overview.totalReviews} reviews`} 
+                        size="small" 
+                        sx={{ 
+                          bgcolor: theme.palette.secondary.light, 
+                          color: 'white',
+                          fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' },
+                          height: { xs: 16, sm: 18, md: 24 }
+                        }} 
+                      />
+                    </Box>
                   </Box>
                 </CardContent>
               </Card>
@@ -500,22 +508,22 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
           </Grid>
           
           {/* Charts */}
-          <Grid container spacing={{ xs: 2, sm: 3 }}>
+          <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {/* Sales Trend Chart */}
             <Grid item xs={12} md={8}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Sales Trend
                   </Typography>
-                  <Box sx={{ height: { xs: 200, sm: 300 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
                     {salesTrendData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
@@ -525,10 +533,10 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis 
                             dataKey="date" 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                           />
                           <YAxis 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                           />
                           <Tooltip />
                           <Legend />
@@ -546,7 +554,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       }}>
                         <Typography 
                           color="text.secondary"
-                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, textAlign: 'center' }}
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}
                         >
                           No sales trend data available
                         </Typography>
@@ -560,18 +568,18 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             {/* Order Status Distribution */}
             <Grid item xs={12} md={4}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Order Status Distribution
                   </Typography>
-                  <Box sx={{ height: { xs: 200, sm: 300 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
                     {statusData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -580,7 +588,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                             cx="50%"
                             cy="50%"
                             labelLine={true}
-                            outerRadius={80}
+                            outerRadius={70}
                             fill="#8884d8"
                             dataKey="value"
                             label={({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
@@ -602,7 +610,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       }}>
                         <Typography 
                           color="text.secondary"
-                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, textAlign: 'center' }}
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}
                         >
                           No order status data available
                         </Typography>
@@ -616,43 +624,43 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             {/* Top Products */}
             <Grid item xs={12}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Top Performing Products
                   </Typography>
                   <Box sx={{ 
-                    maxHeight: { xs: 200, sm: 300 }, 
+                    maxHeight: { xs: 150, sm: 200, md: 300 }, 
                     overflow: 'auto',
                     pr: 1
                   }}>
                     {analytics.topProducts.length > 0 ? (
                       analytics.topProducts.map((product, index) => (
-                        <Box key={product.id || index} sx={{ mb: 2 }}>
+                        <Box key={product.id || index} sx={{ mb: 1.5 }}>
                           <Box sx={{ 
                             display: 'flex', 
                             justifyContent: 'space-between', 
-                            mb: 1,
+                            mb: 0.5,
                             flexDirection: { xs: 'column', sm: 'row' },
                             alignItems: { xs: 'flex-start', sm: 'center' },
                             gap: 0.5
                           }}>
                             <Typography 
                               variant="subtitle1"
-                              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                              sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                             >
                               {product.name || 'Unnamed Product'}
                             </Typography>
                             <Typography 
                               variant="body2" 
                               color="text.secondary"
-                              sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                              sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}
                             >
                               ${product.revenue.toFixed(2)} • {product.sales} sales • {product.quantity} units
                             </Typography>
@@ -662,7 +670,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                             value={analytics.topProducts.length > 0 
                               ? (product.revenue / Math.max(...analytics.topProducts.map(p => p.revenue))) * 100 
                               : 0}
-                            sx={{ height: 8, borderRadius: 4 }}
+                            sx={{ height: 6, borderRadius: 3 }}
                           />
                         </Box>
                       ))
@@ -676,7 +684,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       }}>
                         <Typography 
                           color="text.secondary"
-                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, textAlign: 'center' }}
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}
                         >
                           No top products data available
                         </Typography>
@@ -692,22 +700,22 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
       
       {activeTab === 1 && (
         <Box>
-          <Grid container spacing={{ xs: 2, sm: 3 }}>
+          <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {/* Revenue Trend Chart */}
             <Grid item xs={12} md={12}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Revenue Trend (30 Days)
                   </Typography>
-                  <Box sx={{ height: { xs: 200, sm: 400 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 250, md: 400 } }}>
                     {salesTrendData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart
@@ -717,10 +725,10 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis 
                             dataKey="date" 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                           />
                           <YAxis 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                             tickFormatter={(value) => `$${value}`}
                           />
                           <Tooltip 
@@ -748,7 +756,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       }}>
                         <Typography 
                           color="text.secondary"
-                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, textAlign: 'center' }}
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}
                         >
                           No revenue trend data available
                         </Typography>
@@ -762,18 +770,18 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             {/* Sales Volume Trend */}
             <Grid item xs={12} md={12}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Sales Volume Trend (30 Days)
                   </Typography>
-                  <Box sx={{ height: { xs: 200, sm: 400 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 250, md: 400 } }}>
                     {salesTrendData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
@@ -783,10 +791,10 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis 
                             dataKey="date" 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                           />
                           <YAxis 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                           />
                           <Tooltip />
                           <Legend />
@@ -810,7 +818,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       }}>
                         <Typography 
                           color="text.secondary"
-                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, textAlign: 'center' }}
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}
                         >
                           No sales volume data available
                         </Typography>
@@ -826,17 +834,17 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
       
       {activeTab === 2 && (
         <Box>
-          <Grid container spacing={{ xs: 2, sm: 3 }}>
+          <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {/* Customer Overview */}
             <Grid item xs={12} md={4}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Customer Overview
@@ -847,7 +855,8 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       sx={{ 
                         fontWeight: 700, 
                         color: theme.palette.primary.main,
-                        mb: 1
+                        mb: 1,
+                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
                       }}
                     >
                       {analytics.customerDemographics.totalCustomers}
@@ -855,6 +864,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     <Typography 
                       variant="h6" 
                       color="text.secondary"
+                      sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                     >
                       Total Customers
                     </Typography>
@@ -866,43 +876,43 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             {/* Top Customers */}
             <Grid item xs={12} md={8}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Top Customers
                   </Typography>
                   <Box sx={{ 
-                    maxHeight: { xs: 200, sm: 300 }, 
+                    maxHeight: { xs: 150, sm: 200, md: 300 }, 
                     overflow: 'auto',
                     pr: 1
                   }}>
                     {analytics.customerDemographics.topCustomers.length > 0 ? (
                       analytics.customerDemographics.topCustomers.map((customer, index) => (
-                        <Box key={customer.id || index} sx={{ mb: 2 }}>
+                        <Box key={customer.id || index} sx={{ mb: 1.5 }}>
                           <Box sx={{ 
                             display: 'flex', 
                             justifyContent: 'space-between', 
-                            mb: 1,
+                            mb: 0.5,
                             flexDirection: { xs: 'column', sm: 'row' },
                             alignItems: { xs: 'flex-start', sm: 'center' },
                             gap: 0.5
                           }}>
                             <Typography 
                               variant="subtitle1"
-                              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                              sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                             >
                               {customer.displayName || customer.username || 'Anonymous Customer'}
                             </Typography>
                             <Typography 
                               variant="body2" 
                               color="text.secondary"
-                              sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                              sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}
                             >
                               ${customer.totalSpent.toFixed(2)} • {customer.orderCount} orders
                             </Typography>
@@ -912,7 +922,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                             value={analytics.customerDemographics.topCustomers.length > 0 
                               ? (customer.totalSpent / Math.max(...analytics.customerDemographics.topCustomers.map(c => c.totalSpent))) * 100 
                               : 0}
-                            sx={{ height: 8, borderRadius: 4 }}
+                            sx={{ height: 6, borderRadius: 3 }}
                           />
                         </Box>
                       ))
@@ -926,7 +936,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       }}>
                         <Typography 
                           color="text.secondary"
-                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, textAlign: 'center' }}
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}
                         >
                           No customer data available
                         </Typography>
@@ -940,18 +950,18 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             {/* Customer Locations */}
             <Grid item xs={12} md={6}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Customer Locations
                   </Typography>
-                  <Box sx={{ height: { xs: 200, sm: 300 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
                     {locationData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -960,7 +970,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                             cx="50%"
                             cy="50%"
                             labelLine={true}
-                            outerRadius={80}
+                            outerRadius={70}
                             fill="#8884d8"
                             dataKey="value"
                             label={({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
@@ -982,7 +992,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       }}>
                         <Typography 
                           color="text.secondary"
-                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, textAlign: 'center' }}
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}
                         >
                           No location data available
                         </Typography>
@@ -996,18 +1006,18 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             {/* Spending Distribution */}
             <Grid item xs={12} md={6}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Customer Spending Distribution
                   </Typography>
-                  <Box sx={{ height: { xs: 200, sm: 300 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
                     {spendingRangeData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
@@ -1017,10 +1027,10 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis 
                             dataKey="name" 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                           />
                           <YAxis 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                           />
                           <Tooltip />
                           <Legend />
@@ -1037,7 +1047,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       }}>
                         <Typography 
                           color="text.secondary"
-                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, textAlign: 'center' }}
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}
                         >
                           No spending data available
                         </Typography>
@@ -1053,16 +1063,16 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
       
       {activeTab === 3 && (
         <Box>
-          <Grid container spacing={{ xs: 2, sm: 3 }}>
+          <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {/* Inventory Overview */}
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1.125rem' } }}
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                   >
                     Total Products
                   </Typography>
@@ -1071,7 +1081,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.info.main,
-                      fontSize: { xs: '1.5rem', sm: '2.125rem' }
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
                     }}
                   >
                     {analytics.inventory.totalProducts}
@@ -1080,14 +1090,14 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1.125rem' } }}
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                   >
                     Total Stock
                   </Typography>
@@ -1096,7 +1106,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.success.main,
-                      fontSize: { xs: '1.5rem', sm: '2.125rem' }
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
                     }}
                   >
                     {analytics.inventory.totalStock}
@@ -1105,14 +1115,14 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1.125rem' } }}
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                   >
                     Low Stock Items
                   </Typography>
@@ -1121,7 +1131,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.warning.main,
-                      fontSize: { xs: '1.5rem', sm: '2.125rem' }
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
                     }}
                   >
                     {analytics.inventory.lowStockItems}
@@ -1130,14 +1140,14 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={6} sm={6} md={3}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1.125rem' } }}
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                   >
                     Out of Stock
                   </Typography>
@@ -1146,7 +1156,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.error.main,
-                      fontSize: { xs: '1.5rem', sm: '2.125rem' }
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
                     }}
                   >
                     {analytics.inventory.outOfStockItems}
@@ -1158,13 +1168,13 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             {/* Inventory Value */}
             <Grid item xs={12} md={12}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Inventory Value
@@ -1175,7 +1185,8 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       sx={{ 
                         fontWeight: 700, 
                         color: theme.palette.primary.main,
-                        mb: 1
+                        mb: 1,
+                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
                       }}
                     >
                       ${analytics.inventory.totalValue.toFixed(2)}
@@ -1183,6 +1194,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     <Typography 
                       variant="h6" 
                       color="text.secondary"
+                      sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                     >
                       Total Inventory Value
                     </Typography>
@@ -1194,18 +1206,18 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             {/* Category Distribution */}
             <Grid item xs={12} md={12}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Inventory by Category
                   </Typography>
-                  <Box sx={{ height: { xs: 200, sm: 400 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 250, md: 400 } }}>
                     {categoryData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
@@ -1215,10 +1227,10 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis 
                             dataKey="name" 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                           />
                           <YAxis 
-                            tick={{ fontSize: 12 }} 
+                            tick={{ fontSize: 10 }} 
                             tickFormatter={(value) => `$${value}`}
                           />
                           <Tooltip 
@@ -1238,7 +1250,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       }}>
                         <Typography 
                           color="text.secondary"
-                          sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, textAlign: 'center' }}
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' }, textAlign: 'center' }}
                         >
                           No category data available
                         </Typography>
@@ -1254,17 +1266,17 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
       
       {activeTab === 4 && (
         <Box>
-          <Grid container spacing={{ xs: 2, sm: 3 }}>
+          <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {/* Performance Benchmarks */}
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={4} md={4}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Sales Performance
@@ -1279,7 +1291,8 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                           : analytics.performanceBenchmarks.benchmarks.salesPerformance === 'Below Average' 
                             ? theme.palette.error.main 
                             : theme.palette.warning.main,
-                        mb: 1
+                        mb: 1,
+                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
                       }}
                     >
                       {analytics.performanceBenchmarks.rankings.sales.toFixed(0)}%
@@ -1287,13 +1300,14 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     <Typography 
                       variant="h6" 
                       color="text.secondary"
+                      sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                     >
                       {analytics.performanceBenchmarks.benchmarks.salesPerformance}
                     </Typography>
                     <Typography 
                       variant="body2" 
                       color="text.secondary"
-                      sx={{ mt: 1 }}
+                      sx={{ mt: 1, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}
                     >
                       Your sales: ${analytics.performanceBenchmarks.vendor.totalSales.toFixed(2)}
                       <br />
@@ -1304,15 +1318,15 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={4} md={4}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Orders Performance
@@ -1327,7 +1341,8 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                           : analytics.performanceBenchmarks.benchmarks.ordersPerformance === 'Below Average' 
                             ? theme.palette.error.main 
                             : theme.palette.warning.main,
-                        mb: 1
+                        mb: 1,
+                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
                       }}
                     >
                       {analytics.performanceBenchmarks.rankings.orders.toFixed(0)}%
@@ -1335,13 +1350,14 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     <Typography 
                       variant="h6" 
                       color="text.secondary"
+                      sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                     >
                       {analytics.performanceBenchmarks.benchmarks.ordersPerformance}
                     </Typography>
                     <Typography 
                       variant="body2" 
                       color="text.secondary"
-                      sx={{ mt: 1 }}
+                      sx={{ mt: 1, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}
                     >
                       Your orders: {analytics.performanceBenchmarks.vendor.totalOrders}
                       <br />
@@ -1352,15 +1368,15 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={4} md={4}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Avg Order Value
@@ -1375,7 +1391,8 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                           : analytics.performanceBenchmarks.benchmarks.aovPerformance === 'Below Average' 
                             ? theme.palette.error.main 
                             : theme.palette.warning.main,
-                        mb: 1
+                        mb: 1,
+                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
                       }}
                     >
                       {analytics.performanceBenchmarks.rankings.avgOrderValue.toFixed(0)}%
@@ -1383,13 +1400,14 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                     <Typography 
                       variant="h6" 
                       color="text.secondary"
+                      sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                     >
                       {analytics.performanceBenchmarks.benchmarks.aovPerformance}
                     </Typography>
                     <Typography 
                       variant="body2" 
                       color="text.secondary"
-                      sx={{ mt: 1 }}
+                      sx={{ mt: 1, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}
                     >
                       Your AOV: ${analytics.performanceBenchmarks.vendor.avgOrderValue.toFixed(2)}
                       <br />
@@ -1403,18 +1421,18 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
             {/* Performance Comparison Chart */}
             <Grid item xs={12} md={12}>
               <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1, sm: 3 } }}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     sx={{ 
                       mb: 2, 
                       fontWeight: 600,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
                     Performance Comparison
                   </Typography>
-                  <Box sx={{ height: { xs: 200, sm: 400 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 250, md: 400 } }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={[
@@ -1436,17 +1454,17 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="name" 
-                          tick={{ fontSize: 12 }} 
+                          tick={{ fontSize: 10 }} 
                         />
                         <YAxis 
                           yAxisId="left"
-                          tick={{ fontSize: 12 }} 
+                          tick={{ fontSize: 10 }} 
                           tickFormatter={(value) => `$${value}`}
                         />
                         <YAxis 
                           yAxisId="right"
                           orientation="right"
-                          tick={{ fontSize: 12 }} 
+                          tick={{ fontSize: 10 }} 
                         />
                         <Tooltip 
                           formatter={(value, name) => {

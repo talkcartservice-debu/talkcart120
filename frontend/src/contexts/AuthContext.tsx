@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { api } from '@/lib/api';
+import api from '@/lib/api';
 import { User } from '@/types';
 import { normalizeAuthError } from '@/lib/authErrors';
 
@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     try {
-      const response = await api.auth.getProfile();
+      const response: any = await api.auth.getProfile();
 
       if (response.success && response.data) {
         // Persist user for future profile fetches
@@ -153,7 +153,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     try {
       // Call the backend API for authentication
-      const response = await api.auth.login(credentials);
+      const response: any = await api.auth.login(credentials);
 
       if (response && response.success) {
         const { accessToken, refreshToken, user } = response;
@@ -282,7 +282,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (userData: any) => {
     setLoading(true);
     try {
-      const response = await api.auth.register(userData);
+      const response: any = await api.auth.register(userData);
 
       if (response && response.success) {
         const { accessToken, refreshToken, user } = response;

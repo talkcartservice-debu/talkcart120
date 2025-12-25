@@ -27,6 +27,7 @@ import toast from 'react-hot-toast';
 import { api } from '@/lib/api';
 import { Post } from '@/types/social';
 import { validateMediaFile } from '@/utils/mediaValidation';
+import VendorProductPostCreator from '@/components/ads/VendorProductPostCreator';
 
 interface CreatePostDialogProps {
   open: boolean;
@@ -48,6 +49,8 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [detectedHashtags, setDetectedHashtags] = useState<string[]>([]);
   const [detectedMentions, setDetectedMentions] = useState<string[]>([]);
+  const [postResponseForProductPost, setPostResponseForProductPost] = useState<any>(null);
+  const [isCreatingProductPost, setIsCreatingProductPost] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async () => {
@@ -222,7 +225,37 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
       console.log('Post creation successful, postResponse:', postResponse);
       if (response?.success || postResponse) {
         toast.success('Post created successfully!');
-        resetForm();
+        
+        // Ensure post has proper structure before dispatching
+        const normalizedPost = {
+          ...postResponse,
+          id: postResponse.id || postResponse._id,
+          _id: postResponse._id || postResponse.id,
+          // Ensure media has proper structure
+          media: Array.isArray(postResponse.media) ? postResponse.media : (postResponse.media ? [postResponse.media] : []),
+          // Ensure author is properly structured
+          author: postResponse.author || {
+            id: postResponse.authorId || (response.data?.post?.authorId || response.data?.post?.author?._id || response.data?.post?.author?.id),
+            username: response.data?.post?.author?.username || 'Unknown User',
+            displayName: response.data?.post?.author?.displayName || response.data?.post?.author?.username || 'Unknown User',
+            avatar: response.data?.post?.author?.avatar,
+          },
+          // Ensure counts are properly set
+          likeCount: postResponse.likeCount || 0,
+          commentCount: postResponse.commentCount || 0,
+          shareCount: postResponse.shareCount || 0,
+          bookmarkCount: postResponse.bookmarkCount || 0,
+          // Ensure timestamps are properly set
+          createdAt: postResponse.createdAt || new Date().toISOString(),
+          updatedAt: postResponse.updatedAt || new Date().toISOString(),
+          // Ensure privacy and other fields
+          privacy: postResponse.privacy || 'public',
+          type: postResponse.type || postType,
+          isLiked: postResponse.isLiked || false,
+          isBookmarked: postResponse.isBookmarked || false,
+          isShared: postResponse.isShared || false,
+        };
+        
         // Emit socket event for real-time updates
         if (typeof window !== 'undefined') {
           // Emit socket event for real-time updates if available
@@ -232,36 +265,6 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
               post: postResponse
             });
           }
-          
-          // Ensure post has proper structure before dispatching
-          const normalizedPost = {
-            ...postResponse,
-            id: postResponse.id || postResponse._id,
-            _id: postResponse._id || postResponse.id,
-            // Ensure media has proper structure
-            media: Array.isArray(postResponse.media) ? postResponse.media : (postResponse.media ? [postResponse.media] : []),
-            // Ensure author is properly structured
-            author: postResponse.author || {
-              id: postResponse.authorId || (response.data?.post?.authorId || response.data?.post?.author?._id || response.data?.post?.author?.id),
-              username: response.data?.post?.author?.username || 'Unknown User',
-              displayName: response.data?.post?.author?.displayName || response.data?.post?.author?.username || 'Unknown User',
-              avatar: response.data?.post?.author?.avatar,
-            },
-            // Ensure counts are properly set
-            likeCount: postResponse.likeCount || 0,
-            commentCount: postResponse.commentCount || 0,
-            shareCount: postResponse.shareCount || 0,
-            bookmarkCount: postResponse.bookmarkCount || 0,
-            // Ensure timestamps are properly set
-            createdAt: postResponse.createdAt || new Date().toISOString(),
-            updatedAt: postResponse.updatedAt || new Date().toISOString(),
-            // Ensure privacy and other fields
-            privacy: postResponse.privacy || 'public',
-            type: postResponse.type || postType,
-            isLiked: postResponse.isLiked || false,
-            isBookmarked: postResponse.isBookmarked || false,
-            isShared: postResponse.isShared || false,
-          };
           
           // Dispatch a custom event that feeds can listen to, to prepend the post immediately
           try {
@@ -282,8 +285,13 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
           console.error('Error dispatching posts:refresh event:', e);
           // Ignore if CustomEvent is not supported
         }
+        
+        // Update the component state to show the option to make the post shoppable
+        setIsCreatingProductPost(true);
+        
+        // Don't close the dialog yet, allow user to create a product post
+        setPostResponseForProductPost(normalizedPost);
         onPostCreated?.(postResponse);
-        onClose();
       } else {
         throw new Error(response?.message || 'Failed to create post');
       }
@@ -299,8 +307,11 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
         toast.error(error.message || 'Failed to create post. Please try again.');
       }
     } finally {
-      setSubmitting(false);
-      setUploading(false);
+      if (!isCreatingProductPost) {
+        // Only set to false if we haven't already set up for product post creation
+        setSubmitting(false);
+        setUploading(false);
+      }
     }
   };
 
@@ -552,17 +563,40 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
       </DialogContent>
       
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={handleClose} disabled={submitting || uploading}>
-          Cancel
-        </Button>
-        <Button 
-          variant="contained" 
-          onClick={handleSubmit}
-          disabled={submitting || uploading || !content.trim()}
-          startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
-        >
-          {submitting ? 'Posting...' : 'Post'}
-        </Button>
+        {postResponseForProductPost && !submitting && !uploading ? (
+          // After post is created, show option to make it shoppable
+          <>
+            <Button onClick={() => {
+              setPostResponseForProductPost(null);
+              setIsCreatingProductPost(false);
+            }}>
+              Back
+            </Button>
+            <VendorProductPostCreator
+              postId={postResponseForProductPost.id || postResponseForProductPost._id}
+              onSuccess={() => {
+                toast.success('Product post created successfully!');
+                resetForm();
+                onClose();
+              }}
+            />
+          </>
+        ) : (
+          // Initial state - create post
+          <>
+            <Button onClick={handleClose} disabled={submitting || uploading}>
+              Cancel
+            </Button>
+            <Button 
+              variant="contained" 
+              onClick={handleSubmit}
+              disabled={submitting || uploading || !content.trim()}
+              startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
+            >
+              {submitting ? 'Posting...' : 'Post'}
+            </Button>
+          </>
+        )}
       </DialogActions>
     </Dialog>
   );

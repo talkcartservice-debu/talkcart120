@@ -231,16 +231,18 @@ const UserPosts: React.FC<UserPostsProps> = ({ username, isOwnProfile }) => {
   }
 
   return (
-    <Box display="flex" flexDirection="column" gap={isMobile ? 1 : 2} p={isMobile ? 0.5 : 1}>
+    <Box display="flex" flexDirection="column" gap={isMobile ? 0.5 : 1} p={isMobile ? 0.25 : 1}>
       {posts.map((post) => (
-        <PostCard 
-          key={post.id} 
-          post={post} 
-          onLike={handleLikePost}
-          onBookmark={handleBookmarkPost}
-          onDelete={handleDeletePost}
-          onPostUpdate={handlePostUpdate} // Add this line
-        />
+        <Box key={post.id} sx={{ mb: isMobile ? 0.25 : 0.5 }}>
+          <PostCard 
+            key={post.id} 
+            post={post} 
+            onLike={handleLikePost}
+            onBookmark={handleBookmarkPost}
+            onDelete={handleDeletePost}
+            onPostUpdate={handlePostUpdate} // Add this line
+          />
+        </Box>
       ))}
     </Box>
   );

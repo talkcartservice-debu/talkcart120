@@ -148,6 +148,9 @@ class ApiService {
     // Attempts: 0 (original), then up to maxRetries with backoff
     // Backoff: +5s per retry, max 2x the original timeout
     // Do not retry non-timeout HTTP errors
+    // Increase retries for auth requests since they can be more complex
+    const isAuthRequest = url.includes('/auth');
+    const maxRetriesForThisRequest = isAuthRequest ? 3 : maxRetries; // Allow more retries for auth requests
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
@@ -156,11 +159,11 @@ class ApiService {
       } catch (err: any) {
         const isTimeout = (err?.name === 'AbortError') || (typeof err?.message === 'string' && err.message.toLowerCase().includes('timeout'));
         const isNetwork = typeof err?.message === 'string' && err.message.toLowerCase().includes('network');
-        if (attempt < maxRetries && (isTimeout || isNetwork)) {
+        if (attempt < maxRetriesForThisRequest && (isTimeout || isNetwork)) {
           attempt += 1;
           // Increase timeout for retries to allow for slower responses
           currentTimeout = Math.min(currentTimeout + 5000, TIMEOUTS.API_REQUEST * 2);
-          console.warn(`API transient error (${isTimeout ? 'timeout' : 'network'}), retrying ${attempt}/${maxRetries} in-flight for ${url}`);
+          console.warn(`API transient error (${isTimeout ? 'timeout' : 'network'}), retrying ${attempt}/${maxRetriesForThisRequest} in-flight for ${url}`);
           // Add a small delay before retrying to allow network to recover
           await new Promise(resolve => setTimeout(resolve, attempt * 1000)); // 1s, 2s, 3s etc
           continue;
@@ -382,7 +385,7 @@ class ApiService {
     login: async (credentials: any) => {
       try {
         console.log('Attempting login for:', credentials.email);
-        const response = await this.fetchWithTimeout(`${API_URL}/auth/login`, {
+        const response = await this.request(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -390,27 +393,22 @@ class ApiService {
           body: JSON.stringify(credentials),
         }, TIMEOUTS.AUTH_REQUEST);
 
-        const data = await this.safeJsonParse(response);
-
-        // If the response is not ok, the backend has returned an error
-        if (!response.ok) {
-          // Return the error data so AuthContext can handle it properly
-          return {
-            success: false,
-            message: data?.message || data?.error || 'Login failed',
-            ...data
-          };
-        }
-
-        return data;
+        return response;
       } catch (error: any) {
         // Handle network errors, CORS errors, etc.
         console.error('Login API error:', error);
+        if (error instanceof HttpError) {
+          // Return structured error response
+          return {
+            success: false,
+            message: error.message,
+            error: error.message,
+            status: error.status
+          };
+        }
         return {
           success: false,
-          message: error.name === 'AbortError'
-            ? 'Request timeout. Please try again.'
-            : error.message || 'Network error. Please check your connection.',
+          message: error.message || 'Network error. Please check your connection.',
           error: error.name || 'NetworkError'
         };
       }
@@ -418,46 +416,35 @@ class ApiService {
 
     oauthGoogle: async (idToken: string) => {
       try {
-        const response = await this.fetchWithTimeout(`${API_URL}/auth/oauth/google`, {
+        const response = await this.request(`${API_URL}/auth/oauth/google`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ idToken }),
         }, TIMEOUTS.AUTH_REQUEST);
 
-        const data = await this.safeJsonParse(response);
-
-        if (!response.ok) {
+        return response;
+      } catch (error: any) {
+        console.error('Google OAuth API error:', error);
+        
+        if (error instanceof HttpError) {
           // Provide more specific error messages based on status codes
-          let errorMessage = data?.message || data?.error || 'Google authentication failed';
+          let errorMessage = error.message || 'Google authentication failed';
           
-          if (response.status === 400) {
-            errorMessage = data?.message || 'Invalid Google token. Please try again.';
-          } else if (response.status === 401) {
-            errorMessage = data?.message || 'Authentication failed. Please try again.';
-          } else if (response.status === 504) {
+          if (error.status === 400) {
+            errorMessage = error.message || 'Invalid Google token. Please try again.';
+          } else if (error.status === 401) {
+            errorMessage = error.message || 'Authentication failed. Please try again.';
+          } else if (error.status === 504) {
             errorMessage = 'Google verification service timeout. Please check your connection and try again.';
-          } else if (response.status >= 500) {
+          } else if (error.status >= 500) {
             errorMessage = 'Server error during Google authentication. Please try again later.';
           }
           
           return {
             success: false,
             message: errorMessage,
-            status: response.status,
-            ...data
-          };
-        }
-
-        return data;
-      } catch (error: any) {
-        console.error('Google OAuth API error:', error);
-        
-        // Handle network errors specifically
-        if (error?.name === 'AbortError' || error?.message?.includes('timeout')) {
-          return {
-            success: false,
-            message: 'Request timeout. Please check your connection and try again.',
-            error: 'TIMEOUT'
+            status: error.status,
+            ...error.data
           };
         }
         
@@ -478,29 +465,38 @@ class ApiService {
     },
 
     oauthApple: async (identityToken: string) => {
-      const response = await this.fetchWithTimeout(`${API_URL}/auth/oauth/apple`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identityToken }),
-      }, TIMEOUTS.AUTH_REQUEST);
+      try {
+        const response = await this.request(`${API_URL}/auth/oauth/apple`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identityToken }),
+        }, TIMEOUTS.AUTH_REQUEST);
 
-      const data = await this.safeJsonParse(response);
-
-      if (!response.ok) {
+        return response;
+      } catch (error: any) {
+        console.error('Apple OAuth API error:', error);
+        
+        if (error instanceof HttpError) {
+          return {
+            success: false,
+            message: error.message || 'Apple authentication failed',
+            status: error.status,
+            ...error.data
+          };
+        }
+        
         return {
           success: false,
-          message: data?.message || data?.error || 'Apple authentication failed',
-          ...data
+          message: error?.message || 'Failed to authenticate with Apple. Please try again.',
+          error: error?.name || 'UNKNOWN_ERROR'
         };
       }
-
-      return data;
     },
 
     register: async (userData: any) => {
       try {
         console.log('Sending registration request with data:', userData);
-        const response = await this.fetchWithTimeout(`${API_URL}/auth/register`, {
+        const response = await this.request(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -508,14 +504,8 @@ class ApiService {
           body: JSON.stringify(userData),
         }, TIMEOUTS.AUTH_REQUEST);
 
-        const data = await this.safeJsonParse(response);
-        console.log('Registration response:', data);
-
-        if (!response.ok) {
-          console.error('Registration failed with status:', response.status, data);
-        }
-
-        return data;
+        console.log('Registration response:', response);
+        return response;
       } catch (error) {
         console.error('Registration request error:', error);
         throw error;
@@ -545,11 +535,10 @@ class ApiService {
     },
 
     logout: async () => {
-      const response = await this.fetchWithTimeout(`${API_URL}/auth/logout`, {
+      return await this.request(`${API_URL}/auth/logout`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
       }, TIMEOUTS.AUTH_REQUEST);
-      return this.safeJsonParse(response);
     },
 
     updateProfile: async (data: any) => {
@@ -1579,6 +1568,149 @@ class ApiService {
     },
   };
 
+  // Ads API
+  ads = {
+    // Create a product post (link an existing product to a post)
+    createProductPost: async (postData: {
+      postId: string;
+      productId: string;
+      productPosition?: 'main' | 'tagged' | 'featured' | 'promoted';
+      placementData?: {
+        x?: number;
+        y?: number;
+        width?: number;
+        height?: number;
+        mediaIndex?: number;
+      };
+      currentPrice?: number;
+      originalPrice?: number;
+      availableStock?: number;
+      showPrice?: boolean;
+      showProductTag?: boolean;
+      isFeatured?: boolean;
+      isPromoted?: boolean;
+      promotionDiscount?: number;
+    }) => {
+      return this.post(`/ads/product-posts`, postData);
+    },
+
+    // Get a specific product post
+    getProductPost: async (id: string) => {
+      return this.get(`/ads/product-posts/${id}`);
+    },
+
+    // Update a product post
+    updateProductPost: async (id: string, updateData: any) => {
+      return this.put(`/ads/product-posts/${id}`, updateData);
+    },
+
+    // Get vendor's product posts
+    getVendorProductPosts: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/product-posts?${queryParams}`);
+    },
+
+    // Record ad impression
+    recordAdImpression: async (adId: string) => {
+      return this.post(`/ads/${adId}/impressions`, {});
+    },
+
+    // Record ad click
+    recordAdClick: async (adId: string) => {
+      return this.post(`/ads/${adId}/clicks`, {});
+    },
+
+    // Record product post view
+    recordProductPostView: async (productPostId: string) => {
+      return this.post(`/ads/product-posts/${productPostId}/views`, {});
+    },
+
+    // Record product post interaction
+    recordProductPostInteraction: async (productPostId: string, interactionType: string) => {
+      return this.post(`/ads/product-posts/${productPostId}/interactions`, {
+        type: interactionType
+      });
+    },
+
+    // Get ad campaigns
+    getAdCampaigns: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/campaigns?${queryParams}`);
+    },
+
+    // Get ad analytics
+    getAdAnalytics: async (adId: string = 'all', params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      // If adId is 'all', we want to get overall analytics
+      if (adId === 'all') {
+        return this.get(`/ads/analytics?${queryParams}`);
+      }
+      // Otherwise, get analytics for a specific ad
+      queryParams.append('adId', adId);
+      return this.get(`/ads/analytics?${queryParams}`);
+    },
+
+    // Get campaign analytics
+    getCampaignAnalytics: async (campaignId: string, params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/campaigns/${campaignId}/analytics?${queryParams}`);
+    },
+
+    // Get targeted ads for a user
+    getTargetedAds: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/targeted?${queryParams}`);
+    },
+
+    // Get product posts
+    getProductPosts: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.get(`/ads/product-posts?${queryParams}`);
+    },
+  };
+
   // Marketplace API
   marketplace = {
     // Get products with various filters
@@ -2034,142 +2166,7 @@ class ApiService {
     }
   };
 
-  // Ads API
-  ads = {
-    // Get targeted ads for a user
-    getTargetedAds: async (params?: any) => {
-      const queryParams = new URLSearchParams();
-      if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, value.toString());
-          }
-        });
-      }
-      return this.get(`/ads/targeted?${queryParams}`);
-    },
 
-    // Get product posts
-    getProductPosts: async (params?: any) => {
-      const queryParams = new URLSearchParams();
-      if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, value.toString());
-          }
-        });
-      }
-      return this.get(`/ads/product-posts?${queryParams}`);
-    },
-
-    // Create a new product post
-    createProductPost: async (postData: {
-      postId: string;
-      productId: string;
-      productPosition?: string;
-      placementData?: any;
-      currentPrice?: number;
-      originalPrice?: number;
-      availableStock?: number;
-      showPrice?: boolean;
-      showProductTag?: boolean;
-      isFeatured?: boolean;
-      isPromoted?: boolean;
-      promotionDiscount?: number;
-    }) => {
-      return this.post(`/ads/product-posts`, postData);
-    },
-
-    // Get a specific product post
-    getProductPost: async (id: string) => {
-      return this.get(`/ads/product-posts/${id}`);
-    },
-
-    // Update a product post
-    updateProductPost: async (id: string, updateData: any) => {
-      return this.put(`/ads/product-posts/${id}`, updateData);
-    },
-
-    // Get vendor's product posts
-    getVendorProductPosts: async (params?: any) => {
-      const queryParams = new URLSearchParams();
-      if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, value.toString());
-          }
-        });
-      }
-      return this.get(`/ads/product-posts?${queryParams}`);
-    },
-
-    // Record ad impression
-    recordAdImpression: async (adId: string) => {
-      return this.post(`/ads/${adId}/impressions`, {});
-    },
-
-    // Record ad click
-    recordAdClick: async (adId: string) => {
-      return this.post(`/ads/${adId}/clicks`, {});
-    },
-
-    // Record product post view
-    recordProductPostView: async (productPostId: string) => {
-      return this.post(`/ads/product-posts/${productPostId}/views`, {});
-    },
-
-    // Record product post interaction
-    recordProductPostInteraction: async (productPostId: string, interactionType: string) => {
-      return this.post(`/ads/product-posts/${productPostId}/interactions`, {
-        type: interactionType
-      });
-    },
-
-    // Get ad campaigns
-    getAdCampaigns: async (params?: any) => {
-      const queryParams = new URLSearchParams();
-      if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, value.toString());
-          }
-        });
-      }
-      return this.get(`/ads/campaigns?${queryParams}`);
-    },
-
-    // Get ad analytics
-    getAdAnalytics: async (adId: string = 'all', params?: any) => {
-      const queryParams = new URLSearchParams();
-      if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, value.toString());
-          }
-        });
-      }
-      // If adId is 'all', we want to get overall analytics
-      if (adId === 'all') {
-        return this.get(`/ads/analytics?${queryParams}`);
-      }
-      // Otherwise, get analytics for a specific ad
-      queryParams.append('adId', adId);
-      return this.get(`/ads/analytics?${queryParams}`);
-    },
-
-    // Get campaign analytics
-    getCampaignAnalytics: async (campaignId: string, params?: any) => {
-      const queryParams = new URLSearchParams();
-      if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, value.toString());
-          }
-        });
-      }
-      return this.get(`/ads/campaigns/${campaignId}/analytics?${queryParams}`);
-    },
-  };
 
   // Streams API
   streams = {

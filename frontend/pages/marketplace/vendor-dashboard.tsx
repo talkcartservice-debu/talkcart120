@@ -42,6 +42,7 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Search,
@@ -97,6 +98,7 @@ import { toast } from 'react-hot-toast';
 import { SupportAgent as SupportAgentIcon } from '@mui/icons-material';
 import PersistentChatContainer from '@/components/chatbot/PersistentChatContainer';
 import EnhancedVendorAnalyticsDashboard from '@/components/marketplace/EnhancedVendorAnalyticsDashboard';
+import VendorProductPostCreator from '@/components/ads/VendorProductPostCreator';
 
 interface Product {
   id: string;
@@ -382,6 +384,11 @@ const VendorDashboard: React.FC = () => {
     router.push(`/marketplace/${productId}`);
   };
 
+  const handleCreateProductPost = () => {
+    // Navigate to the social page to create a post that can be linked to products
+    router.push('/social');
+  };
+
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
   };
@@ -478,15 +485,15 @@ const VendorDashboard: React.FC = () => {
   // Main render function
   return (
     <Layout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
           <Typography 
             variant="h4" 
             component="h1" 
             sx={{ 
               fontWeight: 600, 
               mb: 1,
-              fontSize: { xs: '1.5rem', sm: '2.125rem' }
+              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.125rem' }
             }}
           >
             My Store Dashboard
@@ -494,7 +501,7 @@ const VendorDashboard: React.FC = () => {
           <Typography 
             variant="body1" 
             color="text.secondary"
-            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
           >
             Manage your products and store
           </Typography>
@@ -511,7 +518,8 @@ const VendorDashboard: React.FC = () => {
                 display: 'flex', 
                 gap: { xs: 0.5, sm: 1 },
                 flexDirection: { xs: 'column', sm: 'row' },
-                alignItems: { xs: 'stretch', sm: 'center' }
+                alignItems: { xs: 'stretch', sm: 'center' },
+                flexWrap: { xs: 'wrap', sm: 'nowrap' }
               }}>
                 <Button
                   variant="outlined"
@@ -519,13 +527,14 @@ const VendorDashboard: React.FC = () => {
                   onClick={() => router.push('/marketplace/my-dashboard')}
                   sx={{ 
                     minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 }
+                    mb: { xs: 0.5, sm: 0 },
+                    flex: { xs: 1, sm: 'none' }
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     My Dashboard
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }}}>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Dashboard
                   </Box>
                 </Button>
@@ -535,13 +544,14 @@ const VendorDashboard: React.FC = () => {
                   onClick={handleVendorStore}
                   sx={{ 
                     minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 }
+                    mb: { xs: 0.5, sm: 0 },
+                    flex: { xs: 1, sm: 'none' }
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Vendor Store
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }}}>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Store
                   </Box>
                 </Button>
@@ -551,13 +561,14 @@ const VendorDashboard: React.FC = () => {
                   onClick={handlePaymentSettings}
                   sx={{ 
                     minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 }
+                    mb: { xs: 0.5, sm: 0 },
+                    flex: { xs: 1, sm: 'none' }
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Payment Settings
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }}}>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Payments
                   </Box>
                 </Button>
@@ -567,13 +578,14 @@ const VendorDashboard: React.FC = () => {
                   onClick={() => router.push('/marketplace/vendor-messaging')}
                   sx={{ 
                     minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 }
+                    mb: { xs: 0.5, sm: 0 },
+                    flex: { xs: 1, sm: 'none' }
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Messaging
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }}}>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Msg
                   </Box>
                 </Button>
@@ -583,13 +595,14 @@ const VendorDashboard: React.FC = () => {
                   onClick={() => router.push('/marketplace/vendor-admin-chat')}
                   sx={{ 
                     minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 }
+                    mb: { xs: 0.5, sm: 0 },
+                    flex: { xs: 1, sm: 'none' }
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Chat with Admin
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }}}>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Admin
                   </Box>
                 </Button>
@@ -598,14 +611,32 @@ const VendorDashboard: React.FC = () => {
                   startIcon={<Plus size={16} />}
                   onClick={handleCreateProduct}
                   sx={{ 
-                    minWidth: { xs: '100%', sm: 'auto' }
+                    minWidth: { xs: '100%', sm: 'auto' },
+                    mb: { xs: 0.5, sm: 0 },
+                    flex: { xs: 1, sm: 'none' }
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Add Product
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }}}>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
                     Add
+                  </Box>
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<ShoppingBag size={16} />}
+                  onClick={handleCreateProductPost}
+                  sx={{ 
+                    minWidth: { xs: '100%', sm: 'auto' },
+                    flex: { xs: 1, sm: 'none' }
+                  }}
+                >
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                    Create Shoppable Post
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                    Shoppable
                   </Box>
                 </Button>
               </Box>
@@ -635,11 +666,12 @@ const VendorDashboard: React.FC = () => {
                   startAdornment: <Search size={16} style={{ marginRight: 8 }} />,
                 }}
                 sx={{ 
-                  minWidth: { xs: '100%', sm: 200 }
+                  minWidth: { xs: '100%', sm: 200 },
+                  flex: { xs: 1, sm: 'none' }
                 }}
               />
               
-              <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 150 } }}>
+              <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 150 }, flex: { xs: 1, sm: 'none' } }}>
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={categoryFilter}
@@ -653,7 +685,7 @@ const VendorDashboard: React.FC = () => {
                 </Select>
               </FormControl>
               
-              <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 } }}>
+              <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 }, flex: { xs: 1, sm: 'none' } }}>
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={statusFilter}
@@ -671,7 +703,8 @@ const VendorDashboard: React.FC = () => {
                 startIcon={<FilterX size={16} />}
                 onClick={handleClearFilters}
                 sx={{ 
-                  minWidth: { xs: '100%', sm: 'auto' }
+                  minWidth: { xs: '100%', sm: 'auto' },
+                  flex: { xs: 1, sm: 'none' }
                 }}
               >
                 Clear Filters
@@ -703,17 +736,19 @@ const VendorDashboard: React.FC = () => {
                       <ListItem sx={{ 
                         flexDirection: { xs: 'column', sm: 'row' },
                         alignItems: { xs: 'flex-start', sm: 'center' },
-                        gap: { xs: 2, sm: 3 },
-                        px: { xs: 0, sm: 2 }
+                        gap: { xs: 1.5, sm: 3 },
+                        px: { xs: 0, sm: 2 },
+                        py: { xs: 1.5, sm: 2 }
                       }}>
                         <ListItemAvatar>
                           <Avatar 
                             src={getImageSrc(product.images)} 
                             variant="rounded"
                             sx={{ 
-                              width: { xs: 60, sm: 80 }, 
-                              height: { xs: 60, sm: 80 },
-                              borderRadius: 1
+                              width: { xs: 50, sm: 80 }, 
+                              height: { xs: 50, sm: 80 },
+                              borderRadius: 1,
+                              flexShrink: 0
                             }}
                           />
                         </ListItemAvatar>
@@ -724,7 +759,7 @@ const VendorDashboard: React.FC = () => {
                               component="div"
                               sx={{ 
                                 fontWeight: 600,
-                                fontSize: { xs: '1rem', sm: '1.125rem' }
+                                fontSize: { xs: '0.9rem', sm: '1.125rem' }
                               }}
                             >
                               {product.name}
@@ -740,7 +775,8 @@ const VendorDashboard: React.FC = () => {
                                   WebkitLineClamp: { xs: 2, sm: 1 },
                                   WebkitBoxOrient: 'vertical',
                                   overflow: 'hidden',
-                                  mb: 0.5
+                                  mb: 0.5,
+                                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
                                 }}
                               >
                                 {product.description}
@@ -748,35 +784,47 @@ const VendorDashboard: React.FC = () => {
                               <Box sx={{ 
                                 display: 'flex', 
                                 flexWrap: 'wrap', 
-                                gap: 1, 
+                                gap: { xs: 0.5, sm: 1 }, 
                                 alignItems: 'center',
                                 mt: 0.5
                               }}>
-                                <Chip 
-                                  label={formatPrice(product.price, product.currency)} 
-                                  size="small" 
-                                  color="primary" 
-                                  variant="outlined"
-                                />
-                                <Chip 
-                                  label={`${product.stock} in stock`} 
-                                  size="small" 
-                                  color={product.stock > 0 ? 'success' : 'error'} 
-                                  variant="outlined"
-                                />
-                                <Chip 
-                                  label={product.category} 
-                                  size="small" 
-                                  variant="outlined"
-                                />
-                                <Chip 
-                                  label={`${product.sales} sold`} 
-                                  size="small" 
-                                  variant="outlined"
-                                />
+                                <Box component="span" sx={{ display: 'inline-block', mr: 0.5 }}>
+                                  <Chip 
+                                    label={formatPrice(product.price, product.currency)} 
+                                    size="small" 
+                                    color="primary" 
+                                    variant="outlined"
+                                    sx={{ height: { xs: 20, sm: 24 }, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                                  />
+                                </Box>
+                                <Box component="span" sx={{ display: 'inline-block', mr: 0.5 }}>
+                                  <Chip 
+                                    label={`${product.stock} in stock`} 
+                                    size="small" 
+                                    color={product.stock > 0 ? 'success' : 'error'} 
+                                    variant="outlined"
+                                    sx={{ height: { xs: 20, sm: 24 }, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                                  />
+                                </Box>
+                                <Box component="span" sx={{ display: 'inline-block', mr: 0.5 }}>
+                                  <Chip 
+                                    label={product.category} 
+                                    size="small" 
+                                    variant="outlined"
+                                    sx={{ height: { xs: 20, sm: 24 }, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                                  />
+                                </Box>
+                                <Box component="span" sx={{ display: 'inline-block', mr: 0.5 }}>
+                                  <Chip 
+                                    label={`${product.sales} sold`} 
+                                    size="small" 
+                                    variant="outlined"
+                                    sx={{ height: { xs: 20, sm: 24 }, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
+                                  />
+                                </Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                  <Star size={14} fill={theme.palette.warning.main} color={theme.palette.warning.main} />
-                                  <Typography variant="caption">
+                                  <Star size={12} fill={theme.palette.warning.main} color={theme.palette.warning.main} />
+                                  <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                                     {product.rating.toFixed(1)} ({product.reviewCount})
                                   </Typography>
                                 </Box>
@@ -791,7 +839,8 @@ const VendorDashboard: React.FC = () => {
                           right: 'auto',
                           display: 'flex',
                           gap: 1,
-                          mt: { xs: 1, sm: 0 }
+                          mt: { xs: 1, sm: 0 },
+                          alignItems: 'flex-start'
                         }}>
                           <Box sx={{ 
                             display: 'flex', 
@@ -802,16 +851,18 @@ const VendorDashboard: React.FC = () => {
                               <IconButton 
                                 size="small" 
                                 onClick={() => handleEditProduct(product)}
+                                sx={{ p: { xs: 0.5, sm: 0.75 } }}
                               >
-                                <Edit size={18} />
+                                <Edit size={16} />
                               </IconButton>
                             </Tooltip>
                             <Tooltip title={product.isActive ? 'Deactivate product' : 'Activate product'}>
                               <IconButton 
                                 size="small" 
                                 onClick={() => handleToggleProductStatus(product)}
+                                sx={{ p: { xs: 0.5, sm: 0.75 } }}
                               >
-                                <Shield size={18} />
+                                <Shield size={16} />
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Delete product">
@@ -819,11 +870,12 @@ const VendorDashboard: React.FC = () => {
                                 size="small" 
                                 onClick={() => handleDeleteProduct(product.id)}
                                 disabled={deletingProductId === product.id}
+                                sx={{ p: { xs: 0.5, sm: 0.75 } }}
                               >
                                 {deletingProductId === product.id ? (
-                                  <CircularProgress size={18} />
+                                  <CircularProgress size={16} />
                                 ) : (
-                                  <Trash2 size={18} />
+                                  <Trash2 size={16} />
                                 )}
                               </IconButton>
                             </Tooltip>
@@ -837,7 +889,7 @@ const VendorDashboard: React.FC = () => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
                     <Pagination
                       count={totalPages}
                       page={page}

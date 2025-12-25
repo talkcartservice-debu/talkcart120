@@ -32,16 +32,31 @@ const CreateProductPostModal: React.FC<CreateProductPostModalProps> = ({
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  // Define the type for product position
+  type ProductPosition = 'main' | 'tagged' | 'featured' | 'promoted';
+  
+  interface FormData {
+    productPosition: ProductPosition;
+    currentPrice?: number;
+    originalPrice?: number;
+    availableStock?: number;
+    showPrice: boolean;
+    showProductTag: boolean;
+    isFeatured: boolean;
+    isPromoted: boolean;
+    promotionDiscount?: number;
+  }
+
+  const [formData, setFormData] = useState<FormData>({
     productPosition: 'main',
-    currentPrice: undefined as number | undefined,
-    originalPrice: undefined as number | undefined,
-    availableStock: undefined as number | undefined,
+    currentPrice: undefined,
+    originalPrice: undefined,
+    availableStock: undefined,
     showPrice: true,
     showProductTag: true,
     isFeatured: false,
     isPromoted: false,
-    promotionDiscount: undefined as number | undefined
+    promotionDiscount: undefined
   });
 
   useEffect(() => {
@@ -173,7 +188,7 @@ const CreateProductPostModal: React.FC<CreateProductPostModalProps> = ({
                     </label>
                     <select
                       value={formData.productPosition}
-                      onChange={(e) => setFormData({...formData, productPosition: e.target.value})}
+                      onChange={(e) => setFormData({...formData, productPosition: e.target.value as ProductPosition})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     >
                       <option value="main">Main Product</option>
