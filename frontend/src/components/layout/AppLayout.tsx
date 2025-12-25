@@ -29,6 +29,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   
   const [sidebarOpen, setSidebarOpen] = useState(false);  // Start with sidebar closed on all devices
 
@@ -52,8 +53,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   };
 
   // Don't show sidebar on auth pages
+  // Also don't show sidebar on desktop views since navigation is in top bar
   const isAuthPage = router.pathname?.startsWith('/auth') || false;
-  const shouldShowSidebar = showSidebar && showNavigation && !isAuthPage && isAuthenticated;
+  const shouldShowSidebar = showSidebar && showNavigation && !isAuthPage && isAuthenticated && (isMobile || isTablet);
   const shouldShowTopBar = showNavigation && !isAuthPage;
 
   const sidebarWidth = 280;

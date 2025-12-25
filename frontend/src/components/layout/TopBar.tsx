@@ -28,6 +28,8 @@ import {
   CircularProgress,
   Button,
   Chip,
+  BottomNavigation,
+  BottomNavigationAction,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -51,6 +53,8 @@ import {
   Award,
   Zap,
   Sparkles,
+  Home,
+  Plus,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useThemeToggle } from '@/hooks/useThemeToggle';
@@ -60,6 +64,7 @@ import { useMessageUnreadCount } from '@/hooks/useMessageUnreadCount';
 import { useCart } from '@/hooks/useCart';
 import UserAvatar from '../common/UserAvatar';
 import WalletButton from '@/components/wallet/WalletButton';
+import { CreatePostDialog } from '@/components/social/new';
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -76,6 +81,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const { toggleTheme } = useThemeToggle();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('xs'));
   const { cart } = useCart();
 
   // Use our custom search hook
@@ -94,7 +100,9 @@ export const TopBar: React.FC<TopBarProps> = ({
   });
 
   const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [createPostOpen, setCreatePostOpen] = useState(false);
 
   // State for user menu
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
@@ -118,6 +126,21 @@ export const TopBar: React.FC<TopBarProps> = ({
   // State for notifications popover
   const [notificationsAnchor, setNotificationsAnchor] = useState<null | HTMLElement>(null);
   const notificationsOpen = Boolean(notificationsAnchor);
+  
+  // State and functions for bottom navigation
+  const [bottomNavValue, setBottomNavValue] = useState(0);
+  
+  const getBottomNavigationValue = () => {
+    if (router.pathname === '/social') return 0; // Home
+    if (router.pathname.includes('/marketplace') && router.pathname.includes('/cart')) return 1; // Cart
+    if (router.pathname.includes('/messages')) return 2; // Messages
+    if (router.pathname.includes('/notifications')) return 3; // Notifications
+    return 0; // Default to home
+  };
+  
+  const handleBottomNavigationChange = (event: React.SyntheticEvent, newValue: number) => {
+    setBottomNavValue(newValue);
+  };
 
   // Handle click away from search suggestions
   const handleClickAway = () => {
@@ -302,577 +325,972 @@ export const TopBar: React.FC<TopBarProps> = ({
   // Toggle mobile search
   const handleToggleMobileSearch = () => {
     setMobileSearchOpen(prev => !prev);
+    // Focus on the search input when opening mobile search
     if (!mobileSearchOpen) {
       setTimeout(() => {
-        const searchInput = document.getElementById('mobile-search-input');
-        if (searchInput) {
-          searchInput.focus();
+        if (mobileSearchInputRef.current) {
+          mobileSearchInputRef.current.focus();
         }
       }, 100);
     }
   };
 
   return (
-    <AppBar
-      position="fixed"
-      sx={{
-        bgcolor: theme.palette.background.paper,
-        color: theme.palette.text.primary,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        zIndex: theme.zIndex.drawer + 1,
-      }}
-    >
-      <Toolbar sx={{ minHeight: 64 }}>
-        {/* Left Section - Menu and Logo */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {showMenuButton && (
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={onMenuClick}
-              sx={{ mr: 1 }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-          
-          {/* Logo */}
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              cursor: 'pointer',
-              '&:hover': {
-                opacity: 0.8
-              }
-            }}
-            onClick={() => router.push('/')}
-          >
-            <Box
-              component="img"
-              src="/talkcart.logo.png"
-              alt="TalkCart Logo"
-              sx={{
-                height: 45,
-                width: 45,
-                borderRadius: '50%',
-                objectFit: 'cover',
-                mr: 1,
-                display: { xs: 'none', sm: 'block' }
-              }}
-            />
-            <Typography 
-              variant="h6" 
-              component="div" 
+    <>
+      {/* Top AppBar - Menu and Search */}
+      <AppBar
+        position="fixed"
+        sx={{
+          bgcolor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          zIndex: theme.zIndex.drawer + 1,
+          pb: isMobile ? '60px' : 0, // Add padding at bottom when mobile bottom nav is visible
+        }}
+      >
+        <Toolbar sx={{ minHeight: 64 }}>
+          {/* Left Section - Menu and Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {showMenuButton && (
+              <IconButton
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                onClick={onMenuClick}
+                sx={{ mr: 1 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
+            
+            {/* Logo */}
+            <Box 
               sx={{ 
-                fontWeight: 700,
-                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                display: { xs: 'none', sm: 'block' }
-              }}
-            >
-              TalkCart
-            </Typography>
-          </Box>
-          
-          {/* Removed AI Demo Link */}
-        </Box>
-
-        {/* Mobile Search Bar */}
-        {mobileSearchOpen && (
-          <Box
-            component="form"
-            onSubmit={handleSearch}
-            sx={{
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              position: 'relative',
-              width: '100%',
-              mx: 'auto',
-              maxWidth: '100%'
-            }}
-          >
-            <TextField
-              id="mobile-search-input"
-              placeholder="Search TalkCart..."
-              size="small"
-              fullWidth
-              autoFocus
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setShowSuggestions(true);
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {searchLoading ? (
-                      <CircularProgress size={16} color="inherit" />
-                    ) : (
-                      <Search size={18} />
-                    )}
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      edge="end"
-                      size="small"
-                      onClick={handleToggleMobileSearch}
-                    >
-                      <CloseIcon size={18} />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                bgcolor: alpha(theme.palette.background.paper, 0.8),
-                borderRadius: 1,
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 1,
+                display: 'flex', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                '&:hover': {
+                  opacity: 0.8
                 }
               }}
-            />
-
-            {/* Mobile Search Suggestions */}
-            {showSuggestions && (
-              <Paper
-                elevation={4}
+              onClick={() => router.push('/')}
+            >
+              <Box
+                component="img"
+                src="/talkcart.logo.png"
+                alt="TalkCart Logo"
                 sx={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  mt: 0.5,
-                  zIndex: 1000,
-                  maxHeight: 300,
-                  overflow: 'auto',
-                  borderRadius: 1,
+                  height: 45,
+                  width: 45,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  mr: 1,
+                  display: { xs: 'none', sm: 'block' }
+                }}
+              />
+              <Typography 
+                variant="h6" 
+                component="div" 
+                sx={{ 
+                  fontWeight: 700,
+                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  display: { xs: 'none', sm: 'block' }
                 }}
               >
-                <List dense>
-                  {searchLoading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                      <CircularProgress size={24} />
-                    </Box>
-                  ) : searchSuggestions.length > 0 ? (
-                    searchSuggestions.map((suggestion) => (
-                      <ListItem
-                        key={suggestion.id}
-                        component="button"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        sx={{
-                          py: 1,
-                          px: 2,
-                          cursor: 'pointer',
-                          border: 'none',
-                          background: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          '&:hover': {
-                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-                          }
-                        }}
+                TalkCart
+              </Typography>
+            </Box>
+            
+            {/* Removed AI Demo Link */}
+          </Box>
+
+          {/* Mobile Search Bar */}
+          {mobileSearchOpen && (
+            <Box
+              component="form"
+              onSubmit={handleSearch}
+              sx={{
+                display: { xs: 'flex', md: 'none' },
+                flexGrow: 1,
+                position: 'relative',
+                width: '100%',
+                mx: 'auto',
+                maxWidth: '100%'
+              }}
+            >
+              <TextField
+                id="mobile-search-input"
+                placeholder="Search TalkCart..."
+                size="small"
+                fullWidth
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  // Don't immediately show suggestions - let the useSearch hook handle it
+                }}
+                onFocus={() => {
+                  setShowSuggestions(true);
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      {searchLoading ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : (
+                        <Search size={18} />
+                      )}
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        edge="end"
+                        size="small"
+                        onClick={handleToggleMobileSearch}
                       >
-                        <ListItemIcon sx={{ minWidth: 36 }}>
-                          {suggestion.icon}
-                        </ListItemIcon>
+                        <CloseIcon size={18} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  bgcolor: alpha(theme.palette.background.paper, 0.8),
+                  borderRadius: 1,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 1,
+                  }
+                }}
+              />
+
+              {/* Mobile Search Suggestions */}
+              {showSuggestions && (
+                <Paper
+                  elevation={4}
+                  sx={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    mt: 0.5,
+                    zIndex: 1000,
+                    maxHeight: 300,
+                    overflow: 'auto',
+                    borderRadius: 1,
+                  }}
+                >
+                  <List dense>
+                    {searchLoading ? (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                        <CircularProgress size={24} />
+                      </Box>
+                    ) : searchSuggestions.length > 0 ? (
+                      searchSuggestions.map((suggestion) => (
+                        <ListItem
+                          key={suggestion.id}
+                          component="button"
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          sx={{
+                            py: 1,
+                            px: 2,
+                            cursor: 'pointer',
+                            border: 'none',
+                            background: 'transparent',
+                            width: '100%',
+                            textAlign: 'left',
+                            '&:hover': {
+                              bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                            }
+                          }}
+                        >
+                          <ListItemIcon sx={{ minWidth: 36 }}>
+                            {suggestion.icon}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={suggestion.displayText || suggestion.text}
+                            secondary={suggestion.secondaryText}
+                            primaryTypographyProps={{
+                              variant: 'body2',
+                              noWrap: true
+                            }}
+                            secondaryTypographyProps={{
+                              variant: 'caption',
+                              noWrap: true,
+                              color: 'text.secondary'
+                            }}
+                          />
+                        </ListItem>
+                      ))
+                    ) : (
+                      <ListItem sx={{ py: 1, px: 2 }}>
                         <ListItemText
-                          primary={suggestion.displayText || suggestion.text}
-                          secondary={suggestion.secondaryText}
+                          primary="No results found"
                           primaryTypographyProps={{
                             variant: 'body2',
-                            noWrap: true
-                          }}
-                          secondaryTypographyProps={{
-                            variant: 'caption',
-                            noWrap: true,
+                            align: 'center',
                             color: 'text.secondary'
                           }}
                         />
                       </ListItem>
-                    ))
-                  ) : (
-                    <ListItem sx={{ py: 1, px: 2 }}>
-                      <ListItemText
-                        primary="No results found"
-                        primaryTypographyProps={{
-                          variant: 'body2',
-                          align: 'center',
-                          color: 'text.secondary'
-                        }}
-                      />
-                    </ListItem>
-                  )}
-                </List>
-              </Paper>
-            )}
-          </Box>
-        )}
-
-        {/* Desktop Search Bar with Suggestions */}
-        <ClickAwayListener onClickAway={handleClickAway}>
-          <Box
-            component="form"
-            onSubmit={handleSearch}
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              flexGrow: 1,
-              mx: 'auto',
-              maxWidth: 500,
-              position: 'relative'
-            }}
-            ref={searchRef}
-          >
-            <TextField
-              placeholder="Search TalkCart..."
-              size="small"
-              fullWidth
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setShowSuggestions(true);
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {searchLoading ? (
-                      <CircularProgress size={16} color="inherit" />
-                    ) : (
-                      <Search size={18} />
                     )}
-                  </InputAdornment>
-                ),
-                endAdornment: searchQuery ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      edge="end"
-                      size="small"
-                      onClick={() => setSearchQuery('')}
-                    >
-                      <CloseIcon size={16} />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null,
-              }}
-              sx={{
-                bgcolor: alpha(theme.palette.background.paper, 0.8),
-                borderRadius: 1,
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 1,
-                }
-              }}
-            />
-
-            {/* Search Suggestions Dropdown */}
-            {showSuggestions && (
-              <Paper
-                elevation={4}
-                sx={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  mt: 0.5,
-                  zIndex: 1000,
-                  maxHeight: 350,
-                  overflow: 'auto',
-                  borderRadius: 1,
-                }}
-              >
-                <List dense>
-                  {searchLoading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                      <CircularProgress size={24} />
-                    </Box>
-                  ) : searchSuggestions.length > 0 ? (
-                    searchSuggestions.map((suggestion) => (
-                      <ListItem
-                        key={suggestion.id}
-                        component="button"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        sx={{
-                          py: 1,
-                          px: 2,
-                          cursor: 'pointer',
-                          border: 'none',
-                          background: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          '&:hover': {
-                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-                          }
-                        }}
-                      >
-                        <ListItemIcon sx={{ minWidth: 36 }}>
-                          {suggestion.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={suggestion.displayText || suggestion.text}
-                          secondary={suggestion.secondaryText}
-                          primaryTypographyProps={{
-                            variant: 'body2',
-                            noWrap: true
-                          }}
-                          secondaryTypographyProps={{
-                            variant: 'caption',
-                            noWrap: true,
-                            color: 'text.secondary'
-                          }}
-                        />
-                      </ListItem>
-                    ))
-                  ) : (
-                    <ListItem sx={{ py: 1, px: 2 }}>
-                      <ListItemText
-                        primary="No results found"
-                        primaryTypographyProps={{
-                          variant: 'body2',
-                          align: 'center',
-                          color: 'text.secondary'
-                        }}
-                      />
-                    </ListItem>
-                  )}
-                </List>
-              </Paper>
-            )}
-          </Box>
-        </ClickAwayListener>
-
-        {/* Action Icons */}
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: { xs: 'auto', md: '200px' }, justifyContent: 'flex-end' }}>
-          {/* Search Icon - Mobile */}
-          {!mobileSearchOpen && (
-            <IconButton
-              color="inherit"
-              size="small"
-              sx={{ display: { xs: 'flex', md: 'none' } }}
-              onClick={handleToggleMobileSearch}
-            >
-              <Search size={20} />
-            </IconButton>
+                  </List>
+                </Paper>
+              )}
+            </Box>
           )}
 
-          {isAuthenticated ? (
+          {/* Top Action Icons - Wallet, User, Login */}
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: { xs: 'auto', md: '200px' }, justifyContent: 'space-between', width: '100%' }}>
+            {/* Mobile Search Bar - appears between menu and user avatar when search icon is clicked */}
+            {!mobileSearchOpen && (
+              <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexGrow: 1, mx: 1 }}>
+                <IconButton
+                  color="inherit"
+                  size="small"
+                  sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}
+                  onClick={handleToggleMobileSearch}
+                >
+                  <Search size={20} />
+                </IconButton>
+              </Box>
+            )}
+            
+            {/* Mobile Search Bar - expanded view */}
+            {mobileSearchOpen && (
+              <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexGrow: 1, mx: 1 }}>
+                <TextField
+                  placeholder="Search TalkCart..."
+                  size="small"
+                  fullWidth
+                  value={searchQuery}
+                  inputRef={mobileSearchInputRef}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    // Don't immediately show suggestions - let the useSearch hook handle it
+                  }}
+                  onFocus={() => {
+                    setShowSuggestions(true);
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        {searchLoading ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : (
+                          <Search size={18} />
+                        )}
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          onClick={handleToggleMobileSearch}
+                        >
+                          <CloseIcon size={18} />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    bgcolor: alpha(theme.palette.background.paper, 0.8),
+                    borderRadius: 1,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 1,
+                    }
+                  }}
+                />
+              </Box>
+            )}
+            
+            {/* Desktop Navigation Text - Home, Cart, Messages, Notifications */}
+            {isAuthenticated && (
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
+                {/* Home */}
+                <Button
+                  onClick={() => router.push('/social')}
+                  size="small"
+                  sx={{
+                    color: router.pathname === '/social' ? theme.palette.primary.main : 'inherit',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    minWidth: 'auto',
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                      color: theme.palette.primary.main,
+                    }
+                  }}
+                >
+                  Home
+                </Button>
+                
+                {/* Cart */}
+                <Box position="relative">
+                  <Button
+                    onClick={() => router.push('/marketplace/cart')}
+                    size="small"
+                    sx={{
+                      color: 'inherit',
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      minWidth: 'auto',
+                      '&:hover': {
+                        backgroundColor: 'transparent',
+                        color: theme.palette.primary.main,
+                      }
+                    }}
+                  >
+                    Cart
+                  </Button>
+                  {cart && cart.totalItems > 0 && (
+                    <Badge 
+                      badgeContent={cart.totalItems} 
+                      color="error"
+                      sx={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        transform: 'scale(0.7)',
+                      }}
+                    >
+                      <span />
+                    </Badge>
+                  )}
+                </Box>
+                
+                {/* Messages */}
+                <Box position="relative">
+                  <Button
+                    onClick={() => router.push('/messages')}
+                    size="small"
+                    sx={{
+                      color: 'inherit',
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      minWidth: 'auto',
+                      '&:hover': {
+                        backgroundColor: 'transparent',
+                        color: theme.palette.primary.main,
+                      }
+                    }}
+                  >
+                    Messages
+                  </Button>
+                  {unreadMessages > 0 && (
+                    <Badge 
+                      badgeContent={unreadMessages} 
+                      color="error"
+                      sx={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        transform: 'scale(0.7)',
+                      }}
+                    >
+                      <span />
+                    </Badge>
+                  )}
+                </Box>
+                
+                {/* Notifications */}
+                <Box position="relative">
+                  <Button
+                    onClick={handleNotificationsOpen}
+                    size="small"
+                    sx={{
+                      color: 'inherit',
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      minWidth: 'auto',
+                      '&:hover': {
+                        backgroundColor: 'transparent',
+                        color: theme.palette.primary.main,
+                      }
+                    }}
+                  >
+                    Notifications
+                  </Button>
+                  {unreadNotifications > 0 && (
+                    <Badge 
+                      badgeContent={unreadNotifications} 
+                      color="error"
+                      sx={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        transform: 'scale(0.7)',
+                      }}
+                    >
+                      <span />
+                    </Badge>
+                  )}
+                </Box>
+                
+                {/* Marketplace (Shopping) */}
+                <Button
+                  onClick={() => router.push('/marketplace')}
+                  size="small"
+                  sx={{
+                    color: 'inherit',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    minWidth: 'auto',
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                      color: theme.palette.primary.main,
+                    }
+                  }}
+                >
+                  Marketplace
+                </Button>
+              </Box>
+            )}
+            
+            {/* Desktop Search Bar with Suggestions - positioned between notifications and wallet button */}
+            <ClickAwayListener onClickAway={handleClickAway}>
+              <Box
+                component="form"
+                onSubmit={handleSearch}
+                sx={{
+                  display: { xs: 'none', md: 'flex' },
+                  maxWidth: 500,
+                  position: 'relative'
+                }}
+                ref={searchRef}
+              >
+                <TextField
+                  placeholder="Search TalkCart..."
+                  size="small"
+                  fullWidth
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    // Don't immediately show suggestions - let the useSearch hook handle it
+                  }}
+                  onFocus={() => {
+                    setShowSuggestions(true);
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        {searchLoading ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : (
+                          <Search size={18} />
+                        )}
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchQuery ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          onClick={() => setSearchQuery('')}
+                        >
+                          <CloseIcon size={16} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                  sx={{
+                    bgcolor: alpha(theme.palette.background.paper, 0.8),
+                    borderRadius: 2,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      padding: '4px 10px',
+                      '& input': {
+                        fontSize: '0.9rem',
+                        padding: '6px 0',
+                      }
+                    }
+                  }}
+                />
+
+                {/* Search Suggestions Dropdown */}
+                {showSuggestions && (
+                  <Paper
+                    elevation={4}
+                    sx={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      mt: 0.5,
+                      zIndex: 1000,
+                      maxHeight: 350,
+                      overflow: 'auto',
+                      borderRadius: 1,
+                    }}
+                  >
+                    <List dense>
+                      {searchLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                          <CircularProgress size={24} />
+                        </Box>
+                      ) : searchSuggestions.length > 0 ? (
+                        searchSuggestions.map((suggestion) => (
+                          <ListItem
+                            key={suggestion.id}
+                            component="button"
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            sx={{
+                              py: 1,
+                              px: 2,
+                              cursor: 'pointer',
+                              border: 'none',
+                              background: 'transparent',
+                              width: '100%',
+                              textAlign: 'left',
+                              '&:hover': {
+                                bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                              }
+                            }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 36 }}>
+                              {suggestion.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={suggestion.displayText || suggestion.text}
+                              secondary={suggestion.secondaryText}
+                              primaryTypographyProps={{
+                                variant: 'body2',
+                                noWrap: true
+                              }}
+                              secondaryTypographyProps={{
+                                variant: 'caption',
+                                noWrap: true,
+                                color: 'text.secondary'
+                              }}
+                            />
+                          </ListItem>
+                        ))
+                      ) : (
+                        <ListItem sx={{ py: 1, px: 2 }}>
+                          <ListItemText
+                            primary="No results found"
+                            primaryTypographyProps={{
+                              variant: 'body2',
+                              align: 'center',
+                              color: 'text.secondary'
+                            }}
+                          />
+                        </ListItem>
+                      )}
+                    </List>
+                  </Paper>
+                )}
+              </Box>
+            </ClickAwayListener>
+            {/* Mobile Search Bar - appears between menu and user avatar when search icon is clicked */}
+            {!mobileSearchOpen && (
+              <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexGrow: 1, mx: 1 }}>
+                <IconButton
+                  color="inherit"
+                  size="small"
+                  sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}
+                  onClick={handleToggleMobileSearch}
+                >
+                  <Search size={20} />
+                </IconButton>
+              </Box>
+            )}
+            
+            {/* Mobile Search Bar - expanded view */}
+            {mobileSearchOpen && (
+              <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexGrow: 1, mx: 1 }}>
+                <TextField
+                  placeholder="Search TalkCart..."
+                  size="small"
+                  fullWidth
+                  value={searchQuery}
+                  inputRef={mobileSearchInputRef}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    // Don't immediately show suggestions - let the useSearch hook handle it
+                  }}
+                  onFocus={() => {
+                    setShowSuggestions(true);
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        {searchLoading ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : (
+                          <Search size={18} />
+                        )}
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          onClick={handleToggleMobileSearch}
+                        >
+                          <CloseIcon size={18} />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    bgcolor: alpha(theme.palette.background.paper, 0.8),
+                    borderRadius: 1,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 1,
+                    }
+                  }}
+                />
+              </Box>
+            )}
+            
+            {isAuthenticated ? (
+              <>
+                {/* Wallet Button and User Avatar - no space between them */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                  <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                    <WalletButton />
+                  </Box>
+
+                  {/* User Avatar - On the right corner */}
+                  <Tooltip title="Profile">
+                    <IconButton
+                      onClick={handleUserMenuOpen}
+                      size="small"
+                      aria-controls={userMenuOpen ? 'account-menu' : undefined}
+                      aria-haspopup="true"
+                      aria-expanded={userMenuOpen ? 'true' : undefined}
+                    >
+                      <UserAvatar
+                        src={user?.avatar}
+                        alt={user?.displayName || 'User'}
+                        size={32}
+                        isVerified={user?.isVerified}
+                        sx={{
+                          border: `2px solid ${theme.palette.primary.main}`
+                        }}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </>
+            ) : (
+              <Button
+                color="primary"
+                onClick={handleLoginClick}
+                variant="contained"
+                size="small"
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  minWidth: 'auto',
+                  px: 2
+                }}
+              >
+                Login
+              </Button>
+            )}
+          </Stack>
+        </Toolbar>
+      </AppBar>
+
+      {/* Bottom Navigation for Mobile - Home, Cart, Messages, Notifications, Create */}
+      {isMobile && (
+        <AppBar
+          position="fixed"
+          sx={{
+            top: 'auto',
+            bottom: 0,
+            bgcolor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+            boxShadow: '0 -1px 3px rgba(0,0,0,0.1)',
+            zIndex: theme.zIndex.drawer + 1,
+          }}
+        >
+          <Toolbar sx={{ minHeight: '60px', display: 'flex', justifyContent: 'space-around', px: 0 }}>
+            <BottomNavigation
+              showLabels
+              value={getBottomNavigationValue()}
+              onChange={handleBottomNavigationChange}
+              sx={{
+                width: '100%',
+                bgcolor: 'transparent',
+                boxShadow: 'none',
+              }}
+            >
+              {/* Home */}
+              <BottomNavigationAction
+                label="Home"
+                icon={<Home size={20} />}
+                onClick={() => {
+                  if (isAuthenticated) {
+                    router.push('/social');
+                  } else {
+                    router.push('/auth/login');
+                  }
+                }}
+                sx={{
+                  color: router.pathname === '/social' ? theme.palette.primary.main : 'inherit',
+                }}
+              />
+
+              {/* Cart */}
+              <BottomNavigationAction
+                label="Cart"
+                icon={
+                  <Box position="relative">
+                    <ShoppingCart size={20} />
+                    {cart && cart.totalItems > 0 && (
+                      <Badge 
+                        badgeContent={cart.totalItems} 
+                        color="error"
+                        sx={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          transform: 'scale(0.7)',
+                        }}
+                      >
+                        <span />
+                      </Badge>
+                    )}
+                  </Box>
+                }
+                onClick={() => {
+                  if (isAuthenticated) {
+                    router.push('/marketplace/cart');
+                  } else {
+                    router.push('/auth/login');
+                  }
+                }}
+                sx={{
+                  color: router.pathname.includes('/marketplace') && router.pathname.includes('/cart') ? theme.palette.primary.main : 'inherit',
+                }}
+              />
+
+              {/* Messages */}
+              <BottomNavigationAction
+                label="Messages"
+                icon={
+                  <Box position="relative">
+                    <MessageSquare size={20} />
+                    {unreadMessages > 0 && (
+                      <Badge 
+                        badgeContent={unreadMessages} 
+                        color="error"
+                        sx={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          transform: 'scale(0.7)',
+                        }}
+                      >
+                        <span />
+                      </Badge>
+                    )}
+                  </Box>
+                }
+                onClick={() => {
+                  if (isAuthenticated) {
+                    router.push('/messages');
+                  } else {
+                    router.push('/auth/login');
+                  }
+                }}
+                sx={{
+                  color: router.pathname.includes('/messages') ? theme.palette.primary.main : 'inherit',
+                }}
+              />
+
+              {/* Notifications */}
+              <BottomNavigationAction
+                label="Notifications"
+                icon={
+                  <Box position="relative">
+                    <Bell size={20} />
+                    {unreadNotifications > 0 && (
+                      <Badge 
+                        badgeContent={unreadNotifications} 
+                        color="error"
+                        sx={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          transform: 'scale(0.7)',
+                        }}
+                      >
+                        <span />
+                      </Badge>
+                    )}
+                  </Box>
+                }
+                onClick={handleNotificationsOpen}
+                sx={{
+                  color: router.pathname.includes('/notifications') ? theme.palette.primary.main : 'inherit',
+                }}
+              />
+
+              {/* Create */}
+              <BottomNavigationAction
+                label="Create"
+                icon={<Plus size={20} />}
+                onClick={() => {
+                  if (isAuthenticated) {
+                    setCreatePostOpen(true);
+                  } else {
+                    router.push('/auth/login');
+                  }
+                }}
+                sx={{
+                  color: 'inherit',
+                }}
+              />
+            </BottomNavigation>
+          </Toolbar>
+        </AppBar>
+      )}
+
+      {/* Desktop - Right aligned action icons */}
+      {!isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            right: 16,
+            bottom: 16,
+            zIndex: theme.zIndex.drawer + 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+          }}
+        >
+          {isAuthenticated && (
             <>
-              {/* Social Feed Icon */}
-              {isMobile ? (
-                <Tooltip title="Social Feed">
-                  <Button
-                    color="inherit"
-                    size="small"
-                    onClick={() => {
-                      if (isAuthenticated) {
-                        router.push('/social');
-                      } else {
-                        router.push('/auth/login');
-                      }
-                    }}
-                    sx={{ 
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      minWidth: 'auto',
-                      px: 1
-                    }}
-                  >
-                    Home
-                  </Button>
-                </Tooltip>
-              ) : (
-                <Tooltip title="Social Feed">
-                  <Button
-                    color="inherit"
-                    size="small"
-                    onClick={() => {
-                      if (isAuthenticated) {
-                        router.push('/social');
-                      } else {
-                        router.push('/auth/login');
-                      }
-                    }}
-                    sx={{ 
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      minWidth: 'auto',
-                      px: 1
-                    }}
-                  >
-                    Home
-                  </Button>
-                </Tooltip>
-              )}
+              {/* Home */}
+              <Tooltip title="Home">
+                <IconButton
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      router.push('/social');
+                    } else {
+                      router.push('/auth/login');
+                    }
+                  }}
+                  sx={{
+                    bgcolor: theme.palette.background.paper,
+                    boxShadow: 1,
+                    '&:hover': {
+                      bgcolor: theme.palette.action.hover,
+                    },
+                    color: router.pathname === '/social' ? theme.palette.primary.main : 'inherit',
+                  }}
+                >
+                  <Home size={20} />
+                </IconButton>
+              </Tooltip>
 
-              {/* Cart Button */}
-              {isMobile ? (
-                <Tooltip title="Shopping Cart">
-                  <Button
-                    color="inherit"
-                    size="small"
-                    onClick={() => {
-                      if (isAuthenticated) {
-                        router.push('/marketplace/cart');
-                      } else {
-                        router.push('/auth/login');
-                      }
-                    }}
-                    sx={{ 
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      minWidth: 'auto',
-                      px: 1,
-                      position: 'relative'
-                    }}
-                  >
-                    Cart
-                    {cart && cart.totalItems > 0 && (
-                      <Badge 
-                        badgeContent={cart.totalItems} 
-                        color="error"
-                        sx={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4
-                        }}
-                      >
-                        <span />
-                      </Badge>
-                    )}
-                  </Button>
-                </Tooltip>
-              ) : (
-                <Tooltip title="Shopping Cart">
-                  <Button
-                    color="inherit"
-                    size="small"
-                    onClick={() => {
-                      if (isAuthenticated) {
-                        router.push('/marketplace/cart');
-                      } else {
-                        router.push('/auth/login');
-                      }
-                    }}
-                    sx={{ 
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      minWidth: 'auto',
-                      px: 1,
-                      position: 'relative'
-                    }}
-                  >
-                    Cart
-                    {cart && cart.totalItems > 0 && (
-                      <Badge 
-                        badgeContent={cart.totalItems} 
-                        color="error"
-                        sx={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4
-                        }}
-                      >
-                        <span />
-                      </Badge>
-                    )}
-                  </Button>
-                </Tooltip>
-              )}
+              {/* Cart */}
+              <Tooltip title="Cart">
+                <IconButton
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      router.push('/marketplace/cart');
+                    } else {
+                      router.push('/auth/login');
+                    }
+                  }}
+                  sx={{
+                    bgcolor: theme.palette.background.paper,
+                    boxShadow: 1,
+                    '&:hover': {
+                      bgcolor: theme.palette.action.hover,
+                    },
+                    position: 'relative',
+                    color: router.pathname.includes('/marketplace') && router.pathname.includes('/cart') ? theme.palette.primary.main : 'inherit',
+                  }}
+                >
+                  <ShoppingCart size={20} />
+                  {cart && cart.totalItems > 0 && (
+                    <Badge 
+                      badgeContent={cart.totalItems} 
+                      color="error"
+                      sx={{
+                        position: 'absolute',
+                        top: -4,
+                        right: -4,
+                      }}
+                    >
+                      <span />
+                    </Badge>
+                  )}
+                </IconButton>
+              </Tooltip>
 
-              {/* Messages Icon */}
-              {isMobile ? (
-                <Tooltip title="Messages">
-                  <Button
-                    color="inherit"
-                    size="small"
-                    onClick={() => {
-                      if (isAuthenticated) {
-                        router.push('/messages');
-                      } else {
-                        router.push('/auth/login');
-                      }
-                    }}
-                    sx={{ 
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      minWidth: 'auto',
-                      px: 1,
-                      position: 'relative'
-                    }}
-                  >
-                    Messages
-                    {unreadMessages > 0 && (
-                      <Badge 
-                        badgeContent={unreadMessages} 
-                        color="error"
-                        sx={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4
-                        }}
-                      >
-                        <span />
-                      </Badge>
-                    )}
-                  </Button>
-                </Tooltip>
-              ) : (
-                <Tooltip title="Messages">
-                  <Button
-                    color="inherit"
-                    size="small"
-                    onClick={() => {
-                      if (isAuthenticated) {
-                        router.push('/messages');
-                      } else {
-                        router.push('/auth/login');
-                      }
-                    }}
-                    sx={{ 
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      minWidth: 'auto',
-                      px: 1,
-                      position: 'relative'
-                    }}
-                  >
-                    Messages
-                    {unreadMessages > 0 && (
-                      <Badge 
-                        badgeContent={unreadMessages} 
-                        color="error"
-                        sx={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4
-                        }}
-                      >
-                        <span />
-                      </Badge>
-                    )}
-                  </Button>
-                </Tooltip>
-              )}
+              {/* Messages */}
+              <Tooltip title="Messages">
+                <IconButton
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      router.push('/messages');
+                    } else {
+                      router.push('/auth/login');
+                    }
+                  }}
+                  sx={{
+                    bgcolor: theme.palette.background.paper,
+                    boxShadow: 1,
+                    '&:hover': {
+                      bgcolor: theme.palette.action.hover,
+                    },
+                    position: 'relative',
+                    color: router.pathname.includes('/messages') ? theme.palette.primary.main : 'inherit',
+                  }}
+                >
+                  <MessageSquare size={20} />
+                  {unreadMessages > 0 && (
+                    <Badge 
+                      badgeContent={unreadMessages} 
+                      color="error"
+                      sx={{
+                        position: 'absolute',
+                        top: -4,
+                        right: -4,
+                      }}
+                    >
+                      <span />
+                    </Badge>
+                  )}
+                </IconButton>
+              </Tooltip>
 
-              {/* Notification Icon */}
+              {/* Notifications */}
               <Tooltip title="Notifications">
                 <IconButton
                   color="inherit"
                   size="small"
                   onClick={handleNotificationsOpen}
-                  sx={{ 
-                    minWidth: 'auto',
-                    px: 1,
-                    position: 'relative'
+                  sx={{
+                    bgcolor: theme.palette.background.paper,
+                    boxShadow: 1,
+                    '&:hover': {
+                      bgcolor: theme.palette.action.hover,
+                    },
+                    position: 'relative',
+                    color: router.pathname.includes('/notifications') ? theme.palette.primary.main : 'inherit',
                   }}
                 >
                   <Bell size={20} />
@@ -882,8 +1300,8 @@ export const TopBar: React.FC<TopBarProps> = ({
                       color="error"
                       sx={{
                         position: 'absolute',
-                        top: 4,
-                        right: 4
+                        top: -4,
+                        right: -4,
                       }}
                     >
                       <span />
@@ -892,52 +1310,33 @@ export const TopBar: React.FC<TopBarProps> = ({
                 </IconButton>
               </Tooltip>
 
-              {/* Wallet Button */}
-              <Box sx={{ display: { xs: 'none', sm: 'block' }, ml: 1 }}>
-                <WalletButton />
-              </Box>
-
-              {/* User Avatar */}
-              <Tooltip title="Profile">
+              {/* Create */}
+              <Tooltip title="Create Post">
                 <IconButton
-                  onClick={handleUserMenuOpen}
+                  color="inherit"
                   size="small"
-                  sx={{ ml: 1 }}
-                  aria-controls={userMenuOpen ? 'account-menu' : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={userMenuOpen ? 'true' : undefined}
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      setCreatePostOpen(true);
+                    } else {
+                      router.push('/auth/login');
+                    }
+                  }}
+                  sx={{
+                    bgcolor: theme.palette.background.paper,
+                    boxShadow: 1,
+                    '&:hover': {
+                      bgcolor: theme.palette.action.hover,
+                    },
+                  }}
                 >
-                  <UserAvatar
-                    src={user?.avatar}
-                    alt={user?.displayName || 'User'}
-                    size={32}
-                    isVerified={user?.isVerified}
-                    sx={{
-                      border: `2px solid ${theme.palette.primary.main}`
-                    }}
-                  />
+                  <Plus size={20} />
                 </IconButton>
               </Tooltip>
             </>
-          ) : (
-            <Button
-              color="primary"
-              onClick={handleLoginClick}
-              variant="contained"
-              size="small"
-              sx={{
-                textTransform: 'none',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                minWidth: 'auto',
-                px: 2
-              }}
-            >
-              Login
-            </Button>
           )}
-        </Stack>
-      </Toolbar>
+        </Box>
+      )}
 
       {/* User Menu */}
       <Menu
@@ -1241,7 +1640,21 @@ export const TopBar: React.FC<TopBarProps> = ({
         </Box>
       </Popover>
 
-    </AppBar>
+      {/* Create Post Dialog */}
+      {isAuthenticated && (
+        <CreatePostDialog
+          open={createPostOpen}
+          onClose={() => setCreatePostOpen(false)}
+          onPostCreated={() => {
+            setCreatePostOpen(false);
+            // Optionally refresh the feed if we're on the social page
+            if (router.pathname === '/social') {
+              window.dispatchEvent(new CustomEvent('posts:refresh'));
+            }
+          }}
+        />
+      )}
+    </>
   );
 };
 
