@@ -253,6 +253,19 @@ const CartPage: React.FC = () => {
     }
   }, [user, shippingAddress.name]);
 
+  // Listen for cart updates from other components
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      fetchCart();
+    };
+    
+    window.addEventListener('cart-updated', handleCartUpdate);
+    
+    return () => {
+      window.removeEventListener('cart-updated', handleCartUpdate);
+    };
+  }, [fetchCart]);
+
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
     if (newQuantity < 1) {
       await removeFromCart(productId);

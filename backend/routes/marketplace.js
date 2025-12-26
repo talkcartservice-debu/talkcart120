@@ -3428,19 +3428,39 @@ router.get('/cart', authenticateTokenStrict, async (req, res) => {
       await cart.save();
     }
     
-    // Calculate total items and total price
+    // Calculate total items and total price, and populate product info
     let totalItems = 0;
     let totalPrice = 0;
     
-    // Only calculate if there are items in the cart
+    // Transform cart items to include product information
+    const populatedItems = [];
+    
     if (cart.items && cart.items.length > 0) {
       for (const item of cart.items) {
-        totalItems += item.quantity;
-        
-        // Get the product to get the price
         const product = await Product.findById(item.productId);
         if (product) {
+          totalItems += item.quantity;
           totalPrice += product.price * item.quantity;
+          
+          // Add product information to the cart item
+          populatedItems.push({
+            productId: item.productId,
+            name: product.name,
+            price: product.price,
+            currency: product.currency || 'USD',
+            quantity: item.quantity,
+            image: product.images && product.images.length > 0 ? product.images[0].secure_url || product.images[0].url : '',
+            vendorId: product.vendorId,
+            description: product.description,
+            rating: product.rating,
+            reviewCount: product.reviewCount,
+            sales: product.sales,
+            views: product.views,
+            category: product.category,
+            tags: product.tags,
+            stock: product.stock,
+            color: item.color // preserve the color from cart item
+          });
         }
       }
     }
@@ -3448,7 +3468,7 @@ router.get('/cart', authenticateTokenStrict, async (req, res) => {
     res.json({
       success: true,
       data: {
-        items: cart.items,
+        items: populatedItems,
         totalItems,
         totalPrice,
         currency: 'USD'
@@ -3517,19 +3537,40 @@ router.post('/cart/add', authenticateTokenStrict, async (req, res) => {
     
     await cart.save();
     
-    // Calculate total items and total price
+    // Calculate total items and total price, and populate product info
     let totalItems = 0;
     let totalPrice = 0;
+    
+    // Transform cart items to include product information
+    const populatedItems = [];
     
     // Only calculate if there are items in the cart
     if (cart.items && cart.items.length > 0) {
       for (const item of cart.items) {
-        totalItems += item.quantity;
-        
-        // Get the product to get the price
         const itemProduct = await Product.findById(item.productId);
         if (itemProduct) {
+          totalItems += item.quantity;
           totalPrice += itemProduct.price * item.quantity;
+          
+          // Add product information to the cart item
+          populatedItems.push({
+            productId: item.productId,
+            name: itemProduct.name,
+            price: itemProduct.price,
+            currency: itemProduct.currency || 'USD',
+            quantity: item.quantity,
+            image: itemProduct.images && itemProduct.images.length > 0 ? itemProduct.images[0].secure_url || itemProduct.images[0].url : '',
+            vendorId: itemProduct.vendorId,
+            description: itemProduct.description,
+            rating: itemProduct.rating,
+            reviewCount: itemProduct.reviewCount,
+            sales: itemProduct.sales,
+            views: itemProduct.views,
+            category: itemProduct.category,
+            tags: itemProduct.tags,
+            stock: itemProduct.stock,
+            color: item.color // preserve the color from cart item
+          });
         }
       }
     }
@@ -3537,7 +3578,7 @@ router.post('/cart/add', authenticateTokenStrict, async (req, res) => {
     res.json({
       success: true,
       data: {
-        items: cart.items,
+        items: populatedItems,
         totalItems,
         totalPrice,
         message: 'Product added to cart successfully'
@@ -3599,19 +3640,40 @@ router.put('/cart/:productId', authenticateTokenStrict, async (req, res) => {
     
     await cart.save();
     
-    // Calculate total items and total price
+    // Calculate total items and total price, and populate product info
     let totalItems = 0;
     let totalPrice = 0;
+    
+    // Transform cart items to include product information
+    const populatedItems = [];
     
     // Only calculate if there are items in the cart
     if (cart.items && cart.items.length > 0) {
       for (const item of cart.items) {
-        totalItems += item.quantity;
-        
-        // Get the product to get the price
         const itemProduct = await Product.findById(item.productId);
         if (itemProduct) {
+          totalItems += item.quantity;
           totalPrice += itemProduct.price * item.quantity;
+          
+          // Add product information to the cart item
+          populatedItems.push({
+            productId: item.productId,
+            name: itemProduct.name,
+            price: itemProduct.price,
+            currency: itemProduct.currency || 'USD',
+            quantity: item.quantity,
+            image: itemProduct.images && itemProduct.images.length > 0 ? itemProduct.images[0].secure_url || itemProduct.images[0].url : '',
+            vendorId: itemProduct.vendorId,
+            description: itemProduct.description,
+            rating: itemProduct.rating,
+            reviewCount: itemProduct.reviewCount,
+            sales: itemProduct.sales,
+            views: itemProduct.views,
+            category: itemProduct.category,
+            tags: itemProduct.tags,
+            stock: itemProduct.stock,
+            color: item.color // preserve the color from cart item
+          });
         }
       }
     }
@@ -3619,7 +3681,7 @@ router.put('/cart/:productId', authenticateTokenStrict, async (req, res) => {
     res.json({
       success: true,
       data: {
-        items: cart.items,
+        items: populatedItems,
         totalItems,
         totalPrice,
         message: 'Cart item updated successfully'
@@ -3669,19 +3731,40 @@ router.delete('/cart/:productId', authenticateTokenStrict, async (req, res) => {
     
     await cart.save();
     
-    // Calculate total items and total price
+    // Calculate total items and total price, and populate product info
     let totalItems = 0;
     let totalPrice = 0;
+    
+    // Transform cart items to include product information
+    const populatedItems = [];
     
     // Only calculate if there are items in the cart
     if (cart.items && cart.items.length > 0) {
       for (const item of cart.items) {
-        totalItems += item.quantity;
-        
-        // Get the product to get the price
         const itemProduct = await Product.findById(item.productId);
         if (itemProduct) {
+          totalItems += item.quantity;
           totalPrice += itemProduct.price * item.quantity;
+          
+          // Add product information to the cart item
+          populatedItems.push({
+            productId: item.productId,
+            name: itemProduct.name,
+            price: itemProduct.price,
+            currency: itemProduct.currency || 'USD',
+            quantity: item.quantity,
+            image: itemProduct.images && itemProduct.images.length > 0 ? itemProduct.images[0].secure_url || itemProduct.images[0].url : '',
+            vendorId: itemProduct.vendorId,
+            description: itemProduct.description,
+            rating: itemProduct.rating,
+            reviewCount: itemProduct.reviewCount,
+            sales: itemProduct.sales,
+            views: itemProduct.views,
+            category: itemProduct.category,
+            tags: itemProduct.tags,
+            stock: itemProduct.stock,
+            color: item.color // preserve the color from cart item
+          });
         }
       }
     }
@@ -3689,7 +3772,7 @@ router.delete('/cart/:productId', authenticateTokenStrict, async (req, res) => {
     res.json({
       success: true,
       data: {
-        items: cart.items,
+        items: populatedItems,
         totalItems,
         totalPrice,
         message: 'Product removed from cart successfully'

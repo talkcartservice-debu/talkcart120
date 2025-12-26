@@ -197,7 +197,6 @@ export const useCart = () => {
       return false;
     }
   };
-
   const clearCart = async () => {
     try {
       const response: any = await api.marketplace.clearCart();
