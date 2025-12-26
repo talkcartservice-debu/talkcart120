@@ -1,5 +1,6 @@
 ﻿﻿import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
 
 export interface Notification {
   id: string;
@@ -32,14 +33,13 @@ export const useNotifications = (): UseNotificationsReturn => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Calculate unread count
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Fetch notifications
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated || !user) {
       setNotifications([]);
+      setUnreadCount(0);
       return;
     }
 
@@ -47,61 +47,23 @@ export const useNotifications = (): UseNotificationsReturn => {
       setLoading(true);
       setError(null);
 
-      // In a real implementation, this would call an API
-      // For now, we'll simulate with mock data
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'like',
-          title: 'New Like',
-          content: 'John Doe liked your post',
-          isRead: false,
-          createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-          sender: {
-            id: 'user2',
-            displayName: 'John Doe',
-            avatar: '/default-avatar.png'
-          },
-          data: {
-            postId: 'post123'
-          }
-        },
-        {
-          id: '2',
-          type: 'comment',
-          title: 'New Comment',
-          content: 'Jane Smith commented on your post',
-          isRead: false,
-          createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-          sender: {
-            id: 'user3',
-            displayName: 'Jane Smith',
-            avatar: '/default-avatar.png'
-          },
-          data: {
-            postId: 'post456'
-          }
-        },
-        {
-          id: '3',
-          type: 'follow',
-          title: 'New Follower',
-          content: 'Bob Johnson started following you',
-          isRead: true,
-          createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-          sender: {
-            id: 'user4',
-            displayName: 'Bob Johnson',
-            avatar: '/default-avatar.png'
-          }
-        }
-      ];
+      // Fetch notifications from API
+      const response: any = await api.notifications.getNotifications({
+        page: 1,
+        limit: 50, // Fetch more notifications
+      });
 
-      setNotifications(mockNotifications);
+      if (response.success && response.data) {
+        setNotifications(response.data);
+      } else {
+        setNotifications([]);
+        console.error('Failed to fetch notifications:', response.error);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch notifications';
       setError(errorMessage);
       console.error('Fetch notifications error:', errorMessage);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -110,37 +72,51 @@ export const useNotifications = (): UseNotificationsReturn => {
   // Fetch unread count
   const fetchUnreadCount = useCallback(async () => {
     if (!isAuthenticated || !user) {
+      setUnreadCount(0);
       return;
     }
 
     try {
-      // In a real implementation, this would call an API
-      // For now, we'll just refresh notifications to get the count
-      await fetchNotifications();
+      const response: any = await api.notifications.getUnreadCount();
+      
+      if (response.success && response.data) {
+        setUnreadCount(response.data.unreadCount || 0);
+      } else {
+        setUnreadCount(0);
+        console.error('Failed to fetch unread count:', response.error);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch unread count';
       setError(errorMessage);
       console.error('Fetch unread count error:', errorMessage);
+      setUnreadCount(0);
     }
-  }, [isAuthenticated, user, fetchNotifications]);
+  }, [isAuthenticated, user]);
 
   // Mark a notification as read
   const markAsRead = useCallback(async (notificationId: string) => {
     if (!isAuthenticated) return false;
 
     try {
-      // Update local state
-      setNotifications(prev =>
-        prev.map(notification =>
-          notification.id === notificationId
-            ? { ...notification, isRead: true }
-            : notification
-        )
-      );
-
-      // In a real implementation, this would call an API
-      // await notificationService.markAsRead(notificationId);
-      return true;
+      const response: any = await api.notifications.markAsRead([notificationId]);
+      
+      if (response.success) {
+        // Update local state
+        setNotifications(prev =>
+          prev.map(notification =>
+            notification.id === notificationId
+              ? { ...notification, isRead: true }
+              : notification
+          )
+        );
+        
+        // Update unread count
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        return true;
+      } else {
+        console.error('Failed to mark notification as read:', response.error);
+        return false;
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to mark notification as read';
       setError(errorMessage);
@@ -154,17 +130,24 @@ export const useNotifications = (): UseNotificationsReturn => {
     if (!isAuthenticated) return false;
 
     try {
-      // Update local state
-      setNotifications(prev =>
-        prev.map(notification => ({
-          ...notification,
-          isRead: true
-        }))
-      );
-
-      // In a real implementation, this would call an API
-      // await notificationService.markAllAsRead();
-      return true;
+      const response: any = await api.notifications.markAllAsRead();
+      
+      if (response.success) {
+        // Update local state
+        setNotifications(prev =>
+          prev.map(notification => ({
+            ...notification,
+            isRead: true
+          }))
+        );
+        
+        // Reset unread count to 0
+        setUnreadCount(0);
+        return true;
+      } else {
+        console.error('Failed to mark all notifications as read:', response.error);
+        return false;
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to mark all notifications as read';
       setError(errorMessage);
@@ -173,14 +156,16 @@ export const useNotifications = (): UseNotificationsReturn => {
     }
   }, [isAuthenticated]);
 
-  // Fetch notifications on mount if authenticated
+  // Fetch notifications and unread count on mount if authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchNotifications();
+      fetchUnreadCount();
     } else {
       setNotifications([]);
+      setUnreadCount(0);
     }
-  }, [isAuthenticated, fetchNotifications]);
+  }, [isAuthenticated]);
 
   return {
     notifications,

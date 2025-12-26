@@ -2207,6 +2207,70 @@ class ApiService {
       });
     },
   };
+
+  // Notifications API
+  notifications = {
+    // Get user notifications
+    getNotifications: async (params?: {
+      page?: number;
+      limit?: number;
+      type?: string;
+      unreadOnly?: boolean;
+    }) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        if (params.page !== undefined) queryParams.append('page', params.page.toString());
+        if (params.limit !== undefined) queryParams.append('limit', params.limit.toString());
+        if (params.type !== undefined) queryParams.append('type', params.type);
+        if (params.unreadOnly !== undefined) queryParams.append('unreadOnly', params.unreadOnly.toString());
+      }
+      return this.request(`${API_URL}/notifications?${queryParams}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+    },
+
+    // Get unread notifications count
+    getUnreadCount: async () => {
+      return this.request(`${API_URL}/notifications/unread-count`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+    },
+
+    // Mark specific notifications as read
+    markAsRead: async (notificationIds: string[]) => {
+      return this.request(`${API_URL}/notifications/mark-read`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ notificationIds }),
+      });
+    },
+
+    // Mark all notifications as read
+    markAllAsRead: async () => {
+      return this.request(`${API_URL}/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+      });
+    },
+
+    // Delete a notification
+    delete: async (notificationId: string) => {
+      return this.request(`${API_URL}/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders(),
+      });
+    },
+
+    // Get available notification types
+    getTypes: async () => {
+      return this.request(`${API_URL}/notifications/types`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+    },
+  };
 }
 
 export const api = new ApiService();

@@ -119,7 +119,7 @@ const NotificationsPage: React.FC = () => {
       unsubscribeNewNotification();
       unsubscribeUnreadCount();
     };
-  }, [isAuthenticated, onNewNotification, onUnreadCountUpdate, fetchNotifications, fetchUnreadCount]);
+  }, [isAuthenticated]);
 
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
