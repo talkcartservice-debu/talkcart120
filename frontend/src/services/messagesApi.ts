@@ -11,7 +11,7 @@ console.log('Messages API timeout configuration:', TIMEOUTS.API_REQUEST);
 // Create axios instance with default config
 const messageApi = axios.create({
     baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
-    timeout: TIMEOUTS.API_REQUEST, // Use config timeout
+    timeout: 10000, // 10 seconds timeout instead of the default which might be longer
 });
 
 // Log the actual axios instance configuration

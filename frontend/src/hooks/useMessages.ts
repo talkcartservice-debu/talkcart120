@@ -221,113 +221,93 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         setActiveConversation(prev => prev ? { ...prev, lastMessage: tempMessage } : null);
       }
       
-      // Retry logic for network issues
-      let attempts = 0;
-      const maxAttempts = 3;
-      
-      while (attempts < maxAttempts) {
-        try {
-          setSending(true);
-          
-          // Send via REST API for persistence (this will also broadcast via sockets on the backend)
-          const res = await client.sendMessage(currentConversationId, {
+      try {
+        setSending(true);
+        
+        // Send via REST API for persistence (this will also broadcast via sockets on the backend)
+        const res = await client.sendMessage(currentConversationId, {
+          content,
+          type,
+          media,
+          replyTo,
+        });
+        
+        if (res.success) {
+          // Create the final Message object with server data
+          const newMessage: Message = {
+            id: res.data?.id || res.id,
+            conversationId: currentConversationId,
+            createdAt: res.data?.createdAt || res.createdAt || new Date().toISOString(),
             content,
-            type,
-            media,
-            replyTo,
-          });
+            type: (type as 'text' | 'image' | 'video' | 'audio' | 'file' | 'system' | 'post_share') || 'text',
+            senderId: res.data?.senderId || res.sender?.id || '',
+            isEdited: false,
+            isDeleted: false,
+            isForwarded: false,
+            media: media || [],
+            reactions: [],
+            readBy: [],
+            replyTo: replyTo ? { id: replyTo, content: '', senderId: '', type: 'text' } : undefined,
+            sender: res.data?.sender || res.sender ? {
+              id: (res.data?.sender || res.sender)?.id || '',
+              username: (res.data?.sender || res.sender)?.username || 'unknown',
+              displayName: (res.data?.sender || res.sender)?.displayName || 'Unknown',
+              avatar: (res.data?.sender || res.sender)?.avatar || null, // Convert undefined to null
+              isVerified: (res.data?.sender || res.sender)?.isVerified || false
+            } : {
+              id: '',
+              username: 'unknown',
+              displayName: 'Unknown',
+              avatar: null,
+              isVerified: false
+            },
+            isOwn: true,
+            isRead: false,
+            isOptimistic: false // Remove the optimistic flag
+          };
           
-          if (res.success) {
-            // Create the final Message object with server data
-            const newMessage: Message = {
-              id: res.data?.id || res.id,
-              conversationId: currentConversationId,
-              createdAt: res.data?.createdAt || res.createdAt || new Date().toISOString(),
-              content,
-              type: (type as 'text' | 'image' | 'video' | 'audio' | 'file' | 'system' | 'post_share') || 'text',
-              senderId: res.data?.senderId || res.sender?.id || '',
-              isEdited: false,
-              isDeleted: false,
-              isForwarded: false,
-              media: media || [],
-              reactions: [],
-              readBy: [],
-              replyTo: replyTo ? { id: replyTo, content: '', senderId: '', type: 'text' } : undefined,
-              sender: res.data?.sender || res.sender ? {
-                id: (res.data?.sender || res.sender)?.id || '',
-                username: (res.data?.sender || res.sender)?.username || 'unknown',
-                displayName: (res.data?.sender || res.sender)?.displayName || 'Unknown',
-                avatar: (res.data?.sender || res.sender)?.avatar || null, // Convert undefined to null
-                isVerified: (res.data?.sender || res.sender)?.isVerified || false
-              } : {
-                id: '',
-                username: 'unknown',
-                displayName: 'Unknown',
-                avatar: null,
-                isVerified: false
-              },
-              isOwn: true,
-              isRead: false,
-              isOptimistic: false // Remove the optimistic flag
-            };
-            
-            // Update the temporary message with the server message
-            setMessages((prev) => 
-              (prev || []).map(msg => 
-                msg.id === tempId ? newMessage : msg
-              )
-            );
-            
-            // Update the conversation's last message with the server message
-            setConversations(prev => 
-              (prev || []).map(conv => 
-                conv.id === currentConversationId 
-                  ? { ...conv, lastMessage: newMessage } 
-                  : conv
-              )
-            );
-            
-            // Update active conversation's last message
-            if (activeConversation?.id === currentConversationId) {
-              setActiveConversation(prev => prev ? { ...prev, lastMessage: newMessage } : null);
-            }
-            
-            return true;
-          } else {
-            // Handle API error response - remove the temp message
-            setMessages((prev) => (prev || []).filter(msg => msg.id !== tempId));
-            
-            const errorMessage = res.error || 'Failed to send message';
-            setError(errorMessage);
-            console.error('Send message API error:', errorMessage);
-            return false;
-          }
-        } catch (e: any) {
-          attempts++;
+          // Update the temporary message with the server message
+          setMessages((prev) => 
+            (prev || []).map(msg => 
+              msg.id === tempId ? newMessage : msg
+            )
+          );
           
-          // If this is the last attempt or it's not a network error, remove the temp message and show the error
-          const isNetworkError = e.networkError || e.timeout || !e.response;
+          // Update the conversation's last message with the server message
+          setConversations(prev => 
+            (prev || []).map(conv => 
+              conv.id === currentConversationId 
+                ? { ...conv, lastMessage: newMessage } 
+                : conv
+            )
+          );
           
-          if (attempts >= maxAttempts || !isNetworkError) {
-            // Remove the temporary message since the send failed
-            setMessages((prev) => (prev || []).filter(msg => msg.id !== tempId));
-            
-            const errorMessage = e.message || 'Failed to send message. Please check your network connection.';
-            setError(errorMessage);
-            console.error('Send message error:', e);
-            return false;
+          // Update active conversation's last message
+          if (activeConversation?.id === currentConversationId) {
+            setActiveConversation(prev => prev ? { ...prev, lastMessage: newMessage } : null);
           }
           
-          // Wait before retrying (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
-        } finally {
-          setSending(false);
+          return true;
+        } else {
+          // Handle API error response - remove the temp message
+          setMessages((prev) => (prev || []).filter(msg => msg.id !== tempId));
+          
+          const errorMessage = res.error || 'Failed to send message';
+          setError(errorMessage);
+          console.error('Send message API error:', errorMessage);
+          return false;
         }
+      } catch (e: any) {
+        // Remove the temporary message since the send failed
+        setMessages((prev) => (prev || []).filter(msg => msg.id !== tempId));
+        
+        const errorMessage = e.message || 'Failed to send message. Please check your network connection.';
+        setError(errorMessage);
+        console.error('Send message error:', e);
+        return false;
+      } finally {
+        setSending(false);
       }
-      
-      // If we exhausted all attempts, remove the temp message
-      setMessages((prev) => (prev || []).filter(msg => msg.id !== tempId));
-      return false;
     },
     [conversationId, activeConversation?.id, user]
   );
