@@ -220,5 +220,66 @@ export const AdminExtraApi = {
       body: JSON.stringify({ files })
     });
     return res.json();
+  },
+
+  // Refunds Management
+  createRefund: async (data: {
+    orderId: string;
+    paymentIntentId: string;
+    customerId: string;
+    refundAmount: number;
+    originalAmount?: number;
+    currency: string;
+    refundType: string;
+    reason: string;
+    reasonDetails?: string;
+    priority?: string;
+    requiresApproval?: boolean;
+  }) => {
+    const res = await fetchWithAuth(`${API_BASE}/admin/refunds/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+
+  updateRefundStatus: async (id: string, data: { status: string; notes?: string; externalRefundId?: string }) => {
+    const res = await fetchWithAuth(`${API_BASE}/admin/refunds/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+
+  getRefundDetails: async (id: string) => {
+    const res = await fetchWithAuth(`${API_BASE}/admin/refunds/${id}`);
+    return res.json();
+  },
+
+  addRefundCommunication: async (id: string, data: { type: string; content: string; recipient?: string }) => {
+    const res = await fetchWithAuth(`${API_BASE}/admin/refunds/${id}/communicate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+
+  getComprehensiveRefundAnalytics: async (query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithAuth(`${API_BASE}/admin/refunds/analytics/comprehensive?${params.toString()}`);
+    return res.json();
+  },
+
+  bulkRefundAction: async (data: { refundIds: string[]; action: string; actionData?: any }) => {
+    const res = await fetchWithAuth(`${API_BASE}/admin/refunds/bulk-action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
   }
 };

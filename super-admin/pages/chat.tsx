@@ -84,12 +84,12 @@ export default function ChatAdmin() {
 
       <TabPanel value={tabValue} index={1}>
         <Paper sx={{ p: 2, mb: 2 }}>
-          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
+          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} useFlexGap flexWrap="wrap">
             <TextField
               label="Search Conversations"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              sx={{ minWidth: 200 }}
+              sx={{ minWidth: { xs: '100%', sm: 200 }, mb: { xs: 1, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}
               InputProps={{
                 endAdornment: <SearchIcon />
               }}
@@ -99,14 +99,18 @@ export default function ChatAdmin() {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               select
-              sx={{ minWidth: 150 }}
+              sx={{ minWidth: { xs: '100%', sm: 150 }, mb: { xs: 1, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}
             >
               <MenuItem value="">All Statuses</MenuItem>
               <MenuItem value="active">Active</MenuItem>
               <MenuItem value="pending">Pending</MenuItem>
               <MenuItem value="resolved">Resolved</MenuItem>
             </TextField>
-            <Button variant="contained" startIcon={<SearchIcon />}>
+            <Button 
+              variant="contained" 
+              startIcon={<SearchIcon />}
+              sx={{ alignSelf: 'flex-end', mb: { xs: 1, sm: 0 } }}
+            >
               Search
             </Button>
           </Stack>
@@ -117,12 +121,12 @@ export default function ChatAdmin() {
 
       <TabPanel value={tabValue} index={2}>
         <Paper sx={{ p: 2, mb: 2 }}>
-          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
+          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} useFlexGap flexWrap="wrap">
             <TextField
               label="Search Resolved Chats"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              sx={{ minWidth: 200 }}
+              sx={{ minWidth: { xs: '100%', sm: 200 }, mb: { xs: 1, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}
               InputProps={{
                 endAdornment: <SearchIcon />
               }}
@@ -132,14 +136,18 @@ export default function ChatAdmin() {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               select
-              sx={{ minWidth: 150 }}
+              sx={{ minWidth: { xs: '100%', sm: 150 }, mb: { xs: 1, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}
             >
               <MenuItem value="">All Time</MenuItem>
               <MenuItem value="7d">Last 7 Days</MenuItem>
               <MenuItem value="30d">Last 30 Days</MenuItem>
               <MenuItem value="90d">Last 90 Days</MenuItem>
             </TextField>
-            <Button variant="contained" startIcon={<SearchIcon />}>
+            <Button 
+              variant="contained" 
+              startIcon={<SearchIcon />}
+              sx={{ alignSelf: 'flex-end', mb: { xs: 1, sm: 0 } }}
+            >
               Search
             </Button>
           </Stack>

@@ -471,20 +471,21 @@ export default function ChatManagementDashboard({ timeRange = '30d', onRefresh }
                       justifyContent: message.senderId === 'admin' ? 'flex-end' : 'flex-start',
                       flexDirection: 'column',
                       alignItems: message.senderId === 'admin' ? 'flex-end' : 'flex-start',
+                      py: 0.5,
                     }}
                   >
                     <Box
                       sx={{
-                        maxWidth: '80%',
+                        maxWidth: { xs: '85%', sm: '80%' },
                         backgroundColor: message.senderId === 'admin' ? 'primary.main' : 'grey.200',
                         color: message.senderId === 'admin' ? 'white' : 'text.primary',
                         borderRadius: 2,
-                        p: 2,
+                        p: 1.5,
                         mb: 1,
                       }}
                     >
-                      <Typography variant="body1">{message.content}</Typography>
-                      <Typography variant="caption" sx={{ display: 'block', mt: 1, opacity: 0.7 }}>
+                      <Typography variant="body2">{message.content}</Typography>
+                      <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}>
                         {message.sender?.displayName || message.sender?.username} • {formatTime(message.createdAt)}
                       </Typography>
                     </Box>
@@ -494,7 +495,7 @@ export default function ChatManagementDashboard({ timeRange = '30d', onRefresh }
             </Box>
             
             {/* Message Input */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
               <TextField
                 fullWidth
                 variant="outlined"
@@ -510,11 +511,18 @@ export default function ChatManagementDashboard({ timeRange = '30d', onRefresh }
                 disabled={sending}
                 multiline
                 maxRows={3}
+                sx={{
+                  mb: { xs: 1, sm: 0 },
+                }}
               />
               <IconButton
                 color="primary"
                 onClick={handleSendMessage}
                 disabled={sending || !newMessage.trim()}
+                sx={{
+                  alignSelf: 'flex-end',
+                  mb: { xs: 1, sm: 0 },
+                }}
               >
                 {sending ? <CircularProgress size={24} /> : <SendIcon />}
               </IconButton>

@@ -211,7 +211,7 @@ trackingEventSchema.index({ anonymousId: 1, timestamp: -1 });
 trackingEventSchema.index({ sourceId: 1, sourceType: 1 });
 trackingEventSchema.index({ sessionId: 1 });
 trackingEventSchema.index({ timestamp: -1 });
-trackingEventSchema.index({ 'location.coordinates': '2dsphere' });
+
 trackingEventSchema.index({ 'attribution.campaignId': 1 });
 trackingEventSchema.index({ 'attribution.adSetId': 1 });
 trackingEventSchema.index({ 'attribution.adId': 1 });

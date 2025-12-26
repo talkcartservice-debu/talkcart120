@@ -79,9 +79,13 @@ export default function OrdersAdmin() {
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [vendorId, setVendorId] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState('');
+  const [orderDetailsDialogOpen, setOrderDetailsDialogOpen] = useState(false);
   const [pagination, setPagination] = useState({ total: 0, pages: 0 });
 
   const fetchOrders = async () => {
@@ -92,7 +96,10 @@ export default function OrdersAdmin() {
         limit, 
         status: status || undefined,
         search: search || undefined,
-        paymentMethod: paymentMethod || undefined
+        paymentMethod: paymentMethod || undefined,
+        vendorId: vendorId || undefined,
+        from: fromDate || undefined,
+        to: toDate || undefined
       });
       if (res?.success) {
         setOrders(res.data?.orders || []);
@@ -133,6 +140,16 @@ export default function OrdersAdmin() {
     setSelectedOrder(order);
     setNewStatus(order.status);
     setStatusDialogOpen(true);
+  };
+
+  const openOrderDetailsDialog = (order: Order) => {
+    setSelectedOrder(order);
+    setOrderDetailsDialogOpen(true);
+  };
+
+  const closeOrderDetailsDialog = () => {
+    setOrderDetailsDialogOpen(false);
+    setSelectedOrder(null);
   };
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -251,6 +268,28 @@ export default function OrdersAdmin() {
 
             <MenuItem value="crypto">Crypto</MenuItem>
           </TextField>
+          <TextField 
+            label="Vendor ID" 
+            value={vendorId} 
+            onChange={(e) => setVendorId(e.target.value)} 
+            sx={{ minWidth: 150 }} 
+          />
+          <TextField
+            label="From Date"
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ minWidth: 150 }}
+          />
+          <TextField
+            label="To Date"
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ minWidth: 150 }}
+          />
           <Button variant="contained" onClick={() => { setPage(1); fetchOrders(); }}>
             Apply Filters
           </Button>
@@ -325,6 +364,9 @@ export default function OrdersAdmin() {
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
+                    <IconButton size="small" onClick={() => openOrderDetailsDialog(order)}>
+                      <ViewIcon />
+                    </IconButton>
                     <IconButton size="small" onClick={() => openStatusDialog(order)}>
                       <EditIcon />
                     </IconButton>
@@ -363,6 +405,74 @@ export default function OrdersAdmin() {
         <DialogActions>
           <Button onClick={() => setStatusDialogOpen(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleStatusUpdate}>Update</Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Order Details Dialog */}
+      <Dialog open={orderDetailsDialogOpen} onClose={closeOrderDetailsDialog} maxWidth="md" fullWidth>
+        <DialogTitle>Order Details: {selectedOrder?.orderNumber}</DialogTitle>
+        <DialogContent dividers>
+          {selectedOrder && (
+            <Box sx={{ py: 1 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Order Number</Typography>
+                  <Typography variant="body1">{selectedOrder.orderNumber}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Status</Typography>
+                  <Chip 
+                    label={selectedOrder.status} 
+                    color={STATUS_COLORS[selectedOrder.status] || 'default'} 
+                    size="small" 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Total Amount</Typography>
+                  <Typography variant="body1">{formatCurrency(selectedOrder.totalAmount, selectedOrder.currency)}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Payment Method</Typography>
+                  <Typography variant="body1">{selectedOrder.paymentMethod || 'N/A'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Customer</Typography>
+                  <Typography variant="body1">{selectedOrder.user?.username || 'Unknown'}</Typography>
+                  <Typography variant="caption" color="text.secondary">{selectedOrder.user?.email}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Date</Typography>
+                  <Typography variant="body1">{formatDate(selectedOrder.createdAt)}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>Items</Typography>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Product</TableCell>
+                        <TableCell>Price</TableCell>
+                        <TableCell>Quantity</TableCell>
+                        <TableCell>Total</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {selectedOrder.items?.map((item, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell>{item.name}</TableCell>
+                          <TableCell>{formatCurrency(item.price, item.currency)}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>{formatCurrency(item.price * item.quantity, item.currency)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Grid>
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeOrderDetailsDialog}>Close</Button>
         </DialogActions>
       </Dialog>
     </Container>

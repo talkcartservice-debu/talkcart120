@@ -242,6 +242,29 @@ export const AdminApi = {
     return res.json();
   },
 
+  // Order analytics
+  getOrderAnalytics: async (query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithConfig(`${API_BASE}/admin/analytics/overview?${params.toString()}`);
+    return res.json();
+  },
+
+  getOrderSalesTrends: async (query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithConfig(`${API_BASE}/admin/analytics/sales-trends?${params.toString()}`);
+    return res.json();
+  },
+
+  // Orders by vendor
+  listOrdersByVendor: async (vendorId: string, query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithConfig(`${API_BASE}/admin/orders?vendorId=${vendorId}&${params.toString()}`);
+    return res.json();
+  },
+
   // Marketplace (create)
   createMarketplaceProduct: async (body: any) => {
     // Create products via marketplace route (admin-only, strict auth)
@@ -592,6 +615,47 @@ export const AdminApi = {
   // Categories
   getCategories: async () => {
     const res = await fetchWithConfig(`${API_BASE}/admin/categories`);
+    return res.json();
+  },
+
+  // Vendors
+  getVendors: async (query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithConfig(`${API_BASE}/admin/vendors?${params.toString()}`);
+    return res.json();
+  },
+
+  getVendor: async (id: string) => {
+    const res = await fetchWithConfig(`${API_BASE}/admin/vendors/${id}`);
+    return res.json();
+  },
+
+  getVendorSales: async (id: string, query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithConfig(`${API_BASE}/admin/vendors/${id}/sales?${params.toString()}`);
+    return res.json();
+  },
+
+  getVendorFees: async (id: string, query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithConfig(`${API_BASE}/admin/vendors/${id}/fees?${params.toString()}`);
+    return res.json();
+  },
+
+  getVendorPayoutHistory: async (id: string, query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithConfig(`${API_BASE}/admin/vendors/${id}/payout-history?${params.toString()}`);
+    return res.json();
+  },
+
+  getVendorAnalytics: async (query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithConfig(`${API_BASE}/admin/vendors/analytics/overview?${params.toString()}`);
     return res.json();
   },
 };

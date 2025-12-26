@@ -317,7 +317,7 @@ adSetSchema.index({ advertiserId: 1 });
 adSetSchema.index({ status: 1 });
 adSetSchema.index({ scheduledStart: 1, scheduledEnd: 1 });
 adSetSchema.index({ createdAt: -1 });
-adSetSchema.index({ 'targeting.locations.coordinates': '2dsphere' });
+
 
 // Method to calculate ad set duration in days
 adSetSchema.methods.getDurationInDays = function() {

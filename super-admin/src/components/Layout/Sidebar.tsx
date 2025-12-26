@@ -32,6 +32,8 @@ import {
   TrendingUp,
   Notifications,
   Chat as ChatIcon,
+  ExpandMore as ExpandMoreIcon,
+  ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
 import { gradients } from '../../theme';
 
@@ -41,9 +43,11 @@ interface NavigationItem {
   id: string;
   label: string;
   icon: React.ReactNode;
-  path: string;
+  path?: string;
   badge?: string;
   color?: string;
+  type?: 'item' | 'section';
+  children?: NavigationItem[];
 }
 
 const navigationItems: NavigationItem[] = [
@@ -113,6 +117,12 @@ const navigationItems: NavigationItem[] = [
     color: 'secondary',
   },
   {
+    id: 'section-payment',
+    label: 'Payment & Finance',
+    type: 'section',
+    icon: <PaymentsIcon />,
+  },
+  {
     id: 'payments',
     label: 'Payments',
     icon: <PaymentsIcon />,
@@ -125,6 +135,26 @@ const navigationItems: NavigationItem[] = [
     icon: <PayoutsIcon />,
     path: '/payouts',
     color: 'warning',
+  },
+  {
+    id: 'commission',
+    label: 'Commission Report',
+    icon: <TrendingUp />,
+    path: '/commission',
+    color: 'success',
+  },
+  {
+    id: 'commission-withdrawal',
+    label: 'Commission Withdrawal',
+    icon: <TrendingUp />,
+    path: '/commission-withdrawal',
+    color: 'success',
+  },
+  {
+    id: 'section-support',
+    label: 'Support & Disputes',
+    type: 'section',
+    icon: <ChatIcon />,
   },
   {
     id: 'disputes',
@@ -142,18 +172,18 @@ const navigationItems: NavigationItem[] = [
     color: 'info',
   },
   {
+    id: 'refund-management',
+    label: 'Refund Management',
+    icon: <RefundsIcon />,
+    path: '/refund-management',
+    color: 'info',
+  },
+  {
     id: 'settings',
     label: 'Settings',
     icon: <SettingsIcon />,
     path: '/settings',
     color: 'default',
-  },
-  {
-    id: 'commission',
-    label: 'Commission Report',
-    icon: <TrendingUp />,
-    path: '/commission',
-    color: 'success',
   },
 ];
 
@@ -167,14 +197,17 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'permanent' 
   const router = useRouter();
   const theme = useTheme();
 
-  const handleNavigation = (path: string) => {
-    router.push(path);
-    if (variant === 'temporary') {
-      onClose();
+  const handleNavigation = (path?: string) => {
+    if (path) {
+      router.push(path);
+      if (variant === 'temporary') {
+        onClose();
+      }
     }
   };
 
-  const isActive = (path: string) => {
+  const isActive = (path?: string) => {
+    if (!path) return false;
     if (path === '/') {
       return router.pathname === '/';
     }
@@ -242,80 +275,111 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'permanent' 
       <Divider />
 
       {/* Navigation */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
+      <Box sx={{ flex: 1, overflow: 'auto', pb: 2 }}>
         <List sx={{ px: 2, py: 1 }}>
           {navigationItems.map((item) => {
-            const active = isActive(item.path);
-            return (
-              <ListItem key={item.id} disablePadding sx={{ mb: 0.5 }}>
-                <ListItemButton
-                  onClick={() => handleNavigation(item.path)}
-                  sx={{
-                    borderRadius: 2,
-                    py: 1.5,
-                    px: 2,
-                    backgroundColor: active
-                      ? alpha(theme.palette.primary.main, 0.1)
-                      : 'transparent',
-                    color: active
-                      ? theme.palette.primary.main
-                      : theme.palette.text.primary,
-                    '&:hover': {
-                      backgroundColor: active
-                        ? alpha(theme.palette.primary.main, 0.15)
-                        : alpha(theme.palette.action.hover, 0.08),
-                      transform: 'translateX(4px)',
-                    },
-                    transition: 'all 0.2s ease-in-out',
-                    position: 'relative',
-                    '&::before': active
-                      ? {
-                          content: '""',
-                          position: 'absolute',
-                          left: 0,
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          width: 3,
-                          height: '60%',
-                          backgroundColor: theme.palette.primary.main,
-                          borderRadius: '0 2px 2px 0',
-                        }
-                      : {},
-                  }}
-                >
-                  <ListItemIcon
+            if (item.type === 'section') {
+              // Section header
+              return (
+                <ListItem key={item.id} disablePadding sx={{ mb: 0.5 }}>
+                  <Box
                     sx={{
-                      color: 'inherit',
-                      minWidth: 40,
-                      '& .MuiSvgIcon-root': {
-                        fontSize: '1.25rem',
-                      },
+                      width: '100%',
+                      px: 2,
+                      py: 1,
+                      bgcolor: 'primary.50',
+                      color: 'primary.main',
+                      fontWeight: 'bold',
+                      borderRadius: 2,
+                      textTransform: 'uppercase',
+                      fontSize: '0.75rem',
+                      letterSpacing: '0.5px',
                     }}
                   >
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{
-                      fontSize: '0.875rem',
-                      fontWeight: active ? 600 : 500,
+                    {item.label}
+                  </Box>
+                </ListItem>
+              );
+            } else {
+              // Regular navigation item
+              const active = isActive(item.path);
+              return (
+                <ListItem key={item.id} disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton
+                    onClick={() => {
+                      handleNavigation(item.path);
+                      // Close sidebar on mobile after navigation
+                      if (variant === 'temporary') {
+                        onClose();
+                      }
                     }}
-                  />
-                  {item.badge && (
-                    <Chip
-                      label={item.badge}
-                      size="small"
-                      color={item.color as any}
+                    sx={{
+                      borderRadius: 2,
+                      py: 1.5,
+                      px: 2,
+                      backgroundColor: active
+                        ? alpha(theme.palette.primary.main, 0.1)
+                        : 'transparent',
+                      color: active
+                        ? theme.palette.primary.main
+                        : theme.palette.text.primary,
+                      '&:hover': {
+                        backgroundColor: active
+                          ? alpha(theme.palette.primary.main, 0.15)
+                          : alpha(theme.palette.action.hover, 0.08),
+                        transform: 'translateX(4px)',
+                      },
+                      transition: 'all 0.2s ease-in-out',
+                      position: 'relative',
+                      '&::before': active
+                        ? {
+                            content: '""',
+                            position: 'absolute',
+                            left: 0,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: 3,
+                            height: '60%',
+                            backgroundColor: theme.palette.primary.main,
+                            borderRadius: '0 2px 2px 0',
+                          }
+                        : {},
+                    }}
+                  >
+                    <ListItemIcon
                       sx={{
-                        height: 20,
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
+                        color: 'inherit',
+                        minWidth: 40,
+                        '& .MuiSvgIcon-root': {
+                          fontSize: '1.25rem',
+                        },
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{
+                        fontSize: '0.875rem',
+                        fontWeight: active ? 600 : 500,
                       }}
                     />
-                  )}
-                </ListItemButton>
-              </ListItem>
-            );
+                    {item.badge && (
+                      <Chip
+                        label={item.badge}
+                        size="small"
+                        color={item.color as any}
+                        sx={{
+                          height: 20,
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                        }}
+                      />
+                    )}
+                  </ListItemButton>
+                </ListItem>
+              );
+            }
           })}
         </List>
       </Box>

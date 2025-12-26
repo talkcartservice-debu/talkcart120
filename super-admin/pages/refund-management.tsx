@@ -134,10 +134,9 @@ export default function RefundManagement() {
         ...filters
       };
       
-      // TODO: Implement getRefunds functionality
-      // For now, set empty data
-      setRefunds([]);
-      setTotal(0);
+      const response = await AdminApi.getRefunds(query);
+      setRefunds(response.data.data);
+      setTotal(response.data.meta.total);
     } catch (error) {
       console.error('Failed to fetch refunds:', error);
     } finally {
@@ -151,16 +150,8 @@ export default function RefundManagement() {
       if (filters.from) query.from = filters.from;
       if (filters.to) query.to = filters.to;
       
-      // TODO: Implement refund analytics
-      // For now, set empty analytics data
-      setAnalytics({
-        totalRefunds: 0,
-        submittedRefunds: 0,
-        failedRefunds: 0,
-        totalAmount: 0,
-        currencies: [],
-        successRate: '0'
-      });
+      const response = await AdminExtraApi.getComprehensiveRefundAnalytics(query);
+      setAnalytics(response.data);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
     }
@@ -198,28 +189,40 @@ export default function RefundManagement() {
 
   const handleCreateRefund = async () => {
     try {
-      // TODO: Implement create refund functionality
-      console.log('Create refund functionality not implemented yet');
-      
-      // For now, just close the dialog and reset the form
-      setCreateDialogOpen(false);
-      setCreateForm({
-        orderId: '',
-        paymentIntentId: '',
-        customerId: '',
-        refundAmount: '',
-        originalAmount: '',
-        currency: 'USD',
-        refundType: 'full',
-        reason: 'customer_request',
-        reasonDetails: '',
-        priority: 'normal',
-        requiresApproval: true
+      const response = await AdminExtraApi.createRefund({
+        orderId: createForm.orderId,
+        paymentIntentId: createForm.paymentIntentId,
+        customerId: createForm.customerId,
+        refundAmount: parseFloat(createForm.refundAmount),
+        originalAmount: createForm.originalAmount ? parseFloat(createForm.originalAmount) : undefined,
+        currency: createForm.currency,
+        refundType: createForm.refundType,
+        reason: createForm.reason,
+        reasonDetails: createForm.reasonDetails,
+        priority: createForm.priority,
+        requiresApproval: createForm.requiresApproval
       });
       
-      // Refresh the data
-      fetchRefunds();
-      fetchAnalytics();
+      if (response.success) {
+        setCreateDialogOpen(false);
+        setCreateForm({
+          orderId: '',
+          paymentIntentId: '',
+          customerId: '',
+          refundAmount: '',
+          originalAmount: '',
+          currency: 'USD',
+          refundType: 'full',
+          reason: 'customer_request',
+          reasonDetails: '',
+          priority: 'normal',
+          requiresApproval: true
+        });
+        
+        // Refresh the data
+        fetchRefunds();
+        fetchAnalytics();
+      }
     } catch (error) {
       console.error('Failed to create refund:', error);
     }
@@ -229,16 +232,20 @@ export default function RefundManagement() {
     if (!selectedRefund) return;
     
     try {
-      // TODO: Implement update refund status functionality
-      console.log('Update refund status functionality not implemented yet');
+      const response = await AdminExtraApi.updateRefundStatus(selectedRefund._id, {
+        status: statusForm.status,
+        notes: statusForm.notes,
+        externalRefundId: statusForm.externalRefundId
+      });
       
-      // For now, just close the dialog and reset the form
-      setStatusDialogOpen(false);
-      setStatusForm({ status: '', notes: '', externalRefundId: '' });
-      
-      // Refresh the data
-      fetchRefunds();
-      fetchAnalytics();
+      if (response.success) {
+        setStatusDialogOpen(false);
+        setStatusForm({ status: '', notes: '', externalRefundId: '' });
+        
+        // Refresh the data
+        fetchRefunds();
+        fetchAnalytics();
+      }
     } catch (error) {
       console.error('Failed to update status:', error);
     }
@@ -248,16 +255,27 @@ export default function RefundManagement() {
     if (!selectedRefund) return;
     
     try {
-      // TODO: Implement add refund communication functionality
-      console.log('Add refund communication functionality not implemented yet');
+      const response = await AdminExtraApi.addRefundCommunication(selectedRefund._id, {
+        type: communicationForm.type,
+        content: communicationForm.content,
+        recipient: communicationForm.recipient
+      });
       
-      // For now, just close the dialog and reset the form
-      setCommunicationDialogOpen(false);
-      setCommunicationForm({ type: 'note', content: '', recipient: '' });
-      
-      // Refresh the selected refund details
-      // TODO: Implement getRefund functionality
-      console.log('Get refund functionality not implemented yet');
+      if (response.success) {
+        setCommunicationDialogOpen(false);
+        setCommunicationForm({ type: 'note', content: '', recipient: '' });
+        
+        // Refresh the selected refund details
+        const refundResponse = await AdminExtraApi.getRefundDetails(selectedRefund._id);
+        if (refundResponse.success) {
+          // Update the refund in the list
+          const updatedRefunds = refunds.map(ref => 
+            ref._id === selectedRefund._id ? refundResponse.data : ref
+          );
+          setRefunds(updatedRefunds);
+          setSelectedRefund(refundResponse.data);
+        }
+      }
     } catch (error) {
       console.error('Failed to add communication:', error);
     }
@@ -267,13 +285,17 @@ export default function RefundManagement() {
     if (selectedRefunds.length === 0) return;
     
     try {
-      // TODO: Implement bulk refund action functionality
-      console.log('Bulk refund action functionality not implemented yet');
+      const response = await AdminExtraApi.bulkRefundAction({
+        refundIds: selectedRefunds,
+        action,
+        actionData: data
+      });
       
-      // For now, just clear the selection and refresh the data
-      setSelectedRefunds([]);
-      fetchRefunds();
-      fetchAnalytics();
+      if (response.success) {
+        setSelectedRefunds([]);
+        fetchRefunds();
+        fetchAnalytics();
+      }
     } catch (error) {
       console.error('Failed to perform bulk action:', error);
     }
@@ -679,11 +701,19 @@ export default function RefundManagement() {
                       <Tooltip title="View Details">
                         <IconButton
                           size="small"
-                          onClick={() => {
-                            // TODO: Implement getRefund functionality
-                            // For now, just set the selected refund and open the dialog
-                            setSelectedRefund(refund);
-                            setViewDialogOpen(true);
+                          onClick={async () => {
+                            try {
+                              const response = await AdminExtraApi.getRefundDetails(refund._id);
+                              if (response.success) {
+                                setSelectedRefund(response.data);
+                                setViewDialogOpen(true);
+                              }
+                            } catch (error) {
+                              console.error('Failed to fetch refund details:', error);
+                              // Fallback to the refund data we already have
+                              setSelectedRefund(refund);
+                              setViewDialogOpen(true);
+                            }
                           }}
                         >
                           <ViewIcon />

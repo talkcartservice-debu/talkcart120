@@ -6,6 +6,7 @@ const nextConfig = {
   // Point output file tracing to the monorepo root to silence multi-lockfile warning
   outputFileTracingRoot: __dirname,
 
+
   // Environment variables configuration
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,

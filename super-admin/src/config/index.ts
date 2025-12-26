@@ -4,8 +4,8 @@
 export const config = {
   // API Configuration
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? '/api' : '/api'),
-    backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || '',
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? '/api' : 'http://localhost:8000/api'),
+    backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000',
     socketUrl: process.env.NEXT_PUBLIC_SOCKET_URL || '',
     timeout: parseInt(process.env.NEXT_PUBLIC_REQUEST_TIMEOUT || '30000'), // 30 second timeout
   },
@@ -82,12 +82,13 @@ export const isDebugMode = () => config.dev.debugMode;
 // API endpoints builder
 export const buildApiUrl = (endpoint: string) => {
   // For browser requests, use relative path to avoid CORS issues
-  if (typeof window !== 'undefined' && !config.api.baseUrl) {
+  if (typeof window !== 'undefined') {
+    // Use relative path for browser requests to be handled by Next.js proxy
     return `/api${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
   }
   
-  // For server-side requests or when baseUrl is explicitly set
-  return `${config.api.baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  // For server-side requests, use the backend URL
+  return `${config.api.backendUrl}/api${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 };
 
 // Validation function

@@ -351,17 +351,18 @@ export const TopBar: React.FC<TopBarProps> = ({
         <Toolbar sx={{ minHeight: 64 }}>
           {/* Left Section - Menu and Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {showMenuButton && (
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                onClick={onMenuClick}
-                sx={{ mr: 1 }}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
+           {showMenuButton && (
+             <IconButton
+               edge="start"
+               color="inherit"
+               aria-label="menu"
+               onClick={onMenuClick}
+               sx={{ mr: 1 }}
+             >
+               <MenuIcon />
+             </IconButton>
+           )}
+          
             
             {/* Logo */}
             <Box 
@@ -605,7 +606,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 />
               </Box>
             )}
-            
+                        
             {/* Desktop Navigation Text - Home, Cart, Messages, Notifications */}
             {isAuthenticated && (
               <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
@@ -627,7 +628,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 >
                   Home
                 </Button>
-                
+                            
                 {/* Cart */}
                 <Box position="relative">
                   <Button
@@ -662,7 +663,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                     </Badge>
                   )}
                 </Box>
-                
+                            
                 {/* Messages */}
                 <Box position="relative">
                   <Button
@@ -697,7 +698,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                     </Badge>
                   )}
                 </Box>
-                
+                            
                 {/* Notifications */}
                 <Box position="relative">
                   <Button
@@ -732,7 +733,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                     </Badge>
                   )}
                 </Box>
-                
+                            
                 {/* Marketplace (Shopping) */}
                 <Button
                   onClick={() => router.push('/marketplace')}
@@ -753,7 +754,8 @@ export const TopBar: React.FC<TopBarProps> = ({
                 </Button>
               </Box>
             )}
-            
+                        
+                        
             {/* Desktop Search Bar with Suggestions - positioned between notifications and wallet button */}
             <ClickAwayListener onClickAway={handleClickAway}>
               <Box
@@ -889,68 +891,6 @@ export const TopBar: React.FC<TopBarProps> = ({
                 )}
               </Box>
             </ClickAwayListener>
-            {/* Mobile Search Bar - appears between menu and user avatar when search icon is clicked */}
-            {!mobileSearchOpen && (
-              <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexGrow: 1, mx: 1 }}>
-                <IconButton
-                  color="inherit"
-                  size="small"
-                  sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}
-                  onClick={handleToggleMobileSearch}
-                >
-                  <Search size={20} />
-                </IconButton>
-              </Box>
-            )}
-            
-            {/* Mobile Search Bar - expanded view */}
-            {mobileSearchOpen && (
-              <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexGrow: 1, mx: 1 }}>
-                <TextField
-                  placeholder="Search TalkCart..."
-                  size="small"
-                  fullWidth
-                  value={searchQuery}
-                  inputRef={mobileSearchInputRef}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    // Don't immediately show suggestions - let the useSearch hook handle it
-                  }}
-                  onFocus={() => {
-                    setShowSuggestions(true);
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        {searchLoading ? (
-                          <CircularProgress size={16} color="inherit" />
-                        ) : (
-                          <Search size={18} />
-                        )}
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          edge="end"
-                          size="small"
-                          onClick={handleToggleMobileSearch}
-                        >
-                          <CloseIcon size={18} />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    bgcolor: alpha(theme.palette.background.paper, 0.8),
-                    borderRadius: 1,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 1,
-                    }
-                  }}
-                />
-              </Box>
-            )}
             
             {isAuthenticated ? (
               <>

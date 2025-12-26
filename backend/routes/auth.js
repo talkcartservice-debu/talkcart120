@@ -60,35 +60,27 @@ const authenticateToken = (req, res, next) => {
       return next();
     }
     
-    // Check if user is a vendor - improved logic
+    // Check if user is a vendor - improved logic with caching
     if (user.userId && user.userId !== 'anonymous-user') {
       try {
         const User = require('../models/User');
         const VendorStore = require('../models/VendorStore');
         
-        // Check if user has a vendor store
-        const store = await VendorStore.findOne({ vendorId: user.userId });
-        if (store) {
-          // Update user role to vendor if not already set
-          const dbUser = await User.findById(user.userId);
-          if (dbUser && dbUser.role !== 'vendor') {
+        // First, get the user document to check role and avoid duplicate queries
+        const dbUser = await User.findById(user.userId).select('role');
+        
+        if (dbUser) {
+          // Check if user has a vendor store, but cache this information to avoid repeated queries
+          const store = await VendorStore.findOne({ vendorId: user.userId }).select('_id');
+          
+          if (store && dbUser.role !== 'vendor') {
+            // Update user role to vendor in database
             dbUser.role = 'vendor';
             await dbUser.save();
-            // Update the user object to reflect the new role
             user.role = 'vendor';
-          } else if (dbUser) {
-            // Ensure the user object has the correct role from the database
-            user.role = dbUser.role;
-          } else {
-            user.role = 'vendor'; // Default to vendor if we found a store
-          }
-        } else {
-          // Ensure user role is 'user' if they don't have a store
-          const dbUser = await User.findById(user.userId);
-          if (dbUser && dbUser.role === 'vendor') {
-            // Only change role to user if they no longer have a store
-            // But first double-check they really don't have a store
-            const storeCheck = await VendorStore.findOne({ vendorId: user.userId });
+          } else if (!store && dbUser.role === 'vendor') {
+            // Check if user no longer has a store but still has vendor role
+            const storeCheck = await VendorStore.findOne({ vendorId: user.userId }).select('_id');
             if (!storeCheck) {
               dbUser.role = 'user';
               await dbUser.save();
@@ -96,12 +88,12 @@ const authenticateToken = (req, res, next) => {
             } else {
               user.role = 'vendor';
             }
-          } else if (dbUser) {
-            // Ensure the user object has the correct role from the database
-            user.role = dbUser.role;
           } else {
-            user.role = 'user'; // Default to user if no user found
+            // Use the role from the database
+            user.role = dbUser.role;
           }
+        } else {
+          user.role = 'user'; // Default to user if no user found
         }
       } catch (error) {
         console.error('Error checking vendor status:', error);
@@ -144,35 +136,27 @@ const authenticateTokenStrict = (req, res, next) => {
       });
     }
     
-    // Check if user is a vendor - improved logic
+    // Check if user is a vendor - improved logic with caching
     if (user.userId && user.userId !== 'anonymous-user') {
       try {
         const User = require('../models/User');
         const VendorStore = require('../models/VendorStore');
         
-        // Check if user has a vendor store
-        const store = await VendorStore.findOne({ vendorId: user.userId });
-        if (store) {
-          // Update user role to vendor if not already set
-          const dbUser = await User.findById(user.userId);
-          if (dbUser && dbUser.role !== 'vendor') {
+        // First, get the user document to check role and avoid duplicate queries
+        const dbUser = await User.findById(user.userId).select('role');
+        
+        if (dbUser) {
+          // Check if user has a vendor store, but cache this information to avoid repeated queries
+          const store = await VendorStore.findOne({ vendorId: user.userId }).select('_id');
+          
+          if (store && dbUser.role !== 'vendor') {
+            // Update user role to vendor in database
             dbUser.role = 'vendor';
             await dbUser.save();
-            // Update the user object to reflect the new role
             user.role = 'vendor';
-          } else if (dbUser) {
-            // Ensure the user object has the correct role from the database
-            user.role = dbUser.role;
-          } else {
-            user.role = 'vendor'; // Default to vendor if we found a store
-          }
-        } else {
-          // Ensure user role is 'user' if they don't have a store
-          const dbUser = await User.findById(user.userId);
-          if (dbUser && dbUser.role === 'vendor') {
-            // Only change role to user if they no longer have a store
-            // But first double-check they really don't have a store
-            const storeCheck = await VendorStore.findOne({ vendorId: user.userId });
+          } else if (!store && dbUser.role === 'vendor') {
+            // Check if user no longer has a store but still has vendor role
+            const storeCheck = await VendorStore.findOne({ vendorId: user.userId }).select('_id');
             if (!storeCheck) {
               dbUser.role = 'user';
               await dbUser.save();
@@ -180,12 +164,12 @@ const authenticateTokenStrict = (req, res, next) => {
             } else {
               user.role = 'vendor';
             }
-          } else if (dbUser) {
-            // Ensure the user object has the correct role from the database
-            user.role = dbUser.role;
           } else {
-            user.role = 'user'; // Default to user if no user found
+            // Use the role from the database
+            user.role = dbUser.role;
           }
+        } else {
+          user.role = 'user'; // Default to user if no user found
         }
       } catch (error) {
         console.error('Error checking vendor status:', error);

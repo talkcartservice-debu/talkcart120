@@ -46,32 +46,16 @@ export default function VendorDashboard({ timeRange = '30d', onRefresh }: Vendor
       setLoading(true);
       setError('');
       
-      // Fetch vendors with different filters to get summary data
-      const [allVendorsRes, activeVendorsRes, suspendedVendorsRes, kycApprovedRes] = await Promise.all([
-        AdminApi.listUsers({ role: 'vendor' }),
-        AdminApi.listUsers({ role: 'vendor', status: 'active' }),
-        AdminApi.listUsers({ role: 'vendor', status: 'suspended' }),
-        AdminApi.listUsers({ role: 'vendor', kycStatus: 'approved' })
-      ]);
+      // Use dedicated vendor analytics API
+      const analyticsRes = await AdminApi.getVendorAnalytics({ timeRange });
 
-      if (allVendorsRes?.success && activeVendorsRes?.success && suspendedVendorsRes?.success && kycApprovedRes?.success) {
-        const totalVendors = allVendorsRes.data?.length || 0;
-        const activeVendors = activeVendorsRes.data?.length || 0;
-        const suspendedVendors = suspendedVendorsRes.data?.length || 0;
-        const kycApproved = kycApprovedRes.data?.length || 0;
-        
-        // Calculate recent signups (last 24 hours)
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        const recentSignups = allVendorsRes.data?.filter((vendor: any) => 
-          new Date(vendor.createdAt) > oneDayAgo
-        ).length || 0;
-
+      if (analyticsRes?.success) {
         setSummary({
-          total_vendors: totalVendors,
-          active_vendors: activeVendors,
-          kyc_approved: kycApproved,
-          recent_signups: recentSignups,
-          suspended_vendors: suspendedVendors
+          total_vendors: analyticsRes.data.total_vendors || 0,
+          active_vendors: analyticsRes.data.active_vendors || 0,
+          kyc_approved: analyticsRes.data.kyc_approved || 0,
+          recent_signups: analyticsRes.data.new_vendors || 0,
+          suspended_vendors: analyticsRes.data.suspended_vendors || 0
         });
       }
     } catch (err) {

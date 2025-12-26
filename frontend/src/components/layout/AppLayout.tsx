@@ -3,6 +3,7 @@ import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { VideoFeedProvider } from '@/components/video';

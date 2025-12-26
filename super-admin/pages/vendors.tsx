@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
+import TableContainer from '@mui/material/TableContainer';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -116,24 +117,26 @@ export default function VendorsAdmin() {
   const [suspendReason, setSuspendReason] = useState('');
   const [vendorStats, setVendorStats] = useState<Record<string, VendorStats>>({});
   const [vendorFees, setVendorFees] = useState<Record<string, VendorFees>>({});
+  const [vendorAnalytics, setVendorAnalytics] = useState<any>(null);
   const [pagination, setPagination] = useState({ total: 0, pages: 0 });
   const [tabValue, setTabValue] = useState(0);
 
   const fetchVendors = async () => {
     try {
       setLoading(true);
-      // Use listUsers with role filter instead of non-existent listVendors
-      if (!AdminApi || typeof AdminApi.listUsers !== 'function') {
-        console.error('AdminApi.listUsers is not available');
+      // Use dedicated vendor API instead of generic user API
+      if (!AdminApi || typeof AdminApi.getVendors !== 'function') {
+        console.error('AdminApi.getVendors is not available');
         return;
       }
-      const res = await AdminApi.listUsers({
+      const res = await AdminApi.getVendors({
         page,
         limit,
         search: search || undefined,
         kycStatus: kycFilter || undefined,
         status: statusFilter || undefined,
-        role: 'vendor' // Filter for vendors only
+        sortBy: 'revenue',
+        sortOrder: 'desc'
       });
       if (res?.success) {
         setVendors(res.data || []);
@@ -153,7 +156,19 @@ export default function VendorsAdmin() {
     }
     
     fetchVendors();
+    fetchVendorAnalytics();
   }, [page, limit, guard.allowed, guard.loading]);
+
+  const fetchVendorAnalytics = async () => {
+    try {
+      const res = await AdminApi.getVendorAnalytics({ timeRange: '30d' });
+      if (res?.success) {
+        setVendorAnalytics(res.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch vendor analytics:', error);
+    }
+  };
 
   const handleKycUpdate = async () => {
     if (!selectedVendor || !newKycStatus) return;
@@ -251,10 +266,11 @@ export default function VendorsAdmin() {
   }
 
   // Calculate summary stats
-  const totalVendors = pagination.total;
-  const approvedVendors = vendors.filter(v => v.kycStatus === 'approved').length;
-  const suspendedVendors = vendors.filter(v => v.isSuspended).length;
-  const totalRevenue = Object.values(vendorStats).reduce((sum, stats) => sum + (stats.totalRevenue || 0), 0);
+  const totalVendors = vendorAnalytics?.total_vendors || pagination.total;
+  const activeVendors = vendorAnalytics?.active_vendors || vendors.filter(v => !v.isSuspended).length;
+  const approvedVendors = vendorAnalytics?.kyc_approved || vendors.filter(v => v.kycStatus === 'approved').length;
+  const suspendedVendors = vendorAnalytics?.suspended_vendors || vendors.filter(v => v.isSuspended).length;
+  const totalRevenue = vendorAnalytics?.total_revenue || Object.values(vendorStats).reduce((sum, stats) => sum + (stats.totalRevenue || 0), 0);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -277,19 +293,19 @@ export default function VendorsAdmin() {
       <TabPanel value={tabValue} index={1}>
         {/* Filters */}
         <Paper sx={{ p: 2, mb: 2 }}>
-          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
+          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} useFlexGap flexWrap="wrap">
             <TextField
               label="Search Vendors"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              sx={{ minWidth: 200 }}
+              sx={{ minWidth: { xs: '100%', sm: 200 }, mb: { xs: 1, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}
             />
             <TextField
               label="KYC Status"
               value={kycFilter}
               onChange={(e) => setKycFilter(e.target.value)}
               select
-              sx={{ minWidth: 150 }}
+              sx={{ minWidth: { xs: '100%', sm: 150 }, mb: { xs: 1, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}
             >
               <MenuItem value="">All Statuses</MenuItem>
               {KYC_STATUSES.map(status => (
@@ -303,13 +319,17 @@ export default function VendorsAdmin() {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               select
-              sx={{ minWidth: 150 }}
+              sx={{ minWidth: { xs: '100%', sm: 150 }, mb: { xs: 1, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}
             >
               <MenuItem value="">All</MenuItem>
               <MenuItem value="active">Active</MenuItem>
               <MenuItem value="suspended">Suspended</MenuItem>
             </TextField>
-            <Button variant="contained" onClick={() => { setPage(1); fetchVendors(); }}>
+            <Button 
+              variant="contained" 
+              onClick={() => { setPage(1); fetchVendors(); }}
+              sx={{ alignSelf: 'flex-end', mb: { xs: 1, sm: 0 } }}
+            >
               Apply Filters
             </Button>
           </Stack>
@@ -317,7 +337,8 @@ export default function VendorsAdmin() {
 
         {/* Vendors Table */}
         <Paper>
-          <Table>
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <Table>
             <TableHead>
               <TableRow>
                 <TableCell>Vendor</TableCell>
@@ -393,7 +414,7 @@ export default function VendorsAdmin() {
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <Stack direction="row" spacing={1}>
+                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 1 }} justifyContent={{ xs: 'flex-end', sm: 'flex-start' }}>
                         <IconButton size="small" onClick={() => handleViewVendor(vendor._id)}>
                           <ViewIcon />
                         </IconButton>
@@ -419,7 +440,8 @@ export default function VendorsAdmin() {
             )}
           </TableBody>
         </Table>
-
+      </TableContainer>
+      
         {/* Pagination */}
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
           <Pagination

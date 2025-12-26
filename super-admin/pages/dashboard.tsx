@@ -31,6 +31,33 @@ import {
 } from '@mui/icons-material';
 import { useAdminGuard } from '@/services/useAdminGuard';
 import { AdminApi } from '@/services/api';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+
+interface SalesTrend {
+  _id: string;
+  sales: number;
+  revenue: number;
+  items: number;
+}
+
+interface TopProduct {
+  productName: string;
+  category: string;
+  vendorName: string;
+  totalSales: number;
+  totalRevenue: number;
+  orderCount: number;
+}
+
+interface VendorPerformance {
+  vendorName: string;
+  vendorEmail: string;
+  totalSales: number;
+  totalRevenue: number;
+  orderCount: number;
+  productCount: number;
+  avgOrderValue: number;
+}
 
 interface LiveStats {
   overview: {
@@ -40,6 +67,9 @@ interface LiveStats {
     users: number;
     vendors: number;
   };
+  salesTrends: SalesTrend[];
+  topProducts: TopProduct[];
+  vendorPerformance: VendorPerformance[];
   recentActivity: Array<{
     type: 'order' | 'product' | 'user';
     message: string;
@@ -63,8 +93,11 @@ export default function DashboardAdmin() {
   const fetchLiveStats = async () => {
     try {
       setLoading(true);
-      const [overviewRes] = await Promise.all([
-        AdminApi.getAnalyticsOverview()
+      const [overviewRes, salesTrendsRes, topProductsRes, vendorPerformanceRes] = await Promise.all([
+        AdminApi.getAnalyticsOverview(),
+        AdminApi.getSalesTrends({ period: '7d' }),
+        AdminApi.getTopProducts({ limit: 5 }),
+        AdminApi.getVendorPerformance({ limit: 5 })
       ]);
 
       // Simulate real-time data - in production, this would come from WebSocket or real-time API
@@ -76,6 +109,9 @@ export default function DashboardAdmin() {
           users: 0,
           vendors: 0
         },
+        salesTrends: salesTrendsRes?.success ? salesTrendsRes.data : [],
+        topProducts: topProductsRes?.success ? topProductsRes.data : [],
+        vendorPerformance: vendorPerformanceRes?.success ? vendorPerformanceRes.data : [],
         recentActivity: [
           {
             type: 'order',
@@ -378,6 +414,124 @@ export default function DashboardAdmin() {
                   </React.Fragment>
                 ))}
               </List>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+      
+      {/* Charts Section */}
+      <Grid container spacing={3} sx={{ mt: 4 }}>
+        {/* Sales Trends Chart */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Sales Trends (Last 7 Days)
+              </Typography>
+              <Box sx={{ height: { xs: 250, md: 300 } }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={stats?.salesTrends || []}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="_id" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="revenue" stroke="#8884d8" activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="sales" stroke="#82ca9d" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        {/* Top Products Chart */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Top Products by Revenue
+              </Typography>
+              <Box sx={{ height: { xs: 250, md: 300 } }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={stats?.topProducts || []}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="productName" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="totalRevenue" fill="#8884d8" name="Revenue" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        {/* Vendor Performance Chart */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Top Vendors by Revenue
+              </Typography>
+              <Box sx={{ height: { xs: 250, md: 300 } }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={stats?.vendorPerformance || []}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="vendorName" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="totalRevenue" fill="#82ca9d" name="Revenue" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        {/* Revenue Distribution Pie Chart */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Revenue Distribution
+              </Typography>
+              <Box sx={{ height: { xs: 250, md: 300 } }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={stats?.topProducts?.slice(0, 5).map(p => ({ name: p.productName, value: p.totalRevenue })) || []}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      label={(props) => {
+                        const { name, percent } = props;
+                        return `${name} ${percent ? (percent * 100).toFixed(0) : '0'}%`;
+                      }}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {stats?.topProducts?.slice(0, 5).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={`#${Math.floor(Math.random()*16777215).toString(16)}`} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Box>
             </CardContent>
           </Card>
         </Grid>

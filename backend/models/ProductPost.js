@@ -188,7 +188,7 @@ productPostSchema.virtual('conversionRate').get(function() {
 // Indexes for better query performance
 productPostSchema.index({ vendorId: 1, createdAt: -1 });
 productPostSchema.index({ productId: 1 });
-productPostSchema.index({ postId: 1 });
+
 productPostSchema.index({ isActive: 1 });
 productPostSchema.index({ isFeatured: 1 });
 productPostSchema.index({ isPromoted: 1 });
