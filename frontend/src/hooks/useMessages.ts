@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Message, Conversation } from '../types/message';
+import { Message, Conversation, ReadReceipt } from '../types/message';
 import { useLocalStorage } from './useLocalStorage';
 import * as client from '../services/messagesApi';
 import * as conversationClient from '../services/conversationApi';
@@ -366,7 +366,8 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       if (!conversationId) return;
 
       try {
-        await client.markMessageAsRead(messageId);
+        // Use socket service to mark message as read
+        socketService.markMessageAsRead(messageId);
       } catch (e) {
         setError((e as Error).message);
       }
@@ -618,72 +619,141 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         console.log('Received new message via socket:', data);
         
         if (data.message) {
-          // Check if this message already exists in our local state to avoid duplicates
-          const messageExists = messages?.some(msg => 
-            msg.id === (data.message._id || data.message.id)
-          );
+          const messageId = data.message._id || data.message.id;
           
-          if (!messageExists) {
-            const newMessage: Message = {
-              id: data.message._id || data.message.id,
-              conversationId: data.conversationId,
-              createdAt: data.message.createdAt,
-              content: data.message.content,
-              type: data.message.type || 'text',
-              senderId: data.message.senderId || data.message.sender?._id || data.message.sender?.id,
-              isEdited: data.message.isEdited || false,
-              isDeleted: data.message.isDeleted || false,
-              isForwarded: data.message.isForwarded || false,
-              media: data.message.media || [],
-              reactions: data.message.reactions || [],
-              readBy: data.message.readBy || [],
-              replyTo: data.message.replyTo ? {
-                id: data.message.replyTo._id || data.message.replyTo.id,
-                content: data.message.replyTo.content,
-                senderId: data.message.replyTo.senderId || data.message.replyTo.sender?._id || data.message.replyTo.sender?.id,
-                type: data.message.replyTo.type || 'text'
-              } : undefined,
-              sender: data.message.sender ? {
-                id: data.message.sender.id,
-                username: data.message.sender.username,
-                displayName: data.message.sender.displayName,
-                avatar: data.message.sender.avatar || null, // Convert undefined to null
-                isVerified: data.message.sender.isVerified || false
-              } : {
-                id: '',
-                username: 'unknown',
-                displayName: 'Unknown',
-                avatar: null,
-                isVerified: false
-              },
-              isOwn: false, // This is not our own message
-              isRead: false
-            };
-
-            console.log('Processing new message:', newMessage);
-
-            // Only add the message if it's for the current conversation
-            if (activeConversation?.id === data.conversationId) {
-              console.log('Adding message to current conversation');
-              setMessages(prev => [...(prev || []), newMessage]);
-            } else {
-              console.log('Message is for different conversation, not adding to current view');
-            }
-
-            // Update conversations list to show unread count
-            setConversations(prev => 
-              (prev || []).map(conv => 
-                conv.id === data.conversationId 
-                  ? { 
-                      ...conv, 
-                      unreadCount: (conv.unreadCount || 0) + 1,
-                      lastMessage: newMessage
-                    } 
-                  : conv
-              )
+          // Check if this is our own message (we can identify by sender ID)
+          const isOwnMessage = data.message.senderId === user?.id || 
+                             data.message.sender?._id === user?.id || 
+                             data.message.sender?.id === user?.id;
+          
+          if (isOwnMessage) {
+            // This is our own message, update the temporary message with server data
+            // Find the temporary message that matches the content and was sent by this user
+            setMessages(prev => 
+              (prev || []).map(msg => {
+                // If this is our optimistic message that matches the content and was sent by us
+                if (msg.isOptimistic && msg.content === data.message.content && msg.senderId === user?.id) {
+                  // Update with the server message data
+                  return {
+                    ...msg,
+                    id: messageId,
+                    createdAt: data.message.createdAt,
+                    isOptimistic: false, // Remove optimistic flag
+                  };
+                }
+                return msg;
+              })
             );
+            
+            // For own messages, we don't need to update the conversation's last message
+            // because the API response handler already updated it
+            // Only update for messages from other users
+            if (!isOwnMessage) {
+              // Update conversation's last message with server data
+              setConversations(prev => 
+                (prev || []).map(conv => 
+                  conv.id === data.conversationId 
+                    ? { 
+                        ...conv, 
+                        lastMessage: {
+                          id: messageId,
+                          content: data.message.content,
+                          type: data.message.type || 'text',
+                          senderId: data.message.senderId || '',
+                          createdAt: data.message.createdAt,
+                        }
+                      } 
+                    : conv
+                )
+              );
+              
+              // Update active conversation's last message
+              if (activeConversation?.id === data.conversationId) {
+                setActiveConversation(prev => 
+                  prev ? { 
+                    ...prev, 
+                    lastMessage: {
+                      id: messageId,
+                      content: data.message.content,
+                      type: data.message.type || 'text',
+                      senderId: data.message.senderId || '',
+                      createdAt: data.message.createdAt,
+                    }
+                  } : null
+                );
+              }
+            }
+            
+            console.log('Updated own message with server data:', messageId);
           } else {
-            console.log('Message already exists, skipping duplicate');
+            // This is a message from another user, add it normally
+            // Check if this message already exists in our local state to avoid duplicates
+            const messageExists = messages?.some(msg => 
+              msg.id === messageId
+            );
+            
+            if (!messageExists) {
+              const newMessage: Message = {
+                id: messageId,
+                conversationId: data.conversationId,
+                createdAt: data.message.createdAt,
+                content: data.message.content,
+                type: data.message.type || 'text',
+                senderId: data.message.senderId || data.message.sender?._id || data.message.sender?.id,
+                isEdited: data.message.isEdited || false,
+                isDeleted: data.message.isDeleted || false,
+                isForwarded: data.message.isForwarded || false,
+                media: data.message.media || [],
+                reactions: data.message.reactions || [],
+                readBy: data.message.readBy || [],
+                replyTo: data.message.replyTo ? {
+                  id: data.message.replyTo._id || data.message.replyTo.id,
+                  content: data.message.replyTo.content,
+                  senderId: data.message.replyTo.senderId || data.message.replyTo.sender?._id || data.message.replyTo.sender?.id,
+                  type: data.message.replyTo.type || 'text'
+                } : undefined,
+                sender: data.message.sender ? {
+                  id: data.message.sender.id,
+                  username: data.message.sender.username,
+                  displayName: data.message.sender.displayName,
+                  avatar: data.message.sender.avatar || null, // Convert undefined to null
+                  isVerified: data.message.sender.isVerified || false
+                } : {
+                  id: '',
+                  username: 'unknown',
+                  displayName: 'Unknown',
+                  avatar: null,
+                  isVerified: false
+                },
+                isOwn: false, // This is not our own message
+                isRead: false
+              };
+
+              console.log('Processing new message from other user:', newMessage);
+
+              // Only add the message if it's for the current conversation
+              if (activeConversation?.id === data.conversationId) {
+                console.log('Adding message to current conversation');
+                setMessages(prev => [...(prev || []), newMessage]);
+              } else {
+                console.log('Message is for different conversation, not adding to current view');
+              }
+
+              // Update conversations list to show unread count
+              setConversations(prev => 
+                (prev || []).map(conv => 
+                  conv.id === data.conversationId 
+                    ? { 
+                        ...conv, 
+                        unreadCount: (conv.unreadCount || 0) + 1,
+                        lastMessage: newMessage
+                      } 
+                    : conv
+                )
+              );
+            } else {
+              console.log('Message already exists, skipping duplicate');
+            }
           }
         }
       } catch (error) {
@@ -764,11 +834,44 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       }
     };
 
+    const handleMessageRead = (data: any) => {
+      try {
+        console.log('Received message read via socket:', data);
+        
+        if (data && data.messageId && user?.id) {
+          // Update the message to mark it as read
+          setMessages(prev => 
+            (prev || []).map(m => {
+              if (m.id === data.messageId) {
+                // Add current user to readBy array if not already present
+                const isAlreadyRead = m.readBy?.some((read: any) => read.userId === user.id);
+                if (!isAlreadyRead) {
+                  return {
+                    ...m,
+                    isRead: true,
+                    readBy: [...(m.readBy || []), { 
+                      userId: user.id, 
+                      readAt: data.readAt || new Date().toISOString() 
+                    } as ReadReceipt]
+                  };
+                }
+                return m;
+              }
+              return m;
+            })
+          );
+        }
+      } catch (error) {
+        console.error('Error processing message read from socket:', error);
+      }
+    };
+
     // Register socket event listeners
     try {
       socketService.on('message:new', handleNewMessage);
       socketService.on('user:status', handleUserStatus);
       socketService.on('typing', handleTyping);
+      socketService.on('message:read', handleMessageRead);
     } catch (error) {
       console.error('Error registering socket listeners:', error);
     }
@@ -779,6 +882,7 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         socketService.off('message:new', handleNewMessage);
         socketService.off('user:status', handleUserStatus);
         socketService.off('typing', handleTyping);
+        socketService.off('message:read', handleMessageRead);
       } catch (error) {
         console.error('Error unregistering socket listeners:', error);
       }

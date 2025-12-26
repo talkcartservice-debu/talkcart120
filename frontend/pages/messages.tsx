@@ -553,12 +553,17 @@ const MessagesPage: React.FC = () => {
   }, [messages]);
 
   // Mark messages as read when active conversation changes
+  const prevConversationIdRef = useRef<string | null>(null);
+  
   useEffect(() => {
     if (activeConversation) {
-      // Mark all messages as read when opening conversation
-      markAllAsRead();
+      // Only mark as read if we switched to a different conversation
+      if (prevConversationIdRef.current !== activeConversation.id) {
+        markAllAsRead();
+        prevConversationIdRef.current = activeConversation.id;
+      }
     }
-  }, [activeConversation, markAllAsRead]);
+  }, [activeConversation, markAllAsRead]); // Need activeConversation to detect when it changes
 
   // Cleanup typing timeout on unmount
   useEffect(() => {
