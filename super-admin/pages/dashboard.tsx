@@ -93,15 +93,16 @@ export default function DashboardAdmin() {
   const fetchLiveStats = async () => {
     try {
       setLoading(true);
-      const [overviewRes, salesTrendsRes, topProductsRes, vendorPerformanceRes] = await Promise.all([
+      const [overviewRes, salesTrendsRes, topProductsRes, vendorPerformanceRes, recentActivityRes, systemHealthRes] = await Promise.all([
         AdminApi.getAnalyticsOverview(),
         AdminApi.getSalesTrends({ period: '7d' }),
         AdminApi.getTopProducts({ limit: 5 }),
-        AdminApi.getVendorPerformance({ limit: 5 })
+        AdminApi.getVendorPerformance({ limit: 5 }),
+        AdminApi.getRecentActivity({ limit: 10 }),
+        AdminApi.getSystemHealth()
       ]);
 
-      // Simulate real-time data - in production, this would come from WebSocket or real-time API
-      const mockStats: LiveStats = {
+      const liveStats: LiveStats = {
         overview: overviewRes?.success ? overviewRes.data : {
           products: { total: 0, active: 0 },
           orders: { total: 0, completed: 0 },
@@ -112,41 +113,16 @@ export default function DashboardAdmin() {
         salesTrends: salesTrendsRes?.success ? salesTrendsRes.data : [],
         topProducts: topProductsRes?.success ? topProductsRes.data : [],
         vendorPerformance: vendorPerformanceRes?.success ? vendorPerformanceRes.data : [],
-        recentActivity: [
-          {
-            type: 'order',
-            message: 'New order #ORD-2025-001 received',
-            timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-            status: 'success'
-          },
-          {
-            type: 'product',
-            message: 'Product "Digital Art NFT" approved',
-            timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-            status: 'success'
-          },
-          {
-            type: 'user',
-            message: 'New vendor registration pending KYC',
-            timestamp: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
-            status: 'warning'
-          },
-          {
-            type: 'order',
-            message: 'Payment failed for order #ORD-2025-002',
-            timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
-            status: 'error'
-          }
-        ],
-        systemHealth: {
-          database: 'healthy',
-          api: 'healthy',
-          storage: 'healthy',
-          payments: 'warning'
+        recentActivity: recentActivityRes?.success ? recentActivityRes.data : [],
+        systemHealth: systemHealthRes?.success ? systemHealthRes.data : {
+          database: 'error',
+          api: 'error',
+          storage: 'error',
+          payments: 'error'
         }
       };
 
-      setStats(mockStats);
+      setStats(liveStats);
       setLastUpdate(new Date());
     } catch (error) {
       console.error('Failed to fetch live stats:', error);
@@ -250,9 +226,9 @@ export default function DashboardAdmin() {
 
       {loading && <LinearProgress sx={{ mb: 2 }} />}
 
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {/* Key Metrics */}
-        <Grid item xs={12} sm={6} md={2.4}>
+        <Grid item xs={6} sm={4} md={2.4}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -261,17 +237,17 @@ export default function DashboardAdmin() {
                   Products
                 </Typography>
               </Box>
-              <Typography variant="h4">
+              <Typography variant="h5" sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
                 {formatNumber(stats?.overview.products.total || 0)}
               </Typography>
-              <Typography variant="body2" color="success.main">
+              <Typography variant="body2" color="success.main" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                 {formatNumber(stats?.overview.products.active || 0)} active
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={2.4}>
+        <Grid item xs={6} sm={4} md={2.4}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -280,17 +256,17 @@ export default function DashboardAdmin() {
                   Orders
                 </Typography>
               </Box>
-              <Typography variant="h4">
+              <Typography variant="h5" sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
                 {formatNumber(stats?.overview.orders.total || 0)}
               </Typography>
-              <Typography variant="body2" color="success.main">
+              <Typography variant="body2" color="success.main" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                 {formatNumber(stats?.overview.orders.completed || 0)} completed
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={2.4}>
+        <Grid item xs={6} sm={4} md={2.4}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -299,17 +275,17 @@ export default function DashboardAdmin() {
                   Revenue
                 </Typography>
               </Box>
-              <Typography variant="h4">
+              <Typography variant="h5" sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
                 {formatCurrency(stats?.overview.revenue || 0)}
               </Typography>
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                 Total earned
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={2.4}>
+        <Grid item xs={6} sm={4} md={2.4}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -318,17 +294,17 @@ export default function DashboardAdmin() {
                   Vendors
                 </Typography>
               </Box>
-              <Typography variant="h4">
+              <Typography variant="h5" sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
                 {formatNumber(stats?.overview.vendors || 0)}
               </Typography>
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                 Active sellers
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={2.4}>
+        <Grid item xs={6} sm={4} md={2.4}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -337,10 +313,10 @@ export default function DashboardAdmin() {
                   Users
                 </Typography>
               </Box>
-              <Typography variant="h4">
+              <Typography variant="h5" sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
                 {formatNumber(stats?.overview.users || 0)}
               </Typography>
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                 Total registered
               </Typography>
             </CardContent>
@@ -420,15 +396,15 @@ export default function DashboardAdmin() {
       </Grid>
       
       {/* Charts Section */}
-      <Grid container spacing={3} sx={{ mt: 4 }}>
+      <Grid container spacing={2} sx={{ mt: 3 }}>
         {/* Sales Trends Chart */}
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
                 Sales Trends (Last 7 Days)
               </Typography>
-              <Box sx={{ height: { xs: 250, md: 300 } }}>
+              <Box sx={{ height: { xs: 200, sm: 220, md: 250 } }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={stats?.salesTrends || []}
@@ -452,10 +428,10 @@ export default function DashboardAdmin() {
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
                 Top Products by Revenue
               </Typography>
-              <Box sx={{ height: { xs: 250, md: 300 } }}>
+              <Box sx={{ height: { xs: 200, sm: 220, md: 250 } }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={stats?.topProducts || []}
@@ -478,10 +454,10 @@ export default function DashboardAdmin() {
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
                 Top Vendors by Revenue
               </Typography>
-              <Box sx={{ height: { xs: 250, md: 300 } }}>
+              <Box sx={{ height: { xs: 200, sm: 220, md: 250 } }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={stats?.vendorPerformance || []}
@@ -504,10 +480,10 @@ export default function DashboardAdmin() {
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
                 Revenue Distribution
               </Typography>
-              <Box sx={{ height: { xs: 250, md: 300 } }}>
+              <Box sx={{ height: { xs: 200, sm: 220, md: 250 } }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie

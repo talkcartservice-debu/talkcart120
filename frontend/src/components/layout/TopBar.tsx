@@ -65,6 +65,7 @@ import { useCart } from '@/hooks/useCart';
 import UserAvatar from '../common/UserAvatar';
 import WalletButton from '@/components/wallet/WalletButton';
 import { CreatePostDialog } from '@/components/social/new';
+import PWAInstallButton from '@/components/common/PWAInstallButton';
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -897,6 +898,10 @@ export const TopBar: React.FC<TopBarProps> = ({
                 {/* Wallet Button and User Avatar - no space between them */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                   <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                    {/* PWA Install Button - Only show on desktop when installable, placed before wallet */}
+                    <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                      <PWAInstallButton />
+                    </Box>
                     <WalletButton />
                   </Box>
 
@@ -923,21 +928,28 @@ export const TopBar: React.FC<TopBarProps> = ({
                 </Box>
               </>
             ) : (
-              <Button
-                color="primary"
-                onClick={handleLoginClick}
-                variant="contained"
-                size="small"
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  minWidth: 'auto',
-                  px: 2
-                }}
-              >
-                Login
-              </Button>
+              <>
+                {/* PWA Install Button - Only show on desktop when installable */}
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', mr: 1 }}>
+                  <PWAInstallButton />
+                </Box>
+                
+                <Button
+                  color="primary"
+                  onClick={handleLoginClick}
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                    minWidth: 'auto',
+                    px: 2
+                  }}
+                >
+                  Login
+                </Button>
+              </>
             )}
           </Stack>
         </Toolbar>
@@ -1112,8 +1124,12 @@ export const TopBar: React.FC<TopBarProps> = ({
             gap: 1,
           }}
         >
+          {/* PWA Install Button - Always show on desktop when installable */}
+          <PWAInstallButton size="small" />
+          
           {isAuthenticated && (
             <>
+              
               {/* Home */}
               <Tooltip title="Home">
                 <IconButton

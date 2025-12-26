@@ -1,11 +1,15 @@
 import React from 'react';
-import { Button } from '@mui/material';
+import { Button, IconButton, Tooltip } from '@mui/material';
 import { Download as DownloadIcon } from '@mui/icons-material';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material';
 
-const PWAInstallButton: React.FC = () => {
+interface PWAInstallButtonProps {
+  size?: 'normal' | 'small';
+}
+
+const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ size = 'normal' }) => {
   const { isInstallable, installPWA } = usePWAInstall();
   const theme = useTheme();
 
@@ -13,6 +17,28 @@ const PWAInstallButton: React.FC = () => {
     return null;
   }
 
+  if (size === 'small') {
+    // Smaller version for floating action buttons
+    return (
+      <Tooltip title="Install App">
+        <IconButton
+          onClick={installPWA}
+          size="small"
+          sx={{
+            bgcolor: theme.palette.background.paper,
+            boxShadow: 1,
+            '&:hover': {
+              bgcolor: theme.palette.action.hover,
+            },
+          }}
+        >
+          <DownloadIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    );
+  }
+
+  // Normal version for top bar
   return (
     <Button
       variant="outlined"

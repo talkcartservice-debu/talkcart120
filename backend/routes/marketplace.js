@@ -3,7 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const multer = require('multer');
 const { authenticateToken, authenticateTokenStrict } = require('./auth');
-const { Product, User, Order, ProductReview, VendorPaymentPreferences, VendorStore } = require('../models');
+const { Product, User, Order, ProductReview, VendorPaymentPreferences, VendorStore, Cart } = require('../models');
 const vendorAnalyticsService = require('../services/vendorAnalyticsService');
 const vendorPayoutService = require('../services/vendorPayoutService');
 const { uploadToCloudinary, deleteMultipleFiles } = require('../config/cloudinary');
@@ -3416,13 +3416,41 @@ router.get('/cart', authenticateTokenStrict, async (req, res) => {
   try {
     const userId = req.user.userId;
     
-    // In a real implementation, you would retrieve the cart from a database
-    // For now, we'll return an empty cart
+    // Find or create user's cart
+    let cart = await Cart.findOne({ userId });
+    
+    if (!cart) {
+      // Create an empty cart if one doesn't exist
+      cart = new Cart({
+        userId,
+        items: []
+      });
+      await cart.save();
+    }
+    
+    // Calculate total items and total price
+    let totalItems = 0;
+    let totalPrice = 0;
+    
+    // Only calculate if there are items in the cart
+    if (cart.items && cart.items.length > 0) {
+      for (const item of cart.items) {
+        totalItems += item.quantity;
+        
+        // Get the product to get the price
+        const product = await Product.findById(item.productId);
+        if (product) {
+          totalPrice += product.price * item.quantity;
+        }
+      }
+    }
+    
     res.json({
       success: true,
       data: {
-        items: [],
-        total: 0,
+        items: cart.items,
+        totalItems,
+        totalPrice,
         currency: 'USD'
       }
     });
@@ -3461,14 +3489,57 @@ router.post('/cart/add', authenticateTokenStrict, async (req, res) => {
       return res.status(404).json({ success: false, error: 'Product not found or inactive' });
     }
     
-    // In a real implementation, you would add the item to the user's cart in the database
-    // For now, we'll just return a success response
+    // Find or create user's cart
+    let cart = await Cart.findOne({ userId });
+    if (!cart) {
+      cart = new Cart({ userId, items: [] });
+    }
+    
+    // Check if product already exists in cart
+    const existingItemIndex = cart.items.findIndex(item => {
+      // Compare product IDs and colors (if color is specified)
+      const productIdMatch = item.productId.toString() === productId;
+      const colorMatch = (color && item.color) ? item.color === color : (!color && !item.color);
+      return productIdMatch && colorMatch;
+    });
+    
+    if (existingItemIndex > -1) {
+      // Update quantity if item already exists
+      cart.items[existingItemIndex].quantity += qty;
+    } else {
+      // Add new item to cart
+      cart.items.push({
+        productId,
+        quantity: qty,
+        color
+      });
+    }
+    
+    await cart.save();
+    
+    // Calculate total items and total price
+    let totalItems = 0;
+    let totalPrice = 0;
+    
+    // Only calculate if there are items in the cart
+    if (cart.items && cart.items.length > 0) {
+      for (const item of cart.items) {
+        totalItems += item.quantity;
+        
+        // Get the product to get the price
+        const itemProduct = await Product.findById(item.productId);
+        if (itemProduct) {
+          totalPrice += itemProduct.price * item.quantity;
+        }
+      }
+    }
+    
     res.json({
       success: true,
       data: {
-        productId,
-        quantity: qty,
-        color,
+        items: cart.items,
+        totalItems,
+        totalPrice,
         message: 'Product added to cart successfully'
       }
     });
@@ -3502,13 +3573,55 @@ router.put('/cart/:productId', authenticateTokenStrict, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Quantity must be a positive number' });
     }
     
-    // In a real implementation, you would update the item quantity in the user's cart
-    // For now, we'll just return a success response
+    // Find user's cart
+    const cart = await Cart.findOne({ userId });
+    
+    if (!cart) {
+      return res.status(404).json({ success: false, error: 'Cart not found' });
+    }
+    
+    // Find the item in the cart
+    const itemIndex = cart.items.findIndex(item => 
+      item.productId.toString() === productId
+    );
+    
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, error: 'Item not found in cart' });
+    }
+    
+    // Update the quantity
+    cart.items[itemIndex].quantity = qty;
+    
+    // Remove the item if quantity is 0 or less
+    if (qty <= 0) {
+      cart.items.splice(itemIndex, 1);
+    }
+    
+    await cart.save();
+    
+    // Calculate total items and total price
+    let totalItems = 0;
+    let totalPrice = 0;
+    
+    // Only calculate if there are items in the cart
+    if (cart.items && cart.items.length > 0) {
+      for (const item of cart.items) {
+        totalItems += item.quantity;
+        
+        // Get the product to get the price
+        const itemProduct = await Product.findById(item.productId);
+        if (itemProduct) {
+          totalPrice += itemProduct.price * item.quantity;
+        }
+      }
+    }
+    
     res.json({
       success: true,
       data: {
-        productId,
-        quantity: qty,
+        items: cart.items,
+        totalItems,
+        totalPrice,
         message: 'Cart item updated successfully'
       }
     });
@@ -3535,11 +3648,52 @@ router.delete('/cart/:productId', authenticateTokenStrict, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Valid product ID is required' });
     }
     
-    // In a real implementation, you would remove the item from the user's cart
-    // For now, we'll just return a success response
+    // Find user's cart
+    const cart = await Cart.findOne({ userId });
+    
+    if (!cart) {
+      return res.status(404).json({ success: false, error: 'Cart not found' });
+    }
+    
+    // Find the item in the cart
+    const itemIndex = cart.items.findIndex(item => 
+      item.productId.toString() === productId
+    );
+    
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, error: 'Item not found in cart' });
+    }
+    
+    // Remove the item from the cart
+    cart.items.splice(itemIndex, 1);
+    
+    await cart.save();
+    
+    // Calculate total items and total price
+    let totalItems = 0;
+    let totalPrice = 0;
+    
+    // Only calculate if there are items in the cart
+    if (cart.items && cart.items.length > 0) {
+      for (const item of cart.items) {
+        totalItems += item.quantity;
+        
+        // Get the product to get the price
+        const itemProduct = await Product.findById(item.productId);
+        if (itemProduct) {
+          totalPrice += itemProduct.price * item.quantity;
+        }
+      }
+    }
+    
     res.json({
       success: true,
-      message: 'Product removed from cart successfully'
+      data: {
+        items: cart.items,
+        totalItems,
+        totalPrice,
+        message: 'Product removed from cart successfully'
+      }
     });
   } catch (error) {
     console.error('Remove from cart error:', error);
@@ -3558,11 +3712,26 @@ router.delete('/cart', authenticateTokenStrict, async (req, res) => {
   try {
     const userId = req.user.userId;
     
-    // In a real implementation, you would clear all items from the user's cart
-    // For now, we'll just return a success response
+    // Find user's cart
+    const cart = await Cart.findOne({ userId });
+    
+    if (!cart) {
+      return res.status(404).json({ success: false, error: 'Cart not found' });
+    }
+    
+    // Clear all items from the cart
+    cart.items = [];
+    
+    await cart.save();
+    
     res.json({
       success: true,
-      message: 'Cart cleared successfully'
+      data: {
+        items: [],
+        totalItems: 0,
+        totalPrice: 0,
+        message: 'Cart cleared successfully'
+      }
     });
   } catch (error) {
     console.error('Clear cart error:', error);

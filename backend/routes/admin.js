@@ -5605,5 +5605,125 @@ router.get('/commission/history', authenticateTokenStrict, requireAdmin, async (
   }
 });
 
+// GET /api/admin/dashboard/recent-activity
+// Fetch recent activities across the platform
+router.get('/dashboard/recent-activity', authenticateTokenStrict, requireAdmin, async (req, res) => {
+  try {
+    const { limit = 20 } = req.query;
+    const limitN = Math.min(50, Math.max(1, Number(limit) || 20));
+    
+    // Get recent orders
+    const recentOrders = await Order.find({})
+      .sort({ createdAt: -1 })
+      .limit(limitN)
+      .populate('userId', 'username')
+      .lean();
+    
+    // Get recent products
+    const recentProducts = await Product.find({})
+      .sort({ createdAt: -1 })
+      .limit(limitN)
+      .populate('vendorId', 'username')
+      .lean();
+    
+    // Get recent users
+    const recentUsers = await User.find({})
+      .sort({ createdAt: -1 })
+      .limit(limitN)
+      .lean();
+    
+    // Combine and sort all activities by timestamp
+    const allActivities = [];
+    
+    recentOrders.forEach(order => {
+      allActivities.push({
+        type: 'order',
+        message: `New order #${order.orderNumber} placed by ${order.userId?.username || 'Unknown User'}`,
+        timestamp: order.createdAt,
+        status: order.status,
+        id: order._id
+      });
+    });
+    
+    recentProducts.forEach(product => {
+      allActivities.push({
+        type: 'product',
+        message: `New product "${product.name}" added by ${product.vendorId?.username || 'Unknown Vendor'}`,
+        timestamp: product.createdAt,
+        status: product.isActive ? 'success' : 'warning',
+        id: product._id
+      });
+    });
+    
+    recentUsers.forEach(user => {
+      allActivities.push({
+        type: 'user',
+        message: `New user registered: ${user.username || user.email}`,
+        timestamp: user.createdAt,
+        status: 'success',
+        id: user._id
+      });
+    });
+    
+    // Sort by timestamp, most recent first
+    allActivities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    // Limit to the specified number
+    const recentActivity = allActivities.slice(0, limitN);
+    
+    res.json({
+      success: true,
+      data: recentActivity
+    });
+  } catch (error) {
+    console.error('admin recent activity error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch recent activity' });
+  }
+});
+
+// GET /api/admin/dashboard/system-health
+// Check system health status
+router.get('/dashboard/system-health', authenticateTokenStrict, requireAdmin, async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    
+    // Check database connection
+    const dbStatus = mongoose.connection.readyState === 1 ? 'healthy' : 'error';
+    
+    // Check API status (self-check)
+    const apiStatus = 'healthy';
+    
+    // Check storage (check if uploads directory is accessible)
+    const fs = require('fs');
+    const path = require('path');
+    const uploadsPath = path.join(__dirname, '../uploads');
+    let storageStatus = 'healthy';
+    try {
+      await fs.promises.access(uploadsPath, fs.constants.R_OK | fs.constants.W_OK);
+    } catch (err) {
+      storageStatus = 'error';
+    }
+    
+    // Check payment services (check if Stripe is configured)
+    const stripeSecret = process.env.STRIPE_SECRET_KEY;
+    const paymentsStatus = stripeSecret ? 'healthy' : 'warning';
+    
+    const healthData = {
+      database: dbStatus,
+      api: apiStatus,
+      storage: storageStatus,
+      payments: paymentsStatus
+    };
+    
+    res.json({
+      success: true,
+      data: healthData
+    });
+  } catch (error) {
+    console.error('admin system health error:', error);
+    res.status(500).json({ success: false, message: 'Failed to check system health' });
+  }
+});
+
 module.exports = router;
 

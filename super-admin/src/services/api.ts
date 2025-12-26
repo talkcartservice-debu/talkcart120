@@ -66,6 +66,19 @@ const fetchWithConfig = async (url: string, options: RequestInit = {}): Promise<
   }
 };
 
+// Helper function to safely parse JSON response
+const safeJsonParse = async (res: Response) => {
+  // Check if the response is JSON before parsing
+  const contentType = res.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    const text = await res.text();
+    console.error('API returned non-JSON response:', text);
+    throw new Error(`API returned non-JSON response with status ${res.status}`);
+  }
+  
+  return res.json();
+};
+
 // Health check function
 const healthCheck = async () => {
   try {
@@ -139,6 +152,15 @@ export const AdminApi = {
   me: async () => {
     try {
       const res = await fetchWithConfig(`${API_BASE}/admin/me`);
+      
+      // Check if the response is JSON before parsing
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('API returned non-JSON response:', text);
+        throw new Error(`API returned non-JSON response with status ${res.status}`);
+      }
+      
       return res.json();
     } catch (error) {
       // Provide more specific error handling
@@ -154,7 +176,7 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/products?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
   createProduct: async (data: {
     name: string;
@@ -176,7 +198,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   toggleProduct: async (id: string, body: { isActive?: boolean; featured?: boolean }) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/products/${id}/toggle`, {
@@ -184,7 +206,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   updateProduct: async (id: string, body: { price?: number; stock?: number }) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/products/${id}`, {
@@ -192,13 +214,13 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   deleteProduct: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/products/${id}`, {
       method: 'DELETE',
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   approveProduct: async (id: string, featured = false) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/products/${id}/approve`, {
@@ -206,7 +228,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ featured }),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   bulkProducts: async (ids: string[], action: string, payload: any = {}) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/products/bulk`, {
@@ -214,7 +236,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids, action, payload }),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   exportProductsCsvUrl: (query: Record<string, any>) => {
     const params = new URLSearchParams();
@@ -227,11 +249,11 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/orders?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
   getOrder: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/orders/${id}`);
-    return res.json();
+    return safeJsonParse(res);
   },
   updateOrderStatus: async (id: string, status: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/orders/${id}/status`, {
@@ -239,7 +261,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Order analytics
@@ -247,14 +269,14 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/analytics/overview?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getOrderSalesTrends: async (query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/analytics/sales-trends?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Orders by vendor
@@ -262,7 +284,7 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/orders?vendorId=${vendorId}&${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Marketplace (create)
@@ -273,7 +295,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Helper to build a frontend marketplace product URL
@@ -290,33 +312,33 @@ export const AdminApi = {
       // Important: do not set Content-Type; the browser will set the multipart boundary
       body: form,
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   // Analytics
   getAnalyticsOverview: async () => {
     const res = await fetchWithConfig(`${API_BASE}/admin/analytics/overview`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getSalesTrends: async (query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/analytics/sales-trends?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getTopProducts: async (query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/analytics/top-products?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getVendorPerformance: async (query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/analytics/vendor-performance?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Vendor Analytics
@@ -324,7 +346,7 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/marketplace/admin/analytics/vendor-comparison?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Refunds
@@ -332,7 +354,7 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/refunds/recent?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
   refundsExportUrl: (query: Record<string, any>) => {
     const params = new URLSearchParams();
@@ -343,7 +365,7 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/refunds/analytics?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
   processRefund: async (data: { paymentIntentId: string; amount: number; currency: string; reason?: string }) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/refunds/process`, {
@@ -351,7 +373,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Comprehensive Refund Management
@@ -359,7 +381,7 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/refunds/management?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Users
@@ -367,15 +389,15 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/users?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
   getUser: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}`);
-    return res.json();
+    return safeJsonParse(res);
   },
   getUserDetails: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}`);
-    return res.json();
+    return safeJsonParse(res);
   },
   updateUser: async (id: string, data: Record<string, any>) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}`, {
@@ -383,7 +405,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   updateUserRole: async (id: string, role: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}/role`, {
@@ -391,7 +413,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role }),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   updateUserVerification: async (id: string, isVerified: boolean) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}/verification`, {
@@ -399,31 +421,31 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isVerified }),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   deleteUser: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}`, {
       method: 'DELETE',
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   restoreUser: async (userId: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${userId}/restore`, {
       method: 'POST'
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   suspendUser: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}/suspend`, {
       method: 'POST'
     });
-    return res.json();
+    return safeJsonParse(res);
   },
   unsuspendUser: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${id}/unsuspend`, {
       method: 'POST'
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Email Communication
@@ -437,7 +459,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(emailData)
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   sendBulkEmail: async (userIds: string[], emailData: {
@@ -453,12 +475,12 @@ export const AdminApi = {
         ...emailData
       })
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getUserEmailHistory: async (userId: string, limit: number = 50) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/users/${userId}/email-history?limit=${limit}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Chat Management
@@ -466,19 +488,19 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/chat/conversations?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getChatConversation: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/chat/conversations/${id}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getChatMessages: async (conversationId: string, query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/chat/conversations/${conversationId}/messages?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   sendChatMessage: async (conversationId: string, data: { content: string }) => {
@@ -487,21 +509,21 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   resolveChatConversation: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/chat/conversations/${id}/resolve`, {
       method: 'PUT',
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   closeChatConversation: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/chat/conversations/${id}`, {
       method: 'DELETE',
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getChatAnalytics: async (query: Record<string, any> = {}) => {
@@ -509,7 +531,7 @@ export const AdminApi = {
       const params = new URLSearchParams();
       Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
       const res = await fetchWithConfig(`${API_BASE}/admin/chat/analytics?${params.toString()}`);
-      return res.json();
+      return safeJsonParse(res);
     } catch (error) {
       console.error('Failed to fetch chat analytics:', error);
       // Return a default response to prevent app crashes
@@ -534,7 +556,7 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/chat/vendor-admin?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   createVendorAdminConversation: async (vendorId: string) => {
@@ -543,7 +565,7 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vendorId }),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Vendor search for chat
@@ -551,19 +573,19 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/chat/search/vendors?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Vendor-Admin Chat (from chatbot API)
   getVendorAdminChatConversations: async (vendorId: string) => {
     const res = await fetchWithConfig(`${API_BASE}/chatbot/conversations/vendor-admin?vendorId=${vendorId}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Settings
   getSettings: async () => {
     const res = await fetchWithConfig(`${API_BASE}/admin/settings`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   updateSettings: async (type: string, updates: Record<string, any>) => {
@@ -572,13 +594,13 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type, updates }),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Admin Payment Preferences
   getPaymentPreferences: async () => {
     const res = await fetchWithConfig(`${API_BASE}/admin/payment-preferences`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   updatePaymentPreferences: async (updates: Record<string, any>) => {
@@ -587,13 +609,13 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Admin Commission
   getTotalCommission: async () => {
     const res = await fetchWithConfig(`${API_BASE}/admin/commission/total`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   withdrawCommission: async (amount: number, currency: string = 'RWF', withdrawalDetails: Record<string, any> = {}) => {
@@ -602,20 +624,20 @@ export const AdminApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount, currency, withdrawalDetails }),
     });
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getCommissionHistory: async (query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/commission/history?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Categories
   getCategories: async () => {
     const res = await fetchWithConfig(`${API_BASE}/admin/categories`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   // Vendors
@@ -623,39 +645,52 @@ export const AdminApi = {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/vendors?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getVendor: async (id: string) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/vendors/${id}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getVendorSales: async (id: string, query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/vendors/${id}/sales?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getVendorFees: async (id: string, query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/vendors/${id}/fees?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getVendorPayoutHistory: async (id: string, query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/vendors/${id}/payout-history?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
   },
 
   getVendorAnalytics: async (query: Record<string, any> = {}) => {
     const params = new URLSearchParams();
     Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
     const res = await fetchWithConfig(`${API_BASE}/admin/vendors/analytics/overview?${params.toString()}`);
-    return res.json();
+    return safeJsonParse(res);
+  },
+
+  // Dashboard
+  getRecentActivity: async (query: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([k,v]) => { if (v != null && v !== '') params.set(k, String(v)); });
+    const res = await fetchWithConfig(`${API_BASE}/admin/dashboard/recent-activity?${params.toString()}`);
+    return safeJsonParse(res);
+  },
+
+  getSystemHealth: async () => {
+    const res = await fetchWithConfig(`${API_BASE}/admin/dashboard/system-health`);
+    return safeJsonParse(res);
   },
 };

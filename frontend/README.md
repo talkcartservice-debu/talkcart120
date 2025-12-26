@@ -19,7 +19,7 @@ TalkCart supports installation as a Progressive Web App on mobile devices:
 - Native app-like experience with offline functionality
 - Available on both Android and iOS devices
 
-See [PWA Installation Guide](./docs/PWA_INSTALLATION.md) for detailed instructions.
+See [PWA Installation Guide](./PWA_INSTALLATION.md) for detailed instructions.
 
 ## Getting Started
 

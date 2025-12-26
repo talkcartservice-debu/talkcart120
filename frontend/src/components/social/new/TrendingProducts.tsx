@@ -184,7 +184,7 @@ const TrendingProducts: React.FC = () => {
                       variant="subtitle2" 
                       sx={{ 
                         fontWeight: 600, 
-                        mb: 0.5, 
+                        mb: 1, 
                         overflow: 'hidden', 
                         textOverflow: 'ellipsis', 
                         display: '-webkit-box', 
@@ -197,19 +197,6 @@ const TrendingProducts: React.FC = () => {
                     >
                       {product.name}
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto', pt: 0.5 }}>
-                      <Typography variant="body2" fontWeight={700} color="primary.main" sx={{ fontSize: '0.8rem' }}>
-                        {product.currency} {product.price.toFixed(2)}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                        <Box component="span" sx={{ color: '#FFD700', fontSize: '0.7rem' }}>
-                          ★
-                        </Box>
-                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                          {product.rating.toFixed(1)}
-                        </Typography>
-                      </Box>
-                    </Box>
                     <Button 
                       variant="contained" 
                       size="small"
@@ -220,7 +207,6 @@ const TrendingProducts: React.FC = () => {
                         handleAddToCart(product.id || product._id, product.name);
                       }}
                       sx={{ 
-                        mt: 1, 
                         py: 0.5,
                         fontSize: '0.7rem',
                         background: 'primary.main',
