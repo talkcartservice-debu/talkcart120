@@ -3,6 +3,7 @@ export interface Participant {
   username: string;
   displayName: string;
   avatar: string | null;
+  avatarUrl?: string;
   isVerified: boolean;
   isOnline?: boolean;
   lastSeen?: string;
@@ -103,3 +104,5 @@ export interface ConversationSettings {
   muteNotifications?: boolean;
   isEncrypted?: boolean;
 }
+
+

@@ -94,6 +94,7 @@ const MessagesPage: React.FC = () => {
     editMessage,
     deleteMessage,
     forwardMessage,
+    sending,
     // Sound controls
     soundsEnabled,
     toggleSounds,
@@ -324,7 +325,7 @@ const MessagesPage: React.FC = () => {
     const trimmedMessage = newMessage.trim();
     if (!trimmedMessage || !activeConversation) {
       if (!trimmedMessage) {
-        alert('Message content is required');
+        console.log('Message content is required');
       }
       return;
     }
@@ -340,7 +341,8 @@ const MessagesPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error sending message:', error);
-      alert('Failed to send message: ' + (error.message || 'Unknown error'));
+      // Don't show alert for better UX, just log the error
+      // alert('Failed to send message: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -1225,6 +1227,7 @@ const MessagesPage: React.FC = () => {
               </Box>
 
               {/* Message Input */}
+              <form onSubmit={(e) => { e.preventDefault(); return false; }} noValidate>
               <Box
                 sx={{
                   p: { xs: 0.5, sm: 2 },
@@ -1378,7 +1381,7 @@ const MessagesPage: React.FC = () => {
                     setNewMessage(e.target.value);
                     handleTyping();
                   }}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
                       handleSendMessage();
@@ -1414,13 +1417,18 @@ const MessagesPage: React.FC = () => {
                 </IconButton>
                 <IconButton
                   color="primary"
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSendMessage();
+                  }}
+                  disabled={!newMessage.trim() || sending}
                   sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
                 >
-                  <Send size={isMobile ? 14 : 20} />
+                  {sending ? <CircularProgress size={isMobile ? 14 : 20} /> : <Send size={isMobile ? 14 : 20} />}
                 </IconButton>
               </Box>
+              </form>
             </Box>
           ) : (
             <Box

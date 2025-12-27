@@ -91,8 +91,7 @@ router.get('/conversations', authenticateTokenStrict, async (req, res) => {
       })
       .sort({ updatedAt: -1 })
       .limit(parseInt(limit))
-      .skip(skip)
-      .lean();
+      .skip(skip);
 
     // Get total count
     const total = await Conversation.countDocuments(query);
@@ -105,7 +104,7 @@ router.get('/conversations', authenticateTokenStrict, async (req, res) => {
       }
 
       return {
-        ...conv,
+        ...conv.toObject({ virtuals: true }),
         id: conv._id,
         otherParticipant,
         isOnline: otherParticipant ? otherParticipant.isOnline : false,
@@ -249,7 +248,7 @@ router.post('/conversations', authenticateTokenStrict, async (req, res) => {
 
     res.status(201).json({
       success: true,
-      data: newConversation,
+      data: newConversation.toObject({ virtuals: true }),
       message: 'Conversation created successfully'
     });
   } catch (error) {
@@ -310,7 +309,7 @@ router.get('/conversations/:id', authenticateTokenStrict, async (req, res) => {
     }
 
     const transformedConversation = {
-      ...conversation,
+      ...conversation.toObject({ virtuals: true }),
       id: conversation._id,
       otherParticipant,
       isOnline: otherParticipant ? otherParticipant.isOnline : false,
@@ -407,7 +406,7 @@ router.put('/conversations/:id', authenticateTokenStrict, async (req, res) => {
 
     res.json({
       success: true,
-      data: conversation,
+      data: conversation.toObject({ virtuals: true }),
       message: 'Conversation updated successfully'
     });
   } catch (error) {
@@ -479,8 +478,17 @@ router.get('/conversations/:id/messages', authenticateTokenStrict, async (req, r
       })
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
-      .skip(skip)
-      .lean();
+      .skip(skip);
+
+    // Process messages to ensure avatarUrl is properly included from virtuals
+    const processedMessages = messages.map(message => {
+      const messageObj = message.toObject({ virtuals: true });
+      if (messageObj.senderId && messageObj.senderId.avatar) {
+        // The avatarUrl should now be available via the virtual property in the User schema
+        // No need to manually construct it since the virtual property handles it
+      }
+      return messageObj;
+    });
 
     // Get total count
     const total = await Message.countDocuments(query);
@@ -488,12 +496,12 @@ router.get('/conversations/:id/messages', authenticateTokenStrict, async (req, r
     res.json({
       success: true,
       data: {
-        messages: messages.reverse(), // Reverse to show oldest first
+        messages: processedMessages.reverse(), // Reverse to show oldest first
         pagination: {
           currentPage: parseInt(page),
           totalPages: Math.ceil(total / parseInt(limit)),
           totalMessages: total,
-          hasMore: skip + messages.length < total
+          hasMore: skip + processedMessages.length < total
         }
       }
     });
@@ -590,7 +598,7 @@ router.post('/conversations/:id/messages', authenticateTokenStrict, async (req, 
         console.log(`Emitting to room ${roomName}`);
         global.io.to(roomName).emit('message:new', {
           conversationId: id,
-          message: newMessage
+          message: newMessage.toObject({ virtuals: true })
         });
         console.log(`Message emitted to room ${roomName}`);
       } else {
@@ -604,7 +612,7 @@ router.post('/conversations/:id/messages', authenticateTokenStrict, async (req, 
     res.status(201).json({
       success: true,
       data: {
-        message: newMessage
+        message: newMessage.toObject({ virtuals: true })
       },
       message: 'Message sent successfully'
     });
@@ -712,6 +720,99 @@ router.put('/conversations/:id/read', authenticateTokenStrict, async (req, res) 
   }
 });
 
+// @route   PUT /api/messages/messages/:id/read
+// @desc    Mark a single message as read
+// @access  Private
+router.put('/messages/:id/read', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Validate message ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid message ID'
+      });
+    }
+
+    // Find the message
+    const message = await Message.findById(id);
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    // Find the conversation to verify user access
+    const conversation = await Conversation.findOne({
+      _id: message.conversationId,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Check if message is already read by this user
+    const alreadyRead = message.readBy.some(read => read.userId.toString() === userId);
+    
+    if (!alreadyRead) {
+      // Add read receipt
+      message.readBy.push({ userId, readAt: new Date() });
+      await message.save();
+
+      // Update conversation's unread count if message is from other user
+      if (message.senderId.toString() !== userId) {
+        conversation.unreadCount = Math.max(0, conversation.unreadCount - 1);
+        await conversation.save();
+      }
+
+      // Broadcast to all participants in the conversation via sockets
+      try {
+        if (global.io) {
+          // First, populate the sender again to include virtuals before broadcasting
+          await message.populate({
+            path: 'senderId',
+            select: 'username displayName avatar isVerified'
+          });
+          
+          const roomName = `conversation_${message.conversationId}`;
+          global.io.to(roomName).emit('message:read', {
+            messageId: id,
+            userId,
+            readAt: new Date().toISOString(),
+            message: message.toObject({ virtuals: true }) // Include full message with avatarUrl
+          });
+        }
+      } catch (socketError) {
+        console.error('Failed to broadcast message read via socket:', socketError);
+        // Continue with the response even if socket broadcast fails
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        messageId: id,
+        conversationId: message.conversationId
+      },
+      message: 'Message marked as read successfully'
+    });
+  } catch (error) {
+    console.error('Mark message as read error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark message as read'
+    });
+  }
+});
+
 // @route   DELETE /api/messages/messages/:id
 // @desc    Delete message
 // @access  Private
@@ -770,6 +871,32 @@ router.delete('/messages/:id', authenticateTokenStrict, async (req, res) => {
 });
 
 module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

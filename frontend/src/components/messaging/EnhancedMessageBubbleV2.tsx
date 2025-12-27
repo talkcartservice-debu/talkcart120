@@ -369,7 +369,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
           {/* Avatar */}
           {showAvatar && !message.isOwn && (
             <UserAvatar
-              src={message.sender.avatar || undefined}
+              src={message.sender.avatarUrl || message.sender.avatar || undefined}
               alt={message.sender.displayName}
               size={32}
             />
@@ -554,7 +554,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                 {/* Avatar */}
                 {showAvatar && !message.isOwn && (
                     <UserAvatar
-                        src={message.sender.avatar || undefined}
+                        src={message.sender.avatarUrl || message.sender.avatar || undefined}
                         alt={message.sender.displayName}
                         size={32}
                     />
@@ -653,7 +653,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                 {/* Avatar */}
                 {showAvatar && !message.isOwn && (
                     <UserAvatar
-                        src={message.sender.avatar || undefined}
+                        src={message.sender.avatarUrl || message.sender.avatar || undefined}
                         alt={message.sender.displayName}
                         size={32}
                     />
@@ -1015,8 +1015,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                                 position: 'absolute',
                                 [message.isOwn ? 'left' : 'right']: { xs: -32, sm: -50 },
                                 top: '50%',
-                                transform: `translateY(-50%) ${message.isOwn ? 'translateX(10px)' : 'translateX(-10px)'}`,
-                                zIndex: 10
+                                transform: `translateY(-50%) ${message.isOwn ? 'translateX(10px)' : 'translateX(-10px)'}`
                             }}
                         >
                             <Tooltip title="Reply" placement="left">

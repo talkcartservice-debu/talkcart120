@@ -627,27 +627,45 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
                              data.message.sender?.id === user?.id;
           
           if (isOwnMessage) {
-            // This is our own message, update the temporary message with server data
-            // Find the temporary message that matches the content and was sent by this user
-            setMessages(prev => 
-              (prev || []).map(msg => {
-                // If this is our optimistic message that matches the content and was sent by us
-                if (msg.isOptimistic && msg.content === data.message.content && msg.senderId === user?.id) {
-                  // Update with the server message data
-                  return {
-                    ...msg,
-                    id: messageId,
-                    createdAt: data.message.createdAt,
-                    isOptimistic: false, // Remove optimistic flag
-                  };
-                }
-                return msg;
-              })
+            // For own messages, we still need to update the conversation's last message
+            // with the complete server data that might have additional fields
+            console.log('Received socket event for own message, updating conversation last message');
+            
+            // Update conversation's last message with server data
+            setConversations(prev => 
+              (prev || []).map(conv => 
+                conv.id === data.conversationId 
+                  ? { 
+                      ...conv, 
+                      lastMessage: {
+                        id: messageId,
+                        content: data.message.content,
+                        type: data.message.type || 'text',
+                        senderId: data.message.senderId || '',
+                        createdAt: data.message.createdAt,
+                      }
+                    } 
+                  : conv
+              )
             );
             
-            // For own messages, we don't need to update the conversation's last message
-            // because the API response handler already updated it
-            // Only update for messages from other users
+            // Update active conversation's last message
+            if (activeConversation?.id === data.conversationId) {
+              setActiveConversation(prev => 
+                prev ? { 
+                  ...prev, 
+                  lastMessage: {
+                    id: messageId,
+                    content: data.message.content,
+                    type: data.message.type || 'text',
+                    senderId: data.message.senderId || '',
+                    createdAt: data.message.createdAt,
+                  }
+                } : null
+              );
+            }
+            
+            // For messages from other users
             if (!isOwnMessage) {
               // Update conversation's last message with server data
               setConversations(prev => 
@@ -838,19 +856,19 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       try {
         console.log('Received message read via socket:', data);
         
-        if (data && data.messageId && user?.id) {
-          // Update the message to mark it as read
+        if (data && data.messageId && data.userId) {
+          // Update the message to mark it as read by the user who read it
           setMessages(prev => 
             (prev || []).map(m => {
               if (m.id === data.messageId) {
-                // Add current user to readBy array if not already present
-                const isAlreadyRead = m.readBy?.some((read: any) => read.userId === user.id);
+                // Add the user who read the message to readBy array if not already present
+                const isAlreadyRead = m.readBy?.some((read: any) => read.userId === data.userId);
                 if (!isAlreadyRead) {
                   return {
                     ...m,
                     isRead: true,
                     readBy: [...(m.readBy || []), { 
-                      userId: user.id, 
+                      userId: data.userId, 
                       readAt: data.readAt || new Date().toISOString() 
                     } as ReadReceipt]
                   };
