@@ -1435,15 +1435,15 @@ const MessagesPage: React.FC = () => {
               <Box
                 sx={{
                   flexGrow: 1,
-                  p: { xs: 1, sm: 3 },
+                  p: { xs: 0.5, sm: 3 },
                   overflow: 'auto',
                   display: 'flex',
                   flexDirection: 'column',
                   bgcolor: alpha(theme.palette.background.default, 0.5),
                   height: '100%',
                   minHeight: 0,
-                  pt: { xs: 1, sm: 2 },
-                  pb: { xs: 1, sm: 2 },
+                  pt: { xs: 0.5, sm: 2 },
+                  pb: { xs: 0.5, sm: 2 },
                   backgroundColor: theme.palette.background.paper,
                   flexShrink: 1
                 }}
@@ -1522,8 +1522,9 @@ const MessagesPage: React.FC = () => {
                           sx={{
                             display: 'flex',
                             justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
-                            mb: { xs: 1, sm: 2 },
-                            flexShrink: 0
+                            mb: { xs: 0.5, sm: 2 },
+                            flexShrink: 0,
+                            width: '100%'
                           }}
                         >
                           <EnhancedMessageBubbleV2
