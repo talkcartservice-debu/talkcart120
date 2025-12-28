@@ -524,10 +524,11 @@ router.post('/conversations/:id/messages', authenticateTokenStrict, async (req, 
     const userId = req.user.userId;
 
     // Validation
-    if (!content || content.trim().length === 0) {
+    // Either content or media must be provided
+    if ((!content || content.trim().length === 0) && (!media || media.length === 0)) {
       return res.status(400).json({
         success: false,
-        message: 'Message content is required'
+        message: 'Message must have content or media'
       });
     }
 

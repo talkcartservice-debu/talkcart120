@@ -111,6 +111,7 @@ const MyDashboard: React.FC = () => {
     error: messagesError,
     fetchConversations,
     setActiveConversation,
+    openConversation,
     sendMessage,
     createConversation,
   } = useMessages();
@@ -292,7 +293,7 @@ const MyDashboard: React.FC = () => {
     }
   };
 
-  const handleChatWithVendor = (vendorId: string) => {
+  const handleChatWithVendor = async (vendorId: string) => {
     // Find existing conversation with this vendor or create a new one
     const existingConversation = conversations.find(conv => 
       conv.participants.some(p => p.id === vendorId) && 
@@ -300,7 +301,7 @@ const MyDashboard: React.FC = () => {
     );
     
     if (existingConversation) {
-      setActiveConversation(existingConversation);
+      await openConversation(existingConversation);
       setActiveTab(2); // Switch to chat tab
     } else {
       // Open dialog to create new conversation
@@ -318,7 +319,7 @@ const MyDashboard: React.FC = () => {
     try {
       const newConversation = await createConversation([selectedVendor.id]);
       if (newConversation) {
-        setActiveConversation(newConversation);
+        await openConversation(newConversation);
         setActiveTab(2); // Switch to chat tab
         setOpenVendorDialog(false);
         setSelectedVendor(null);

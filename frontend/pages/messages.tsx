@@ -28,6 +28,9 @@ import {
   useTheme,
   alpha,
   useMediaQuery,
+  Menu,
+  MenuItem,
+  ListItemIcon,
 } from '@mui/material';
 import {
   Search,
@@ -87,6 +90,7 @@ const MessagesPage: React.FC = () => {
     sendMessage,
     createConversation,
     setActiveConversation,
+    openConversation,
     markAllAsRead,
     sendTypingIndicator,
     addReaction,
@@ -94,7 +98,13 @@ const MessagesPage: React.FC = () => {
     editMessage,
     deleteMessage,
     forwardMessage,
+    searchMessages,
+    searchAllMessages,
+    searchResults,
+    searching,
     sending,
+    hasMore,
+    updateConversation,
     // Sound controls
     soundsEnabled,
     toggleSounds,
@@ -125,7 +135,9 @@ const MessagesPage: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesStartRef = useRef<HTMLDivElement>(null);
 
   // Emoji picker
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -162,9 +174,21 @@ const MessagesPage: React.FC = () => {
   // Reply state
   const [replyToMessage, setReplyToMessage] = useState<any | null>(null);
 
+  // Conversation update state
+  const [isEditingConversation, setIsEditingConversation] = useState(false);
+  const [conversationName, setConversationName] = useState('');
+  const [conversationDescription, setConversationDescription] = useState('');
+
+  // Load more state
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  
+  // Mobile menu state
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
+  const isMobileMenuOpen = Boolean(mobileMenuAnchor);
+
   // Helper functions
   // Get other participant(s) for display
-  const getConversationName = (conversation: any) => {
+  const getConversationName = useCallback((conversation: any) => {
     // Handle invalid conversation data
     if (!conversation) return 'Unknown User';
     
@@ -187,10 +211,10 @@ const MessagesPage: React.FC = () => {
     }
     
     return otherParticipant.displayName || otherParticipant.username || 'Unknown User';
-  };
+  }, [user]);
 
   // Get avatar for conversation
-  const getConversationAvatar = (conversation: any) => {
+  const getConversationAvatar = useCallback((conversation: any) => {
     // Handle invalid conversation data
     if (!conversation) return undefined;
     
@@ -201,10 +225,10 @@ const MessagesPage: React.FC = () => {
     // For direct messages, show the other person's avatar
     const otherParticipant = conversation.participants?.find((p: any) => p.id !== user?.id);
     return otherParticipant?.avatar;
-  };
+  }, [user]);
 
   // Check if user is online
-  const isUserOnline = (conversation: any) => {
+  const isUserOnline = useCallback((conversation: any) => {
     // Handle invalid conversation data
     if (!conversation || conversation.isGroup) return false;
 
@@ -213,7 +237,7 @@ const MessagesPage: React.FC = () => {
     
     // Use presence context to check online status
     return isUserOnlineFromContext(otherParticipant.id);
-  };
+  }, [isUserOnlineFromContext]);
 
   // Call handlers
   // Handle initiating audio call
@@ -293,8 +317,8 @@ const MessagesPage: React.FC = () => {
   }, [conversations, searchQuery, getConversationName]);
 
   // Handle conversation selection
-  const handleSelectConversation = (conversation: any) => {
-    setActiveConversation(conversation);
+  const handleSelectConversation = async (conversation: any) => {
+    await openConversation(conversation);
     // fetchMessages will be called automatically when activeConversation changes
   };
 
@@ -319,6 +343,58 @@ const MessagesPage: React.FC = () => {
       sendTypingIndicator(false);
     }, 2000);
   };
+  
+  // Mobile menu handlers
+  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMobileMenuAnchor(event.currentTarget);
+  };
+  
+  const handleMobileMenuClose = () => {
+    setMobileMenuAnchor(null);
+  };
+  
+  const handleMenuEditConversation = () => {
+    if (activeConversation?.isGroup) {
+      setIsEditingConversation(true);
+      setConversationName(activeConversation?.groupName || getConversationName(activeConversation));
+      setConversationDescription(activeConversation?.groupDescription || '');
+    }
+    handleMobileMenuClose();
+  };
+  
+  const handleMenuCall = (callType: 'audio' | 'video') => {
+    if (activeConversation) {
+      if (callType === 'audio') {
+        handleAudioCall();
+      } else {
+        handleVideoCall();
+      }
+    }
+    handleMobileMenuClose();
+  };
+  
+  
+
+  // Message search handlers
+  const handleSearchMessages = async () => {
+    if (!messageSearchQuery.trim() || !activeConversation) return;
+    
+    try {
+      await searchMessages(messageSearchQuery.trim());
+    } catch (error) {
+      console.error('Error searching messages:', error);
+    }
+  };
+
+  const handleSearchAllMessages = async () => {
+    if (!messageSearchQuery.trim()) return;
+    
+    try {
+      await searchAllMessages(messageSearchQuery.trim());
+    } catch (error) {
+      console.error('Error searching all messages:', error);
+    }
+  };
 
   // Handle sending a message
   const handleSendMessage = async () => {
@@ -338,11 +414,22 @@ const MessagesPage: React.FC = () => {
       if (success) {
         setNewMessage('');
         setReplyToMessage(null);
+      } else {
+        // Show a subtle error message to the user
+        console.error('Failed to send message');
       }
     } catch (error: any) {
       console.error('Error sending message:', error);
       // Don't show alert for better UX, just log the error
       // alert('Failed to send message: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  // Handle sending message with Enter key
+  const handleSendWithEnter = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -378,6 +465,48 @@ const MessagesPage: React.FC = () => {
   // Handle cancel reply
   const handleCancelReply = () => {
     setReplyToMessage(null);
+  };
+
+  // Handle conversation update
+  const handleUpdateConversation = async () => {
+    if (!activeConversation || !isEditingConversation) return;
+    
+    try {
+      const updates: { groupName?: string; groupDescription?: string } = {};
+      
+      if (activeConversation.isGroup) {
+        if (conversationName.trim() && conversationName !== activeConversation.groupName) {
+          updates.groupName = conversationName.trim();
+        }
+        if (conversationDescription.trim() && conversationDescription !== activeConversation.groupDescription) {
+          updates.groupDescription = conversationDescription.trim();
+        }
+      }
+      
+      if (Object.keys(updates).length > 0) {
+        await updateConversation(activeConversation.id, updates);
+        setIsEditingConversation(false);
+      } else {
+        setIsEditingConversation(false);
+      }
+    } catch (error) {
+      console.error('Error updating conversation:', error);
+      alert('Failed to update conversation: ' + (error as Error).message);
+    }
+  };
+
+  // Handle loading more messages
+  const handleLoadMore = async () => {
+    if (hasMore && !isLoadingMore && !messageSearchQuery) { // Don't load more when searching
+      setIsLoadingMore(true);
+      try {
+        await fetchMessages(true); // Load more messages
+      } catch (error) {
+        console.error('Error loading more messages:', error);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    }
   };
 
   // Emoji helpers
@@ -641,7 +770,7 @@ const MessagesPage: React.FC = () => {
         });
         
         if (newConversation) {
-          setActiveConversation(newConversation);
+          await openConversation(newConversation);
           setNewConversationOpen(false);
           setSelectedUsers([]);
           setUserSearchQuery('');
@@ -655,7 +784,7 @@ const MessagesPage: React.FC = () => {
         const newConversation = await createConversation(participantIds);
         
         if (newConversation) {
-          setActiveConversation(newConversation);
+          await openConversation(newConversation);
           setNewConversationOpen(false);
           setSelectedUsers([]);
           setUserSearchQuery('');
@@ -718,7 +847,9 @@ const MessagesPage: React.FC = () => {
         sx={{ 
           py: { xs: 0, sm: 4 }, 
           height: 'calc(100vh - 64px)',
-          px: { xs: 0, sm: 3 }
+          px: { xs: 0, sm: 3 },
+          width: '100%',
+          maxWidth: '100%'
         }}
       >
         <Paper
@@ -745,7 +876,8 @@ const MessagesPage: React.FC = () => {
               height: { xs: 'auto', sm: '100%' },
               maxHeight: { xs: '40vh', sm: 'none' },
               backgroundColor: theme.palette.background.paper,
-              flexShrink: 0
+              flexShrink: { xs: 0, sm: 0 },
+              minHeight: { xs: 0, sm: 'auto' }
             }}
           >
             <Box sx={{ p: { xs: 1, sm: 2 }, borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.background.paper }}>
@@ -843,7 +975,8 @@ const MessagesPage: React.FC = () => {
                         flexShrink: 0,
                         overflow: 'hidden',
                         minWidth: 0,
-                        display: 'flex'
+                        display: 'flex',
+                        wordBreak: 'break-word'
                       }}
                     >
                       <ListItemAvatar sx={{ minWidth: 0, flexShrink: 0 }}>
@@ -986,7 +1119,8 @@ const MessagesPage: React.FC = () => {
                 display: 'flex', 
                 flexDirection: 'column',
                 height: { xs: 'auto', sm: '100%' },
-                minHeight: 0
+                minHeight: 0,
+                width: { xs: '100%', sm: 'auto' }
               }}
             >
               {/* Conversation Header */}
@@ -999,10 +1133,12 @@ const MessagesPage: React.FC = () => {
                   justifyContent: 'space-between',
                   minHeight: { xs: 56, sm: 64 },
                   backgroundColor: theme.palette.background.paper,
-                  flexShrink: 0
+                  flexShrink: 0,
+                  flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                  gap: { xs: 1, sm: 0 }
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
                   <Badge
                     overlap="circular"
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -1016,19 +1152,59 @@ const MessagesPage: React.FC = () => {
                       sx={{ width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}
                     />
                   </Badge>
-                  <Box sx={{ ml: { xs: 1, sm: 2 }, minWidth: 0 }}>
-                    <Typography 
-                      variant="subtitle1" 
-                      fontWeight={600}
-                      sx={{
-                        fontSize: { xs: '0.9rem', sm: '1rem' },
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {getConversationName(activeConversation)}
-                    </Typography>
+                  <Box sx={{ ml: { xs: 1, sm: 2 }, minWidth: 0, flex: 1, overflow: 'hidden' }}>
+                    {isEditingConversation ? (
+                      <>
+                        <TextField
+                          value={conversationName}
+                          onChange={(e) => setConversationName(e.target.value)}
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          sx={{ mb: 1, fontSize: { xs: '0.9rem', sm: '1rem' } }}
+                        />
+                        {activeConversation.isGroup && (
+                          <TextField
+                            value={conversationDescription}
+                            onChange={(e) => setConversationDescription(e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            placeholder="Group description"
+                            sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                          />
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <Typography 
+                          variant="subtitle1" 
+                          fontWeight={600}
+                          sx={{
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {getConversationName(activeConversation)}
+                        </Typography>
+                        {activeConversation.isGroup && activeConversation.groupDescription && (
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {activeConversation.groupDescription}
+                          </Typography>
+                        )}
+                      </>
+                    )}
                     <Typography 
                       variant="body2" 
                       color="text.secondary"
@@ -1104,13 +1280,155 @@ const MessagesPage: React.FC = () => {
                   >
                     <Video size={isMobile ? 16 : 20} />
                   </IconButton>
-                  <IconButton sx={{ p: { xs: 0.5, sm: 1 } }}>
-                    <Info size={isMobile ? 16 : 20} />
-                  </IconButton>
-                  <IconButton sx={{ p: { xs: 0.5, sm: 1 } }}>
-                    <MoreVertical size={isMobile ? 16 : 20} />
-                  </IconButton>
+                  {isEditingConversation ? (
+                    <>
+                      <IconButton
+                        onClick={handleUpdateConversation}
+                        sx={{
+                          color: theme.palette.success.main,
+                          '&:hover': { backgroundColor: alpha(theme.palette.success.main, 0.1) },
+                          p: { xs: 0.5, sm: 1 }
+                        }}
+                      >
+                        <CheckCheck size={isMobile ? 16 : 20} />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => {
+                          setIsEditingConversation(false);
+                          setConversationName(activeConversation?.groupName || getConversationName(activeConversation));
+                          setConversationDescription(activeConversation?.groupDescription || '');
+                        }}
+                        sx={{
+                          color: theme.palette.error.main,
+                          '&:hover': { backgroundColor: alpha(theme.palette.error.main, 0.1) },
+                          p: { xs: 0.5, sm: 1 }
+                        }}
+                      >
+                        <X size={isMobile ? 16 : 20} />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <>
+                      {activeConversation?.isGroup && (
+                        <IconButton
+                          onClick={() => {
+                            setIsEditingConversation(true);
+                            setConversationName(activeConversation?.groupName || getConversationName(activeConversation));
+                            setConversationDescription(activeConversation?.groupDescription || '');
+                          }}
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            '&:hover': { backgroundColor: alpha(theme.palette.text.secondary, 0.1) },
+                            p: { xs: 0.5, sm: 1 }
+                          }}
+                        >
+                          <Info size={isMobile ? 16 : 20} />
+                        </IconButton>
+                      )}
+                      <IconButton 
+                        sx={{ p: { xs: 0.5, sm: 1 } }}
+                        onClick={isMobile ? handleMobileMenuOpen : undefined}
+                        disabled={isMobile ? false : undefined}
+                        aria-label="More options"
+                        id="mobile-menu-button"
+                      >
+                        <MoreVertical size={isMobile ? 16 : 20} />
+                      </IconButton>
+                    </>
+                  )}
                 </Box>
+              </Box>
+              
+              {/* Mobile Menu */}
+              <Menu
+                anchorEl={mobileMenuAnchor}
+                open={isMobileMenuOpen}
+                onClose={handleMobileMenuClose}
+                MenuListProps={{
+                  'aria-labelledby': 'mobile-menu-button',
+                }}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                {activeConversation?.isGroup && (
+                  <MenuItem onClick={handleMenuEditConversation}>
+                    <ListItemIcon>
+                      <Info size={20} />
+                    </ListItemIcon>
+                    <ListItemText>Edit Group Info</ListItemText>
+                  </MenuItem>
+                )}
+                <MenuItem onClick={() => handleMenuCall('audio')}>
+                  <ListItemIcon>
+                    <Phone size={20} />
+                  </ListItemIcon>
+                  <ListItemText>Audio Call</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => handleMenuCall('video')}>
+                  <ListItemIcon>
+                    <Video size={20} />
+                  </ListItemIcon>
+                  <ListItemText>Video Call</ListItemText>
+                </MenuItem>
+              </Menu>
+
+              {/* Message Search */}
+              <Box sx={{ p: { xs: 1, sm: 2 }, pt: 0 }}>
+                <TextField
+                  fullWidth
+                  placeholder="Search messages..."
+                  size="small"
+                  value={messageSearchQuery}
+                  onChange={(e) => setMessageSearchQuery(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search size={isMobile ? 16 : 18} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setMessageSearchQuery('')} size="small">
+                          {messageSearchQuery ? <X size={isMobile ? 14 : 16} /> : null}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                    }
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSearchMessages();
+                    }
+                  }}
+                />
+                {messageSearchQuery && (
+                  <Box sx={{ p: { xs: 1, sm: 2 }, pt: 0 }}>
+                    <Button
+                      startIcon={<X size={16} />}
+                      onClick={() => {
+                        setMessageSearchQuery('');
+                        // This will cause the original messages to be displayed again
+                      }}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                    >
+                      Clear Search
+                    </Button>
+                  </Box>
+                )}
               </Box>
 
               {/* Messages */}
@@ -1129,7 +1447,20 @@ const MessagesPage: React.FC = () => {
                   backgroundColor: theme.palette.background.paper,
                   flexShrink: 1
                 }}
+                onScroll={async (e) => {
+                  const element = e.target as HTMLElement;
+                  // Check if user has scrolled to the top (loading more messages)
+                  if (element.scrollTop === 0 && hasMore && !isLoadingMore && !messageSearchQuery) {
+                    await handleLoadMore();
+                  }
+                }}
               >
+                {/* Load more indicator */}
+                {isLoadingMore && (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                )}
                 {loading ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                     <CircularProgress size={32} />
@@ -1141,87 +1472,118 @@ const MessagesPage: React.FC = () => {
                       {error}
                     </Typography>
                   </Box>
-                ) : messages.length === 0 ? (
+                ) : (messageSearchQuery && searchResults.length === 0 && !searching) ? (
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                     <Typography color="text.secondary" variant="body1">
-                      No messages yet
+                      No search results found
                     </Typography>
                     <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
-                      Send a message to start the conversation
+                      Try a different search term
                     </Typography>
                   </Box>
                 ) : (
-                  messages.map((message) => {
-                    const isCurrentUser = message.senderId === user?.id;
-                    const sender = activeConversation?.participants.find((p: any) => p.id === message.senderId);
-
-                    return (
-                      <Box
-                        key={message.id}
-                        sx={{
-                          display: 'flex',
-                          justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
-                          mb: { xs: 1, sm: 2 },
-                          flexShrink: 0
-                        }}
-                      >
-                        <EnhancedMessageBubbleV2
-                          message={{
-                            ...message,
-                            isOwn: isCurrentUser,
-                            sender: sender || {
-                              id: message.senderId,
-                              displayName: 'Unknown',
-                              username: 'unknown',
-                              avatar: null,
-                              isVerified: false
-                            },
-                            reactions: message.reactions || []
-                          }}
-                          showAvatar={!activeConversation?.isGroup || !isCurrentUser}
-                          onReply={() => {
-                            handleReplyToMessage(message);
-                          }}
-                          onForward={() => {
-                            handleForwardMessage(message.id);
-                          }}
-                          onEdit={async (messageId: string, newContent: string) => {
-                            if (isCurrentUser) {
-                              try {
-                                await editMessage?.(messageId, newContent);
-                                return true;
-                              } catch (error) {
-                                console.error('Failed to edit message:', error);
-                                return false;
-                              }
-                            }
-                            return false;
-                          }}
-                          onDelete={async (messageId: string) => {
-                            if (isCurrentUser) {
-                              try {
-                                await deleteMessage?.(messageId);
-                                return true;
-                              } catch (error) {
-                                console.error('Failed to delete message:', error);
-                                return false;
-                              }
-                            }
-                            return false;
-                          }}
-                          onReaction={async (messageId: string, emoji: string) => {
-                            try {
-                              await addReaction(messageId, emoji);
-                              return true;
-                            } catch (error) {
-                              console.error('Failed to add reaction:', error);
-                              return false;
-                            }
-                          }}
-                        />
+                  <>
+                    {/* Load more indicator */}
+                    {hasMore && !isLoadingMore && !messageSearchQuery && (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 1 }}>
+                        <Button onClick={handleLoadMore} variant="outlined" size="small">
+                          Load More Messages
+                        </Button>
                       </Box>
-                    );
-                  })
+                    )}
+                    {/* Search results header */}
+                    {messageSearchQuery && searchResults.length > 0 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 1, mb: 2 }}>
+                        <Paper 
+                          sx={{ 
+                            px: 2, 
+                            py: 1, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1,
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+                          }}
+                        >
+                          <Typography variant="body2" color="primary">
+                            Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for &quot;{messageSearchQuery}&quot;
+                          </Typography>
+                        </Paper>
+                      </Box>
+                    )}
+                    <div ref={messagesStartRef} />
+                    {((messageSearchQuery && searchResults.length > 0) ? searchResults : messages).map((message) => {
+                      const isCurrentUser = message.senderId === user?.id;
+                      const sender = activeConversation?.participants.find((p: any) => p.id === message.senderId);
+
+                      return (
+                        <Box
+                          key={message.id}
+                          sx={{
+                            display: 'flex',
+                            justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
+                            mb: { xs: 1, sm: 2 },
+                            flexShrink: 0
+                          }}
+                        >
+                          <EnhancedMessageBubbleV2
+                            message={{
+                              ...message,
+                              isOwn: isCurrentUser,
+                              sender: sender || {
+                                id: message.senderId,
+                                displayName: 'Unknown',
+                                username: 'unknown',
+                                avatar: null,
+                                isVerified: false
+                              },
+                              reactions: message.reactions || []
+                            }}
+                            showAvatar={!activeConversation?.isGroup || !isCurrentUser}
+                            onReply={() => {
+                              handleReplyToMessage(message);
+                            }}
+                            onForward={() => {
+                              handleForwardMessage(message.id);
+                            }}
+                            onEdit={async (messageId: string, newContent: string) => {
+                              if (isCurrentUser) {
+                                try {
+                                  await editMessage?.(messageId, newContent);
+                                  return true;
+                                } catch (error) {
+                                  console.error('Failed to edit message:', error);
+                                  return false;
+                                }
+                              }
+                              return false;
+                            }}
+                            onDelete={async (messageId: string) => {
+                              if (isCurrentUser) {
+                                try {
+                                  await deleteMessage?.(messageId);
+                                  return true;
+                                } catch (error) {
+                                  console.error('Failed to delete message:', error);
+                                  return false;
+                                }
+                              }
+                              return false;
+                            }}
+                            onReaction={async (messageId: string, emoji: string) => {
+                              try {
+                                await addReaction(messageId, emoji);
+                                return true;
+                              } catch (error) {
+                                console.error('Failed to add reaction:', error);
+                                return false;
+                              }
+                            }}
+                          />
+                        </Box>
+                      );
+                    })}
+                  </>
                 )}
                 <div ref={messagesEndRef} />
               </Box>
@@ -1239,7 +1601,8 @@ const MessagesPage: React.FC = () => {
                   position: 'relative',
                   minHeight: { xs: 50, sm: 64 },
                   backgroundColor: theme.palette.background.paper,
-                  flexShrink: 0
+                  flexShrink: 0,
+                  flexWrap: { xs: 'wrap', sm: 'nowrap' }
                 }}
               >
                 {/* Hidden file inputs */}
@@ -1251,16 +1614,19 @@ const MessagesPage: React.FC = () => {
                 {showEmojiPicker && (
                   <Paper 
                     elevation={3} 
-                    style={{ 
+                    sx={{ 
                       position: 'absolute', 
-                      bottom: isMobile ? 40 : 64, 
-                      right: isMobile ? 8 : 64, 
-                      padding: isMobile ? 4 : 8, 
+                      bottom: isMobile ? 100 : 64, 
+                      left: isMobile ? 8 : 64, 
+                      right: isMobile ? 8 : 'auto',
+                      padding: isMobile ? 1 : 2, 
                       zIndex: 2,
-                      maxWidth: isMobile ? '95vw' : 300
+                      maxWidth: isMobile ? 'calc(100vw - 16px)' : 350,
+                      maxHeight: isMobile ? '250px' : 'none',
+                      overflow: 'auto'
                     }}
                   >
-                    <Box sx={{ width: isMobile ? '100%' : 300 }}>
+                    <Box sx={{ width: '100%', maxWidth: 350 }}>
                       <TypedPicker
                         data={data}
                         onEmojiSelect={(e: any) => {
@@ -1271,7 +1637,7 @@ const MessagesPage: React.FC = () => {
                         previewPosition="none"
                       />
                       {/* Fallback quick emojis in case Picker fails to render */}
-                      <Box sx={{ display: 'flex', gap: isMobile ? 0.5 : 1, flexWrap: 'wrap', maxWidth: isMobile ? '100%' : 240, mt: isMobile ? 0.5 : 1 }}>
+                      <Box sx={{ display: 'flex', gap: isMobile ? 0.5 : 1, flexWrap: 'wrap', maxWidth: '100%', mt: isMobile ? 0.5 : 1 }}>
                         {commonEmojis.map((e) => (
                           <Button 
                             key={e} 
@@ -1317,7 +1683,7 @@ const MessagesPage: React.FC = () => {
 
                 {/* Reply Preview */}
                 {replyToMessage && (
-                  <Box sx={{ mx: { xs: 0.5, sm: 2 }, mb: { xs: 0.5, sm: 1 } }}>
+                  <Box sx={{ mx: { xs: 0.5, sm: 2 }, mb: { xs: 0.5, sm: 1 }, width: '100%' }}>
                     <Paper
                       sx={{
                         p: { xs: 0.75, sm: 1.5 },
@@ -1381,23 +1747,22 @@ const MessagesPage: React.FC = () => {
                     setNewMessage(e.target.value);
                     handleTyping();
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
+                  onKeyDown={handleSendWithEnter}
                   variant="outlined"
                   size="small"
                   multiline
                   maxRows={4}
                   sx={{
                     mx: { xs: 0.5, sm: 2 },
+                    mt: replyToMessage ? { xs: 0, sm: 0 } : { xs: 0.5, sm: 0.5 },
                     '& .MuiOutlinedInput-root': {
                       borderRadius: { xs: 2, sm: 3 },
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      py: { xs: 0.5, sm: 0.75 },
+                      px: { xs: 1, sm: 1.5 }
                     },
-                    minHeight: { xs: 36, sm: 40 }
+                    minHeight: { xs: 36, sm: 40 },
+                    flex: { xs: '1 1 auto', sm: 1 }
                   }}
                 />
                 <IconButton 
@@ -1510,6 +1875,7 @@ const MessagesPage: React.FC = () => {
                   <Box key={key} component="li" {...optionProps} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Avatar
                       src={option?.avatar}
+                      alt={option?.displayName || option?.username || 'User'}
                       sx={{ width: 32, height: 32 }}
                     >
                       {option?.displayName?.[0] || option?.username?.[0]}
@@ -1530,7 +1896,7 @@ const MessagesPage: React.FC = () => {
                   <Chip
                     {...getTagProps({ index })}
                     key={option?.id}
-                    avatar={<Avatar src={option?.avatar}>{option?.displayName?.[0] || option?.username?.[0]}</Avatar>}
+                    avatar={<Avatar src={option?.avatar} alt={option?.displayName || option?.username || 'User'}>{option?.displayName?.[0] || option?.username?.[0]}</Avatar>}
                     label={option?.displayName || option?.username}
                     size="small"
                   />

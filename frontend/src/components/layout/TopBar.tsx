@@ -489,9 +489,9 @@ export const TopBar: React.FC<TopBarProps> = ({
                         <CircularProgress size={24} />
                       </Box>
                     ) : searchSuggestions.length > 0 ? (
-                      searchSuggestions.map((suggestion) => (
+                      searchSuggestions.map((suggestion, index) => (
                         <ListItem
-                          key={suggestion.id}
+                          key={`${suggestion.id || index}`}
                           component="button"
                           onClick={() => handleSuggestionClick(suggestion)}
                           sx={{
@@ -839,9 +839,9 @@ export const TopBar: React.FC<TopBarProps> = ({
                           <CircularProgress size={24} />
                         </Box>
                       ) : searchSuggestions.length > 0 ? (
-                        searchSuggestions.map((suggestion) => (
+                        searchSuggestions.map((suggestion, index) => (
                           <ListItem
-                            key={suggestion.id}
+                            key={`${suggestion.id || index}`}
                             component="button"
                             onClick={() => handleSuggestionClick(suggestion)}
                             sx={{
@@ -1488,7 +1488,8 @@ export const TopBar: React.FC<TopBarProps> = ({
             </Typography>
           </Box>
         ) : (
-          notifications.map((notification) => {
+          <React.Fragment key="notifications-list">
+          {notifications.map((notification) => {
             // Format relative time
             const timeAgo = (date: string) => {
               const now = new Date();
@@ -1574,7 +1575,8 @@ export const TopBar: React.FC<TopBarProps> = ({
                 </Box>
               </Box>
             );
-          })
+          })}
+          </React.Fragment>
         )}
 
         <Box sx={{ textAlign: 'center', mt: 1 }}>

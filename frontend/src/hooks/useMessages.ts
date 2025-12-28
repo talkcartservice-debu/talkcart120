@@ -42,6 +42,7 @@ interface UseMessagesReturn {
   searchAllMessages: (query: string) => Promise<{ messages: Message[]; total: number }>;
   sendTypingIndicator: (isTyping?: boolean) => void;
   setActiveConversation: (conversation: Conversation | null) => void;
+  openConversation: (conversation: any) => Promise<void>;
   createConversation: (participantIds: string[], options?: { isGroup?: boolean; groupName?: string; groupDescription?: string }) => Promise<any>;
   updateConversation: (conversationId: string, settings: { groupName?: string; groupDescription?: string; groupAvatar?: string }) => Promise<any>;
   fetchConversations: () => Promise<void>; // Add this new function
@@ -366,13 +367,50 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       if (!conversationId) return;
 
       try {
-        // Use socket service to mark message as read
+        // Update local state immediately for better UX
+        setMessages(prev => 
+          (prev || []).map(m => 
+            m.id === messageId 
+              ? { ...m, isRead: true } 
+              : m
+          )
+        );
+        
+        // Update conversation unread count
+        setConversations(prev => 
+          (prev || []).map(c => 
+            c.id === conversationId 
+              ? { ...c, unreadCount: Math.max(0, (c.unreadCount || 0) - 1) } 
+              : c
+          )
+        );
+        
+        // Update active conversation if applicable
+        if (activeConversation && activeConversation.id === conversationId) {
+          setActiveConversation(prev => 
+            prev ? { ...prev, unreadCount: Math.max(0, (prev.unreadCount || 0) - 1) } : prev
+          );
+        }
+        
+        // Call API to mark message as read
+        await client.markMessageAsRead(messageId);
+        
+        // Use socket service to notify other users
         socketService.markMessageAsRead(messageId);
       } catch (e) {
         setError((e as Error).message);
+        
+        // Revert local state changes if API call fails
+        setMessages(prev => 
+          (prev || []).map(m => 
+            m.id === messageId 
+              ? { ...m, isRead: false } 
+              : m
+          )
+        );
       }
     },
-    [conversationId]
+    [conversationId, activeConversation, setActiveConversation]
   );
 
   const markAllAsRead = useCallback(async () => {
@@ -519,6 +557,45 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     [conversationId]
   );
 
+  const openConversation = useCallback(async (conversation: any) => {
+    setActiveConversation(conversation);
+    setMessages([]);
+    setLoading(true);
+    setError(null);
+    
+    if (conversation?.id) {
+      await fetchMessages(conversation.id);
+      // Join the conversation room via socket
+      socketService.joinConversation(conversation.id);
+      
+      // Mark all messages in this conversation as read
+      try {
+        await client.markAllAsRead(conversation.id);
+        
+        // Update local state to reflect messages are read
+        setMessages(prev => 
+          (prev || []).map(m => ({ ...m, isRead: true }))
+        );
+        
+        // Update conversation unread count to 0
+        setConversations(prev => 
+          (prev || []).map(c => 
+            c.id === conversation.id 
+              ? { ...c, unreadCount: 0 } 
+              : c
+          )
+        );
+        
+        // Update active conversation unread count
+        setActiveConversation(prev => 
+          prev ? { ...prev, unreadCount: 0 } : prev
+        );
+      } catch (e) {
+        console.error('Error marking all messages as read:', e);
+      }
+    }
+  }, [fetchMessages, client]);
+
   const handleCreateConversation = useCallback(
     async (participantIds: string[], options?: { isGroup?: boolean; groupName?: string; groupDescription?: string }) => {
       try {
@@ -663,43 +740,6 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
                   }
                 } : null
               );
-            }
-            
-            // For messages from other users
-            if (!isOwnMessage) {
-              // Update conversation's last message with server data
-              setConversations(prev => 
-                (prev || []).map(conv => 
-                  conv.id === data.conversationId 
-                    ? { 
-                        ...conv, 
-                        lastMessage: {
-                          id: messageId,
-                          content: data.message.content,
-                          type: data.message.type || 'text',
-                          senderId: data.message.senderId || '',
-                          createdAt: data.message.createdAt,
-                        }
-                      } 
-                    : conv
-                )
-              );
-              
-              // Update active conversation's last message
-              if (activeConversation?.id === data.conversationId) {
-                setActiveConversation(prev => 
-                  prev ? { 
-                    ...prev, 
-                    lastMessage: {
-                      id: messageId,
-                      content: data.message.content,
-                      type: data.message.type || 'text',
-                      senderId: data.message.senderId || '',
-                      createdAt: data.message.createdAt,
-                    }
-                  } : null
-                );
-              }
             }
             
             console.log('Updated own message with server data:', messageId);
@@ -878,6 +918,22 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
               return m;
             })
           );
+          
+          // Update conversation unread count
+          if (activeConversation) {
+            setConversations(prev => 
+              (prev || []).map(c => 
+                c.id === activeConversation.id 
+                  ? { ...c, unreadCount: Math.max(0, (c.unreadCount || 0) - 1) } 
+                  : c
+              )
+            );
+            
+            // Update active conversation
+            setActiveConversation(prev => 
+              prev ? { ...prev, unreadCount: Math.max(0, (prev.unreadCount || 0) - 1) } : prev
+            );
+          }
         }
       } catch (error) {
         console.error('Error processing message read from socket:', error);
@@ -939,6 +995,7 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     searchAllMessages: handleSearchAllMessages,
     sendTypingIndicator: handleSendTypingIndicator,
     setActiveConversation,
+    openConversation,
     createConversation: handleCreateConversation,
     updateConversation: handleUpdateConversation,
     fetchConversations
