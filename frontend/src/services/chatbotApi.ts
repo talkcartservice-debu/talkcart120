@@ -2,9 +2,16 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+// Ensure the base URL doesn't end with '/api' or '/api/' to prevent double '/api/api' paths
+const normalizedBaseUrl = API_BASE_URL.endsWith('/api/') 
+  ? API_BASE_URL.slice(0, -5) // Remove trailing '/api/'
+  : API_BASE_URL.endsWith('/api') 
+    ? API_BASE_URL.slice(0, -4) // Remove trailing '/api'
+    : API_BASE_URL;
+
 // Create axios instance with default config
 const apiClient = axios.create({
-    baseURL: `${API_BASE_URL}/api/chatbot`,
+    baseURL: `${normalizedBaseUrl}/api/chatbot`,
     timeout: 0, // No timeout
 });
 
