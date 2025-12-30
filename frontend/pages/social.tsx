@@ -16,6 +16,7 @@ import {
   Container,
   Paper,
   Divider,
+  Tooltip,
 } from '@mui/material';
 import UnifiedVideoMedia from '@/components/media/UnifiedVideoMedia';
 import UnifiedImageMedia from '@/components/media/UnifiedImageMedia';
@@ -406,74 +407,74 @@ const SocialPage: React.FC = () => {
               {/* Post actions */}
               <Box display="flex" justifyContent="space-around" sx={{ py: 0.5 }}>
                 <Button 
-                  startIcon={<Heart size={18} />}
+                  startIcon={<Heart size={16} />}
                   onClick={async () => await handleLikePost(post.id)}
                   sx={{ 
                     textTransform: 'none', 
                     fontWeight: 600, 
                     color: post.isLiked ? theme.palette.error.main : 'inherit',
                     flex: 1,
-                    justifyContent: 'flex-start',
-                    px: 1.5,
+                    justifyContent: 'center',
+                    px: { xs: 0.5, sm: 1.5 },
                     minWidth: 0,
                     '&:hover': {
                       backgroundColor: 'transparent',
                     }
                   }}
                 >
-                  Like
+                  <Box display={{ xs: 'none', sm: 'block' }}>Like</Box>
                 </Button>
                 <Button 
-                  startIcon={<MessageSquare size={18} />}
+                  startIcon={<MessageSquare size={16} />}
                   onClick={() => handleCommentClick(post.id)}
                   sx={{ 
                     textTransform: 'none', 
                     fontWeight: 600, 
                     flex: 1,
-                    justifyContent: 'flex-start',
-                    px: 1.5,
+                    justifyContent: 'center',
+                    px: { xs: 0.5, sm: 1.5 },
                     minWidth: 0,
                     '&:hover': {
                       backgroundColor: 'transparent',
                     }
                   }}
                 >
-                  Comment
+                  <Box display={{ xs: 'none', sm: 'block' }}>Comment</Box>
                 </Button>
                 <Button 
-                  startIcon={<Bookmark size={18} />}
+                  startIcon={<Bookmark size={16} />}
                   onClick={async () => await handleBookmarkPost(post.id)}
                   sx={{ 
                     textTransform: 'none', 
                     fontWeight: 600, 
                     color: post.isBookmarked ? theme.palette.primary.main : 'inherit',
                     flex: 1,
-                    justifyContent: 'flex-start',
-                    px: 1.5,
+                    justifyContent: 'center',
+                    px: { xs: 0.5, sm: 1.5 },
                     minWidth: 0,
                     '&:hover': {
                       backgroundColor: 'transparent',
                     }
                   }}
                 >
-                  Bookmark
+                  <Box display={{ xs: 'none', sm: 'block' }}>Bookmark</Box>
                 </Button>
                 <Button 
-                  startIcon={<ShareIcon size={18} />}
+                  startIcon={<ShareIcon size={16} />}
                   onClick={() => handleSharePost(post.id)}
                   sx={{ 
                     textTransform: 'none', 
                     fontWeight: 600, 
                     flex: 1,
-                    justifyContent: 'flex-start',
-                    px: 1.5,
+                    justifyContent: 'center',
+                    px: { xs: 0.5, sm: 1.5 },
                     minWidth: 0,
                     '&:hover': {
                       backgroundColor: 'transparent',
                     }
                   }}
                 >
-                  Share
+                  <Box display={{ xs: 'none', sm: 'block' }}>Share</Box>
                 </Button>
               </Box>
             </CardContent>
@@ -524,27 +525,29 @@ const SocialPage: React.FC = () => {
             TalkCart
           </Typography>
         </Box>
-        <IconButton 
-          sx={{
-            color: 'white',
-            bgcolor: 'rgba(255, 255, 255, 0.2)',
-            '&:hover': {
-              bgcolor: 'rgba(255, 255, 255, 0.3)'
-            }
-          }}
-          onClick={() => setCreatePostOpen(true)}
-        >
-          <Plus size={20} />
-        </IconButton>
+        <Tooltip title="Create Post">
+          <IconButton 
+            sx={{
+              color: 'white',
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.3)'
+              }
+            }}
+            onClick={() => setCreatePostOpen(true)}
+          >
+            <Plus size={20} />
+          </IconButton>
+        </Tooltip>
       </Box>
       
-      <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 } }}>
-        <Grid container spacing={{ xs: 1, sm: 2 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 }, px: { xs: 0.5, sm: 1, md: 2 } }}>
+        <Grid container spacing={{ xs: 0.5, sm: 1, md: 2 }}>
           {/* Left Sidebar - Hidden on mobile */}
           <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 3, md: 1 } }}>
             <Paper 
               sx={{ 
-                p: 2, 
+                p: { xs: 1, sm: 2 }, 
                 borderRadius: 3, 
                 mb: 2,
                 position: 'sticky',
@@ -584,41 +587,45 @@ const SocialPage: React.FC = () => {
                     @{user?.username || 'username'}
                   </Typography>
                 </Box>
-                <IconButton 
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    bgcolor: theme.palette.primary.main,
-                    color: 'white',
-                    '&:hover': {
-                      bgcolor: theme.palette.primary.dark,
+                <Tooltip title="Create Post">
+                  <IconButton 
+                    sx={
+                      {
+                        width: 40,
+                        height: 40,
+                        bgcolor: theme.palette.primary.main,
+                        color: 'white',
+                        '&:hover': {
+                          bgcolor: theme.palette.primary.dark,
+                        }
+                      }
                     }
-                  }}
-                  onClick={() => setCreatePostOpen(true)}
-                >
-                  <Plus size={20} />
-                </IconButton>
+                    onClick={() => setCreatePostOpen(true)}
+                  >
+                    <Plus size={20} />
+                  </IconButton>
+                </Tooltip>
               </Box>
               
-              <Box display="flex" justifyContent="space-around" textAlign="center" mt={2} flexWrap="wrap" gap={1}>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.25rem' } }}>{userStats.postCount}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Posts</Typography>
+              <Box display="flex" justifyContent="space-around" textAlign="center" mt={2} flexWrap="wrap" gap={{ xs: 0.5, sm: 1 }}>
+                <Box textAlign="center">
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' } }}>{userStats.postCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}>Posts</Typography>
                 </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.25rem' } }}>{userStats.followerCount}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Followers</Typography>
+                <Box textAlign="center">
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' } }}>{userStats.followerCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}>Followers</Typography>
                 </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.25rem' } }}>{userStats.followingCount}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Following</Typography>
+                <Box textAlign="center">
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' } }}>{userStats.followingCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}>Following</Typography>
                 </Box>
               </Box>
             </Paper>
             
             <Paper 
               sx={{ 
-                p: 2, 
+                p: { xs: 1, sm: 2 }, 
                 borderRadius: 3, 
                 position: 'sticky',
                 top: 150,
@@ -636,6 +643,7 @@ const SocialPage: React.FC = () => {
             {/* Feed tabs */}
             <Paper 
               sx={{ 
+                p: { xs: 0.5, sm: 1 },
                 borderRadius: 3, 
                 mb: 2,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
@@ -681,7 +689,7 @@ const SocialPage: React.FC = () => {
                 ) : error ? (
                   <Paper 
                     sx={{ 
-                      p: 4, 
+                      p: { xs: 2, sm: 4 }, 
                       textAlign: 'center', 
                       borderRadius: 3,
                       boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
@@ -705,7 +713,7 @@ const SocialPage: React.FC = () => {
                 ) : displayFeedItems.length === 0 ? (
                   <Paper 
                     sx={{ 
-                      p: 4, 
+                      p: { xs: 2, sm: 4 }, 
                       textAlign: 'center', 
                       borderRadius: 3,
                       boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
@@ -744,7 +752,7 @@ const SocialPage: React.FC = () => {
           <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 } }}>
             <Paper 
               sx={{ 
-                p: 2, 
+                p: { xs: 1, sm: 2 }, 
                 borderRadius: 3, 
                 mb: 2,
                 position: 'sticky',
@@ -761,7 +769,7 @@ const SocialPage: React.FC = () => {
             
             <Paper 
               sx={{ 
-                p: 2, 
+                p: { xs: 1, sm: 2 }, 
                 borderRadius: 3, 
                 position: 'sticky',
                 top: 300,
@@ -805,24 +813,26 @@ const SocialPage: React.FC = () => {
         display: { xs: 'block', md: 'none' },
         zIndex: 1000,
       }}>
-        <IconButton
-          onClick={() => setCreatePostOpen(true)}
-          sx={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            bgcolor: theme.palette.primary.main,
-            color: 'white',
-            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-            border: `3px solid ${theme.palette.background.paper}`,
-            '&:hover': {
-              bgcolor: theme.palette.primary.dark,
-              transform: 'scale(1.05)',
-            },
-          }}
-        >
-          <Plus size={28} />
-        </IconButton>
+        <Tooltip title="Create Post">
+          <IconButton
+            onClick={() => setCreatePostOpen(true)}
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              bgcolor: theme.palette.primary.main,
+              color: 'white',
+              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+              border: `3px solid ${theme.palette.background.paper}`,
+              '&:hover': {
+                bgcolor: theme.palette.primary.dark,
+                transform: 'scale(1.05)',
+              },
+            }}
+          >
+            <Plus size={28} />
+          </IconButton>
+        </Tooltip>
       </Box>
       
       {/* Share Dialog */}
