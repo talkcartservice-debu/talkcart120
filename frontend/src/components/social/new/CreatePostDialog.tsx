@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -33,12 +33,14 @@ interface CreatePostDialogProps {
   open: boolean;
   onClose: () => void;
   onPostCreated?: (post: Post) => void;
+  linkPostId?: string; // If provided, we're linking products to an existing post
 }
 
 export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
   open,
   onClose,
   onPostCreated,
+  linkPostId,
 }) => {
   const theme = useTheme();
   const [content, setContent] = useState('');
@@ -51,6 +53,7 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
   const [detectedMentions, setDetectedMentions] = useState<string[]>([]);
   const [postResponseForProductPost, setPostResponseForProductPost] = useState<any>(null);
   const [isCreatingProductPost, setIsCreatingProductPost] = useState(false);
+  const [linkingExistingPost, setLinkingExistingPost] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async () => {
@@ -345,6 +348,18 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
     }
   };
 
+  // Handle when linkPostId is provided
+  useEffect(() => {
+    if (linkPostId && open) {
+      // We're linking an existing post to products, so show the product post creator
+      setLinkingExistingPost(true);
+      setIsCreatingProductPost(true);
+      
+      // Set the post ID in state to be used by the VendorProductPostCreator
+      setPostResponseForProductPost({ id: linkPostId });
+    }
+  }, [linkPostId, open]);
+
   const resetForm = () => {
     setContent('');
     setSelectedFile(null);
@@ -563,24 +578,46 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
       </DialogContent>
       
       <DialogActions sx={{ p: 2 }}>
-        {postResponseForProductPost && !submitting && !uploading ? (
-          // After post is created, show option to make it shoppable
-          <>
-            <Button onClick={() => {
-              setPostResponseForProductPost(null);
-              setIsCreatingProductPost(false);
-            }}>
-              Back
-            </Button>
-            <VendorProductPostCreator
-              postId={postResponseForProductPost.id || postResponseForProductPost._id}
-              onSuccess={() => {
-                toast.success('Product post created successfully!');
-                resetForm();
-                onClose();
-              }}
-            />
-          </>
+        {(postResponseForProductPost && !submitting && !uploading) || linkingExistingPost ? (
+          // After post is created or when linking existing post, show option to make it shoppable
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <Box sx={{ display: 'flex', gap: 1, width: '100%', justifyContent: 'space-between' }}>
+              <Button onClick={() => {
+                // If we're linking an existing post, close the dialog
+                if (linkingExistingPost) {
+                  setPostResponseForProductPost(null);
+                  setIsCreatingProductPost(false);
+                  setLinkingExistingPost(false);
+                  onClose();
+                } else {
+                  // Otherwise go back to post creation
+                  setPostResponseForProductPost(null);
+                  setIsCreatingProductPost(false);
+                }
+              }}>
+                Back
+              </Button>
+              <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', minWidth: 0 }}>
+                <VendorProductPostCreator
+                  postId={postResponseForProductPost?.id || postResponseForProductPost?._id || linkPostId}
+                  onSuccess={() => {
+                    toast.success('Product post created successfully!');
+                    // Reset the form but don't close the dialog immediately
+                    // The dialog will be closed by the parent component
+                    setPostResponseForProductPost(null);
+                    setIsCreatingProductPost(false);
+                    setLinkingExistingPost(false);
+                    // Reset the form to allow creating another post if needed
+                    resetForm();
+                    // Close the dialog after a short delay
+                    setTimeout(() => {
+                      onClose();
+                    }, 500);
+                  }}
+                />
+              </Box>
+            </Box>
+          </Box>
         ) : (
           // Initial state - create post
           <>

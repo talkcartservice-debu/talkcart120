@@ -144,35 +144,45 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
   return (
     <Card 
       sx={{ 
-        mb: 2, 
+        mb: 2.5, 
         borderRadius: 3, 
         border: `1px solid ${theme.palette.divider}`,
         position: 'relative',
         overflow: 'visible',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
+        },
       }}
     >
       {/* Shoppable label */}
       <Box 
         sx={{ 
           position: 'absolute', 
-          top: 8, 
-          left: 8, 
+          top: 12, 
+          left: 12, 
           zIndex: 1,
-          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)',
-          px: 1,
-          py: 0.5,
-          borderRadius: 1,
+          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.95)',
+          px: 1.2,
+          py: 0.6,
+          borderRadius: 1.5,
         }}
       >
         <Chip 
+          icon={<ShoppingCart size={14} />}
           label="Shoppable" 
           size="small" 
           color="secondary" 
-          variant="outlined"
+          variant="filled"
           sx={{ 
-            fontSize: '0.7rem',
-            height: '20px'
+            fontSize: '0.75rem',
+            height: '22px',
+            fontWeight: 600,
+            '& .MuiChip-label': {
+              pl: 0.5,
+            },
           }}
         />
       </Box>
@@ -183,13 +193,17 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
         size="small"
         sx={{
           position: 'absolute',
-          top: 8,
-          right: 8,
+          top: 12,
+          right: 12,
           zIndex: 1,
-          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)',
+          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.95)',
+          color: theme.palette.text.secondary,
+          '&:hover': {
+            backgroundColor: theme.palette.action.hover,
+          },
         }}
       >
-        <X size={16} />
+        <X size={18} />
       </IconButton>
 
       {/* Product post content */}
@@ -199,14 +213,14 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
           sx={{ 
             display: 'flex', 
             alignItems: 'center', 
-            p: 1.5,
-            pb: 1,
+            p: 2,
+            pb: 1.5,
           }}
         >
           <Avatar 
             src={productPost.author?.avatar} 
             alt={productPost.author?.displayName}
-            sx={{ width: 32, height: 32, mr: 1.5 }}
+            sx={{ width: 36, height: 36, mr: 1.5 }}
           />
           <Box sx={{ flex: 1 }}>
             <Typography 
@@ -230,8 +244,8 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
                 >
                   <Box
                     component="svg"
-                    width={14}
-                    height={14}
+                    width={16}
+                    height={16}
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
@@ -240,19 +254,19 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
                 </Box>
               )}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
               Shoppable Post
             </Typography>
           </Box>
-          <IconButton size="small">
-            <MoreVertical size={16} />
+          <IconButton size="small" sx={{ color: theme.palette.text.secondary }}>
+            <MoreVertical size={18} />
           </IconButton>
         </Box>
 
         {/* Post content */}
         {productPost.content && (
-          <CardContent sx={{ pt: 1, pb: 1 }}>
-            <Typography variant="body2" paragraph>
+          <CardContent sx={{ pt: 1, pb: 1, px: 2 }}>
+            <Typography variant="body2" paragraph sx={{ mb: 0, fontSize: '0.9rem' }}>
               {productPost.content}
             </Typography>
           </CardContent>
@@ -260,25 +274,77 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
 
         {/* Product media */}
         {primaryImage && (
-          <CardMedia
-            component="img"
-            image={primaryImage.secure_url || primaryImage.url}
-            alt={product.name}
+          <Box
             sx={{
+              position: 'relative',
               width: '100%',
-              maxHeight: isMobile ? 300 : 400,
-              objectFit: 'cover',
+              overflow: 'hidden',
               cursor: 'pointer',
             }}
             onClick={handleProductClick}
-          />
+          >
+            <CardMedia
+              component="img"
+              image={primaryImage.secure_url || primaryImage.url}
+              alt={product.name}
+              sx={{
+                width: '100%',
+                maxHeight: isMobile ? 300 : 400,
+                objectFit: 'cover',
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  transform: 'scale(1.02)',
+                },
+              }}
+            />
+            
+            {/* Quick action overlay on hover */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.3))',
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                opacity: 0,
+                transition: 'opacity 0.3s',
+                '&:hover': {
+                  opacity: 1,
+                },
+              }}
+            >
+              <Button
+                variant="contained"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart();
+                }}
+                startIcon={<ShoppingCart size={16} />}
+                sx={{ 
+                  mb: 2,
+                  backgroundColor: 'white',
+                  color: 'primary.main',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                  },
+                }}
+              >
+                Quick Add to Cart
+              </Button>
+            </Box>
+          </Box>
         )}
 
         {/* Product info overlay */}
         <Box
           sx={{
             position: 'absolute',
-            bottom: 0,
+            bottom: 100,
             left: 0,
             right: 0,
             background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
@@ -287,10 +353,11 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
             display: 'flex',
             flexDirection: 'column',
             gap: 1,
+            zIndex: 0,
           }}
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', maxWidth: '70%' }}>
               {product.name}
             </Typography>
             
@@ -339,8 +406,8 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
         </Box>
 
         {/* Action buttons */}
-        <CardContent sx={{ pt: 1, pb: 1.5 }}>
-          <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+        <CardContent sx={{ pt: 2, pb: 2, px: 2 }}>
+          <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
             <Button
               variant="contained"
               size="small"
@@ -348,8 +415,9 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
               startIcon={<ShoppingCart size={16} />}
               sx={{ 
                 textTransform: 'none',
-                fontWeight: 500,
-                flex: 1
+                fontWeight: 600,
+                flex: 1,
+                py: 1,
               }}
             >
               View Product
@@ -362,7 +430,14 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
               startIcon={<ShoppingCart size={14} />}
               sx={{ 
                 textTransform: 'none',
-                fontWeight: 500,
+                fontWeight: 600,
+                py: 1,
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                '&:hover': {
+                  backgroundColor: 'primary.light',
+                  borderColor: 'primary.dark',
+                },
               }}
             >
               Add to Cart
@@ -370,11 +445,11 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
           </Stack>
           
           {/* Engagement buttons */}
-          <Stack direction="row" spacing={2} sx={{ pt: 1, borderTop: `1px solid ${theme.palette.divider}` }}>
+          <Stack direction="row" spacing={2} sx={{ pt: 1.5, borderTop: `1px solid ${theme.palette.divider}` }}>
             <Button
               startIcon={
                 <Heart 
-                  size={16} 
+                  size={18} 
                   fill={isLiked ? 'currentColor' : 'none'} 
                 />
               }
@@ -384,16 +459,19 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
                 textTransform: 'none',
                 color: isLiked ? 'error.main' : 'inherit',
                 minWidth: 'auto',
-                padding: '6px 8px'
+                padding: '6px 10px',
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover,
+                },
               }}
             >
-              <Typography variant="caption">
+              <Typography variant="caption" fontWeight={500}>
                 {likeCount}
               </Typography>
             </Button>
             
             <Button
-              startIcon={<MessageCircle size={16} />}
+              startIcon={<MessageCircle size={18} />}
               onClick={() => {
                 // Navigate to post comments
                 if (productPost.originalPostId) {
@@ -404,37 +482,46 @@ const ProductPostCard: React.FC<ProductPostCardProps> = ({
               sx={{ 
                 textTransform: 'none',
                 minWidth: 'auto',
-                padding: '6px 8px'
+                padding: '6px 10px',
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover,
+                },
               }}
             >
-              <Typography variant="caption">
+              <Typography variant="caption" fontWeight={500}>
                 {productPost.comments || 0}
               </Typography>
             </Button>
             
             <Button
-              startIcon={<Share2 size={16} />}
+              startIcon={<Share2 size={18} />}
               onClick={handleShare}
               size="small"
               sx={{ 
                 textTransform: 'none',
                 minWidth: 'auto',
-                padding: '6px 8px'
+                padding: '6px 10px',
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover,
+                },
               }}
             >
-              <Typography variant="caption">Share</Typography>
+              <Typography variant="caption" fontWeight={500}>Share</Typography>
             </Button>
             
             <Button
-              startIcon={<Bookmark size={16} />}
+              startIcon={<Bookmark size={18} />}
               size="small"
               sx={{ 
                 textTransform: 'none',
                 minWidth: 'auto',
-                padding: '6px 8px'
+                padding: '6px 10px',
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover,
+                },
               }}
             >
-              <Typography variant="caption">Save</Typography>
+              <Typography variant="caption" fontWeight={500}>Save</Typography>
             </Button>
           </Stack>
         </CardContent>

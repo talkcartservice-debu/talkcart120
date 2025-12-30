@@ -99,6 +99,7 @@ import { SupportAgent as SupportAgentIcon } from '@mui/icons-material';
 import PersistentChatContainer from '@/components/chatbot/PersistentChatContainer';
 import EnhancedVendorAnalyticsDashboard from '@/components/marketplace/EnhancedVendorAnalyticsDashboard';
 import VendorProductPostCreator from '@/components/ads/VendorProductPostCreator';
+import VendorPostSelectorModal from '@/components/ads/VendorPostSelectorModal';
 
 interface Product {
   id: string;
@@ -134,7 +135,7 @@ interface Product {
   };
 }
 
-const VendorDashboard: React.FC = () => {
+const VendorDashboardContent: React.FC = () => {
   const theme = useTheme();
   const router = useRouter();
   const { user, isAuthenticated, updateUser } = useAuth();
@@ -158,6 +159,7 @@ const VendorDashboard: React.FC = () => {
   const [ticketsError, setTicketsError] = useState<string | null>(null);
   const [accessDenied, setAccessDenied] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  const [showPostSelectorModal, setShowPostSelectorModal] = useState(false);
 
   // Refresh user profile on component mount to ensure role is up to date
   useEffect(() => {
@@ -385,8 +387,19 @@ const VendorDashboard: React.FC = () => {
   };
 
   const handleCreateProductPost = () => {
-    // Navigate to the social page to create a post that can be linked to products
-    router.push('/social');
+    // Open the post selector modal to let vendor choose which post to make shoppable
+    setShowPostSelectorModal(true);
+  };
+
+  const handlePostSelected = (postId: string) => {
+    // Now we have a postId, we could potentially open the CreateProductPostModal directly
+    // For now, we'll just show a toast to indicate the selection
+    toast.success('Post selected. You can now link products to this post.');
+    
+    // In a real implementation, we might want to redirect to the social page 
+    // and pre-select this post, or open the product linking modal directly
+    // For now, we'll navigate to the social page with the post ID as a query parameter
+    router.push(`/social?linkPostId=${postId}`);
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -516,25 +529,38 @@ const VendorDashboard: React.FC = () => {
             action={
               <Box sx={{ 
                 display: 'flex', 
-                gap: { xs: 0.5, sm: 1 },
+                gap: { xs: 0.5, sm: 1, md: 1.5 },
                 flexDirection: { xs: 'column', sm: 'row' },
                 alignItems: { xs: 'stretch', sm: 'center' },
-                flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                flexWrap: { xs: 'wrap', sm: 'wrap' },
+                width: '100%',
+                justifyContent: { xs: 'stretch', sm: 'flex-start' }
               }}>
                 <Button
                   variant="outlined"
                   startIcon={<ShoppingBag size={16} />}
                   onClick={() => router.push('/marketplace/my-dashboard')}
                   sx={{ 
-                    minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 },
-                    flex: { xs: 1, sm: 'none' }
+                    minWidth: { xs: '100%', sm: 120, md: 140 },
+                    mb: { xs: 0.5, sm: 0.5, md: 0 },
+                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                    py: { xs: 0.75, sm: 1 },
+                    px: { xs: 1, sm: 1.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
-                    My Dashboard
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    My
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Dashboard
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
                     Dashboard
                   </Box>
                 </Button>
@@ -543,15 +569,26 @@ const VendorDashboard: React.FC = () => {
                   startIcon={<Store size={16} />}
                   onClick={handleVendorStore}
                   sx={{ 
-                    minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 },
-                    flex: { xs: 1, sm: 'none' }
+                    minWidth: { xs: '100%', sm: 120, md: 140 },
+                    mb: { xs: 0.5, sm: 0.5, md: 0 },
+                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                    py: { xs: 0.75, sm: 1 },
+                    px: { xs: 1, sm: 1.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
-                    Vendor Store
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Vendor
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Store
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
                     Store
                   </Box>
                 </Button>
@@ -560,15 +597,26 @@ const VendorDashboard: React.FC = () => {
                   startIcon={<Settings size={16} />}
                   onClick={handlePaymentSettings}
                   sx={{ 
-                    minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 },
-                    flex: { xs: 1, sm: 'none' }
+                    minWidth: { xs: '100%', sm: 120, md: 140 },
+                    mb: { xs: 0.5, sm: 0.5, md: 0 },
+                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                    py: { xs: 0.75, sm: 1 },
+                    px: { xs: 1, sm: 1.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
-                    Payment Settings
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Payment
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Settings
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
                     Payments
                   </Box>
                 </Button>
@@ -577,32 +625,54 @@ const VendorDashboard: React.FC = () => {
                   startIcon={<MessageCircle size={16} />}
                   onClick={() => router.push('/marketplace/vendor-messaging')}
                   sx={{ 
-                    minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 },
-                    flex: { xs: 1, sm: 'none' }
+                    minWidth: { xs: '100%', sm: 120, md: 140 },
+                    mb: { xs: 0.5, sm: 0.5, md: 0 },
+                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                    py: { xs: 0.75, sm: 1 },
+                    px: { xs: 1, sm: 1.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
                     Messaging
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
                     Msg
                   </Box>
                 </Button>
                 <Button
                   variant="outlined"
-                  startIcon={<SupportAgentIcon />}
+                  startIcon={<SupportAgentIcon fontSize="small" />}
                   onClick={() => router.push('/marketplace/vendor-admin-chat')}
                   sx={{ 
-                    minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 },
-                    flex: { xs: 1, sm: 'none' }
+                    minWidth: { xs: '100%', sm: 120, md: 140 },
+                    mb: { xs: 0.5, sm: 0.5, md: 0 },
+                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                    py: { xs: 0.75, sm: 1 },
+                    px: { xs: 1, sm: 1.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
-                    Chat with Admin
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Chat
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    with
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Admin
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
                     Admin
                   </Box>
                 </Button>
@@ -611,15 +681,26 @@ const VendorDashboard: React.FC = () => {
                   startIcon={<Plus size={16} />}
                   onClick={handleCreateProduct}
                   sx={{ 
-                    minWidth: { xs: '100%', sm: 'auto' },
-                    mb: { xs: 0.5, sm: 0 },
-                    flex: { xs: 1, sm: 'none' }
+                    minWidth: { xs: '100%', sm: 120, md: 140 },
+                    mb: { xs: 0.5, sm: 0.5, md: 0 },
+                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                    py: { xs: 0.75, sm: 1 },
+                    px: { xs: 1, sm: 1.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
-                    Add Product
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Add
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Product
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
                     Add
                   </Box>
                 </Button>
@@ -628,14 +709,28 @@ const VendorDashboard: React.FC = () => {
                   startIcon={<ShoppingBag size={16} />}
                   onClick={handleCreateProductPost}
                   sx={{ 
-                    minWidth: { xs: '100%', sm: 'auto' },
-                    flex: { xs: 1, sm: 'none' }
+                    minWidth: { xs: '100%', sm: 120, md: 140 },
+                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                    py: { xs: 0.75, sm: 1 },
+                    px: { xs: 1, sm: 1.5 },
+                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
-                    Create Shoppable Post
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Create
                   </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.75rem', sm: '0.875rem' }}}>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Shoppable
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
+                    Post
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
                     Shoppable
                   </Box>
                 </Button>
@@ -645,7 +740,10 @@ const VendorDashboard: React.FC = () => {
               pb: 0,
               flexDirection: { xs: 'column', sm: 'row' },
               alignItems: { xs: 'flex-start', sm: 'center' },
-              gap: { xs: 1, sm: 0 }
+              gap: { xs: 1, sm: 2 },
+              width: '100%',
+              display: 'flex',
+              flexWrap: 'wrap'
             }}
           />
           <CardContent>
@@ -913,8 +1011,37 @@ const VendorDashboard: React.FC = () => {
         isOpen={isChatOpen} 
         onToggle={() => setIsChatOpen(!isChatOpen)} 
       />
+      
+      {/* Post Selector Modal for creating shoppable posts */}
+      <VendorPostSelectorModal
+        open={showPostSelectorModal}
+        onClose={() => setShowPostSelectorModal(false)}
+        onPostSelected={handlePostSelected}
+        vendorId={user?.id || ''}
+      />
     </Layout>
   );
+};
+
+const VendorDashboard: React.FC = () => {
+  const { user, isLoading } = useAuth();
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <Layout>
+        <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
+          <CircularProgress />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Loading dashboard...
+          </Typography>
+        </Container>
+      </Layout>
+    );
+  }
+
+  // Only render the content after auth state is loaded
+  return <VendorDashboardContent />;
 };
 
 export default VendorDashboard;

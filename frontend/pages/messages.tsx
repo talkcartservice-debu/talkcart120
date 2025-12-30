@@ -75,6 +75,8 @@ import VoiceMessageBubble from '@/components/messaging/VoiceMessageBubble';
 import ForwardMessageDialog from '@/components/messaging/ForwardMessageDialog';
 import debounce from 'lodash.debounce';
 
+type RecordingState = 'inactive' | 'recording' | 'paused';
+
 const MessagesPage: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -535,7 +537,9 @@ const MessagesPage: React.FC = () => {
       if (sizeMB > MAX_VIDEO_MB) throw new Error(`Video exceeds ${MAX_VIDEO_MB}MB.`);
     }
     if (kind === 'audio') {
-      if (!AUDIO_TYPES.includes(mime)) throw new Error('Unsupported audio type. Use MP3, WAV, AAC, OGG, or WEBM.');
+      // Check if the MIME type starts with any of the supported audio types (to handle codecs like 'audio/webm;codecs=opus')
+      const isSupportedAudioType = AUDIO_TYPES.some(type => mime.startsWith(type));
+      if (!isSupportedAudioType) throw new Error('Unsupported audio type. Use MP3, WAV, AAC, OGG, or WEBM.');
       if (sizeMB > MAX_AUDIO_MB) throw new Error(`Audio exceeds ${MAX_AUDIO_MB}MB.`);
     }
   };
@@ -587,7 +591,7 @@ const MessagesPage: React.FC = () => {
         }
       }
 
-      await sendMessage(kind === 'audio' ? '' : (newMessage || ''), kind, mediaPayload);
+      await sendMessage(newMessage || '', kind, mediaPayload);
       if (kind !== 'audio') setNewMessage('');
     } catch (err: any) {
       console.error('Media send error:', err);
@@ -617,33 +621,103 @@ const MessagesPage: React.FC = () => {
 
   // Voice recording using MediaRecorder
   const startRecording = async () => {
+    // Prevent starting a new recording if one is already in progress
+    if (isRecording) {
+      console.warn('Recording already in progress');
+      return;
+    }
+    
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: { 
+          echoCancellation: true, 
+          noiseSuppression: true, 
+          autoGainControl: true,
+          sampleRate: 44100
+        } 
+      });
+      
+      // Create MediaRecorder with best available format
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
+                        MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' :
+                        MediaRecorder.isTypeSupported('audio/ogg;codecs=opus') ? 'audio/ogg;codecs=opus' :
+                        'audio/mp4';
+      
+      const recorder = new MediaRecorder(stream, { mimeType });
+      
       audioChunksRef.current = [];
+      
       recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
+      
       recorder.onstop = async () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+        if (audioChunksRef.current.length === 0) {
+          console.warn('No audio data recorded');
+          stream.getTracks().forEach(t => t.stop());
+          setIsRecording(false); // Update state after stopping
+          return;
+        }
+        
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        
+        // Validate the blob has content
+        if (audioBlob.size === 0) {
+          console.warn('Recorded audio blob is empty');
+          stream.getTracks().forEach(t => t.stop());
+          setIsRecording(false); // Update state after stopping
+          return;
+        }
+        
+        const fileExtension = mimeType.includes('webm') ? 'webm' :
+                             mimeType.includes('ogg') ? 'ogg' :
+                             mimeType.includes('mp4') ? 'mp4' : 'wav';
+        
+        const file = new File([audioBlob], `voice-${Date.now()}.${fileExtension}`, { 
+          type: mimeType 
+        });
+        
         await uploadAndSendMedia(file, 'audio');
         stream.getTracks().forEach(t => t.stop());
+        setIsRecording(false); // Update state after stopping
       };
+      
+      recorder.onerror = (event) => {
+        console.error('MediaRecorder error:', event.error);
+        stream.getTracks().forEach(t => t.stop());
+        setIsRecording(false);
+      };
+      
+      // Handle recorder state changes to ensure proper state management
+      recorder.onstart = () => {
+        setIsRecording(true);
+      };
+      
       mediaRecorderRef.current = recorder;
       recorder.start();
       setIsRecording(true);
-    } catch (err) {
-      console.error('Mic permission / record error:', err);
-      alert('Microphone access denied or not available');
+    } catch (err: any) {
+      console.error('Microphone access error:', err);
+      alert(`Microphone access denied or not available: ${err.message || err}`);
+      setIsRecording(false);
     }
   };
 
   const stopRecording = () => {
-    const r = mediaRecorderRef.current;
-    if (r && r.state !== 'inactive') {
-      r.stop();
-      setIsRecording(false);
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state === 'recording') {
+      try {
+        recorder.stop();
+      } catch (err) {
+        console.error('Error stopping recording:', err);
+        // Ensure stream is stopped even if recorder.stop() fails
+        if (recorder.stream) {
+          recorder.stream.getTracks().forEach(t => t.stop());
+        }
+      }
     }
   };
 
@@ -1769,11 +1843,29 @@ const MessagesPage: React.FC = () => {
                 <IconButton 
                   onClick={() => (isRecording ? stopRecording() : startRecording())} 
                   disabled={uploadingMedia}
-                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
+                  sx={{ 
+                    p: { xs: 0.75, sm: 1 }, 
+                    minWidth: { xs: 36, sm: 40 },
+                    backgroundColor: isRecording ? alpha(theme.palette.error.main, 0.1) : 'transparent',
+                    '&:hover': {
+                      backgroundColor: isRecording ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.action.hover, 0.04)
+                    }
+                  }}
                 >
                   <Badge color="error" variant={isRecording ? 'dot' : 'standard'} overlap="circular">
-                    <Mic size={isMobile ? 14 : 20} color={isRecording ? theme.palette.error.main : undefined} />
+                    <Mic 
+                      size={isMobile ? 14 : 20} 
+                      color={isRecording ? theme.palette.error.main : undefined}
+                      style={{ animation: isRecording ? 'pulse 1.5s infinite' : 'none' }}
+                    />
                   </Badge>
+                  <style>{`
+                    @keyframes pulse {
+                      0% { opacity: 1; }
+                      50% { opacity: 0.5; }
+                      100% { opacity: 1; }
+                    }
+                  `}</style>
                 </IconButton>
                 <IconButton 
                   onClick={() => setShowEmojiPicker(v => !v)}

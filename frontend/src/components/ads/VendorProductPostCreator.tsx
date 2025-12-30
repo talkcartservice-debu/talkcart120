@@ -19,12 +19,13 @@ const VendorProductPostCreator: React.FC<VendorProductPostCreatorProps> = ({
   const [loading, setLoading] = useState(true);
   const [hasProducts, setHasProducts] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkingProducts, setCheckingProducts] = useState(false);
 
   // Check if the user has products available to create a product post
   useEffect(() => {
     const checkUserProducts = async () => {
       try {
-        setLoading(true);
+        setCheckingProducts(true);
         setError(null);
         
         if (!user) {
@@ -44,6 +45,7 @@ const VendorProductPostCreator: React.FC<VendorProductPostCreatorProps> = ({
         setError('Failed to check your products');
         setHasProducts(false);
       } finally {
+        setCheckingProducts(false);
         setLoading(false);
       }
     };
@@ -90,20 +92,32 @@ const VendorProductPostCreator: React.FC<VendorProductPostCreatorProps> = ({
     <>
       <Button
         variant="contained"
-        startIcon={<ShoppingCart size={16} />}
+        startIcon={checkingProducts ? null : <ShoppingCart size={16} />}
         onClick={handleOpen}
-        disabled={!hasProducts}
+        disabled={!hasProducts || checkingProducts}
         sx={{
           backgroundColor: 'primary.main',
           color: 'white',
           '&:hover': {
             backgroundColor: 'primary.dark',
           },
+          minWidth: { xs: '160px', sm: '180px', md: '200px' },
           mt: 1,
-          mb: 2
+          mb: 2,
+          alignSelf: 'center',
+          flexShrink: 0
         }}
       >
-        {hasProducts ? 'Create Shoppable Post' : 'Create Products First'}
+        {checkingProducts ? (
+          <>
+            <CircularProgress size={16} thickness={4} className="mr-2" />
+            Checking Products...
+          </>
+        ) : hasProducts ? (
+          'Create Shoppable Post'
+        ) : (
+          'Create Products First'
+        )}
       </Button>
 
       {error && (

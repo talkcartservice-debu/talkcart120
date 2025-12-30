@@ -23,6 +23,7 @@ import {
     Reply,
     Forward
 } from 'lucide-react';
+import AudioWaveform from './AudioWaveform';
 
 interface VoiceMessageBubbleProps {
     audioUrl: string;
@@ -331,7 +332,15 @@ const VoiceMessageBubble: React.FC<VoiceMessageBubbleProps> = ({
         }
     };
 
-    const handleSeek = (event: Event, newValue: number | number[]) => {
+    const handleSeek = (time: number) => {
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        audio.currentTime = time;
+        setCurrentTime(time);
+    };
+
+    const handleSliderSeek = (event: Event, newValue: number | number[]) => {
         const audio = audioRef.current;
         if (!audio) return;
 
@@ -382,10 +391,81 @@ const VoiceMessageBubble: React.FC<VoiceMessageBubbleProps> = ({
       audioUrl.includes('file_1760276276250_3pqeekj048s')
     );
 
-    // If it's a known missing file, hide the element
-    if (isKnownMissingFile) {
-        console.warn('Known missing file detected in voice message, hiding element:', audioUrl);
-        return null; // Don't render anything for known missing files
+    // If it's a known missing file or no audio URL, show an error indicator
+    if (isKnownMissingFile || !audioUrl) {
+        console.warn('Known missing file or no audio URL detected in voice message:', audioUrl);
+        return (
+            <Box
+                sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                }}
+            >
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 0.75,
+                        borderRadius: 2,
+                        minWidth: 100,
+                        maxWidth: 140,
+                        bgcolor: isOwn
+                            ? alpha(theme.palette.primary.main, 0.1)
+                            : alpha(theme.palette.background.paper, 0.8),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                        backdropFilter: 'blur(10px)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: 2,
+                            bgcolor: isOwn ? theme.palette.error.main : theme.palette.error.main,
+                            opacity: 0.6
+                        }
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <IconButton
+                                disabled
+                                sx={{
+                                    bgcolor: theme.palette.error.main,
+                                    color: theme.palette.primary.contrastText,
+                                    width: 20,
+                                    height: 20,
+                                    minWidth: 'unset',
+                                    '&:hover': {
+                                        bgcolor: theme.palette.error.dark,
+                                    },
+                                    '&.Mui-disabled': {
+                                        bgcolor: alpha(theme.palette.error.main, 0.3),
+                                    }
+                                }}
+                            >
+                                <Mic size={10} />
+                            </IconButton>
+                            <Mic size={8} color={theme.palette.error.main} />
+                            <Typography variant="caption" fontWeight={500} color="text.secondary" sx={{ fontSize: '0.6rem' }}>No Audio</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem' }}>
+                                0:00 / 0:00
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <Box sx={{ px: 0.5, mb: 0 }}>
+                        <Typography variant="caption" color="error" sx={{ fontSize: '0.5rem' }}>
+                            Audio unavailable
+                        </Typography>
+                    </Box>
+                </Paper>
+            </Box>
+        );
     }
 
     return (
@@ -468,7 +548,7 @@ const VoiceMessageBubble: React.FC<VoiceMessageBubbleProps> = ({
                             )}
                         </IconButton>
                         <Mic size={8} color={theme.palette.primary.main} />
-                        <Typography variant="caption" fontWeight={500} color="text.secondary" sx={{ fontSize: '0.6rem' }}>Voice</Typography>
+                        <Typography variant="caption" fontWeight={500} color="text.secondary" sx={{ fontSize: '0.6rem' }}>{(filename === 'Audio message' || filename === 'Voice Message') ? 'Voice' : filename}</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem' }}>
@@ -484,34 +564,18 @@ const VoiceMessageBubble: React.FC<VoiceMessageBubbleProps> = ({
                     </Box>
                 </Box>
 
-                {/* Removed Waveform - Using simple progress bar instead */}
-
-                {/* Removed duplicate controls - now integrated in header */}
-
-                {/* Minimal Progress Bar */}
+                {/* Audio Waveform Visualization */}
                 <Box sx={{ px: 0.5, mb: 0 }}>
-                    <Slider
-                        value={progress}
-                        onChange={handleSeek}
-                        size="small"
-                        sx={{
-                            height: 1.5,
-                            '& .MuiSlider-track': {
-                                bgcolor: theme.palette.primary.main,
-                                border: 'none'
-                            },
-                            '& .MuiSlider-rail': {
-                                bgcolor: alpha(theme.palette.text.secondary, 0.15)
-                            },
-                            '& .MuiSlider-thumb': {
-                                width: 4,
-                                height: 4,
-                                bgcolor: theme.palette.primary.main,
-                                '&:hover': {
-                                    boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.16)}`
-                                }
-                            }
-                        }}
+                    <AudioWaveform
+                        audioUrl={audioUrl}
+                        isPlaying={isPlaying}
+                        currentTime={currentTime}
+                        duration={audioDuration}
+                        onSeek={handleSeek}
+                        color={isOwn ? theme.palette.primary.main : theme.palette.secondary.main}
+                        height={24}
+                        barWidth={2}
+                        gap={1}
                     />
                 </Box>
 

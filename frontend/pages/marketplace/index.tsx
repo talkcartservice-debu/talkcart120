@@ -530,7 +530,7 @@ const MarketplacePage: React.FC = () => {
             <PWAInstallButton />
             
             {user && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', width: '100%' }}>
                 {/* My Orders Button - Visible to all authenticated users */}
                 <Button
                   variant="contained"
@@ -543,12 +543,18 @@ const MarketplacePage: React.FC = () => {
                       bgcolor: '#1d2733',
                     },
                     whiteSpace: 'nowrap',
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    py: { xs: 1, sm: 1.5 },
-                    px: { xs: 1.5, sm: 2 },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                    py: { xs: 0.75, sm: 1, md: 1.5 },
+                    px: { xs: 1, sm: 1.5, md: 2 },
+                    minWidth: { xs: 'auto', sm: 120 },
+                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                    justifyContent: { xs: 'center', sm: 'center' },
                   }}
                 >
-                  My Orders
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5 }}>
+                    My
+                  </Box>
+                  Orders
                 </Button>
                 
                 {/* My Dashboard Button - Only show if user is not a vendor */}
@@ -564,12 +570,18 @@ const MarketplacePage: React.FC = () => {
                         bgcolor: '#1565c0',
                       },
                       whiteSpace: 'nowrap',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      py: { xs: 1, sm: 1.5 },
-                      px: { xs: 1.5, sm: 2 },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      py: { xs: 0.75, sm: 1, md: 1.5 },
+                      px: { xs: 1, sm: 1.5, md: 2 },
+                      minWidth: { xs: 'auto', sm: 120 },
+                      flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                      justifyContent: { xs: 'center', sm: 'center' },
                     }}
                   >
-                    My Dashboard
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5 }}>
+                      My
+                    </Box>
+                    Dashboard
                   </Button>
                 )}
                 
@@ -586,12 +598,18 @@ const MarketplacePage: React.FC = () => {
                         bgcolor: '#e88900',
                       },
                       whiteSpace: 'nowrap',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      py: { xs: 1, sm: 1.5 },
-                      px: { xs: 1.5, sm: 2 },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      py: { xs: 0.75, sm: 1, md: 1.5 },
+                      px: { xs: 1, sm: 1.5, md: 2 },
+                      minWidth: { xs: 'auto', sm: 120 },
+                      flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                      justifyContent: { xs: 'center', sm: 'center' },
                     }}
                   >
-                    Vendor Store
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5 }}>
+                      Vendor
+                    </Box>
+                    Store
                   </Button>
                 )}
                 
@@ -608,12 +626,21 @@ const MarketplacePage: React.FC = () => {
                         bgcolor: '#e88900',
                       },
                       whiteSpace: 'nowrap',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      py: { xs: 1, sm: 1.5 },
-                      px: { xs: 1.5, sm: 2 },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      py: { xs: 0.75, sm: 1, md: 1.5 },
+                      px: { xs: 1, sm: 1.5, md: 2 },
+                      minWidth: { xs: 'auto', sm: 120 },
+                      flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                      justifyContent: { xs: 'center', sm: 'center' },
                     }}
                   >
-                    My Store Dashboard
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5 }}>
+                      My
+                    </Box>
+                    Store
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, ml: 0.5 }}>
+                      Dashboard
+                    </Box>
                   </Button>
                 )}
                 
@@ -630,12 +657,23 @@ const MarketplacePage: React.FC = () => {
                         bgcolor: '#45a049',
                       },
                       whiteSpace: 'nowrap',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      py: { xs: 1, sm: 1.5 },
-                      px: { xs: 1.5, sm: 2 },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                      py: { xs: 0.75, sm: 1, md: 1.5 },
+                      px: { xs: 1, sm: 1.5, md: 2 },
+                      minWidth: { xs: 'auto', sm: 120 },
+                      flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                      justifyContent: { xs: 'center', sm: 'center' },
                     }}
                   >
-                    Register Your Store
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5 }}>
+                      Register
+                    </Box>
+                    <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                      +
+                    </Box>
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, ml: 0.5 }}>
+                      Store
+                    </Box>
                   </Button>
                 )}
               </Box>
@@ -643,7 +681,7 @@ const MarketplacePage: React.FC = () => {
             
             {/* Show registration button for non-authenticated users */}
             {!user && (
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
                 <Button
                   variant="contained"
                   startIcon={<Plus size={20} />}
@@ -655,12 +693,23 @@ const MarketplacePage: React.FC = () => {
                       bgcolor: '#45a049',
                     },
                     whiteSpace: 'nowrap',
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    py: { xs: 1, sm: 1.5 },
-                    px: { xs: 1.5, sm: 2 },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                    py: { xs: 0.75, sm: 1, md: 1.5 },
+                    px: { xs: 1, sm: 1.5, md: 2 },
+                    minWidth: { xs: 'auto', sm: 120 },
+                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                    justifyContent: { xs: 'center', sm: 'center' },
                   }}
                 >
-                  Register to Sell
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5 }}>
+                    Register
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                    +
+                  </Box>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, ml: 0.5 }}>
+                    Sell
+                  </Box>
                 </Button>
               </Box>
             )}

@@ -1488,7 +1488,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </Typography>
           </Box>
         ) : (
-          <React.Fragment key="notifications-list">
+          <React.Fragment>
           {notifications.map((notification) => {
             // Format relative time
             const timeAgo = (date: string) => {

@@ -63,6 +63,7 @@ const SocialPage: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [createPostOpen, setCreatePostOpen] = useState(false);
+  const [linkPostId, setLinkPostId] = useState<string | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [userStats, setUserStats] = useState({
@@ -112,6 +113,22 @@ const SocialPage: React.FC = () => {
     feedType: usePostsFeedType,
     limit: 20
   });
+
+  // Handle query parameters
+  useEffect(() => {
+    if (router.isReady) {
+      const { linkPostId: postId } = router.query;
+      if (postId && typeof postId === 'string') {
+        setLinkPostId(postId);
+        // Open the CreatePostDialog with the specific post ID
+        setCreatePostOpen(true);
+      } else if (postId && Array.isArray(postId) && postId[0]) {
+        // Handle case where postId might be an array
+        setLinkPostId(postId[0] || null);
+        setCreatePostOpen(true);
+      }
+    }
+  }, [router.isReady, router.query]);
 
   // Fetch user statistics
   useEffect(() => {
@@ -763,6 +780,7 @@ const SocialPage: React.FC = () => {
       <CreatePostDialog 
         open={createPostOpen}
         onClose={() => setCreatePostOpen(false)}
+        linkPostId={linkPostId || undefined}
         onPostCreated={() => {
           // Refresh posts after creating a new one
           typedFetchPosts({ reset: true });

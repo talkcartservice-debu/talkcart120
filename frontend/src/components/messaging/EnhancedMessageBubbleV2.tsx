@@ -42,6 +42,7 @@ import UnifiedVideoMedia from '@/components/media/UnifiedVideoMedia';
 import UnifiedImageMedia from '@/components/media/UnifiedImageMedia';
 import { isKnownMissingFile } from '@/utils/mediaUtils';
 import UserAvatar from '@/components/common/UserAvatar';
+import MediaMessageContainer from './MediaMessageContainer';
 
 // Placeholder VoiceMessageBubble component if not exists
 const VoiceMessageBubblePlaceholder: React.FC<any> = (props) => (
@@ -243,106 +244,16 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
         }
 
         return (
-            <Box sx={{ mt: message.content ? 1 : 0 }}>
-                {Array.isArray(message.media) && message.media.map((media, index) => {
-                    const mediaKey = `${message.id}-${index}`;
-                    const audioState = audioStates[media.url] || { playing: false, currentTime: 0, duration: 0, muted: false };
-                    const mediaUrl = media.url;
-
-                    // Handle known missing files
-                    const isMissingFile = media.url && typeof media.url === 'string' && isKnownMissingFile(media.url);
-
-                    // Handle post detail URLs or known missing files
-                    if ((media.url && media.url.includes('/post/')) || isMissingFile) {
-                        console.warn('Post detail URL or known missing file detected in message, hiding element:', media.url);
-                        return null; // Don't render anything for known missing files
-                    }
-
-                    switch (media.type) {
-                        case 'image':
-                            return (
-                                <Box key={index} sx={{ mb: 1, cursor: 'pointer', position: 'relative' }}>
-                                    <UnifiedImageMedia
-                                        src={isMissingFile ? '/images/placeholder-image-new.png' : mediaUrl}
-                                        alt={media.filename}
-                                        style={{
-                                            maxWidth: '100%',
-                                            height: 'auto',
-                                            borderRadius: 12,
-                                            objectFit: 'cover',
-                                            display: 'block'
-                                        }}
-                                    />
-                                    <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}>
-                                        {media.filename}
-                                    </Typography>
-                                </Box>
-                            );
-
-                        case 'video':
-                            return (
-                                <Box key={index} sx={{ mb: 1, position: 'relative', borderRadius: '12px', overflow: 'hidden' }}>
-                                    <UnifiedVideoMedia
-                                        src={isMissingFile ? '/images/placeholder-video-new.png' : mediaUrl}
-                                        alt={media.filename}
-                                        style={{
-                                            maxWidth: '100%',
-                                            maxHeight: 300,
-                                            display: 'block',
-                                            width: '100%',
-                                        }}
-                                    />
-                                    <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}>
-                                        {media.filename}
-                                    </Typography>
-                                </Box>
-                            );
-
-                        case 'audio':
-                            // Use the new VoiceMessageBubble for audio files
-                            return (
-                                <Box key={index} sx={{ mb: 1 }}>
-                                    <VoiceMessageBubble
-                                        audioUrl={isMissingFile ? '' : mediaUrl}
-                                        filename={media.filename}
-                                        isOwn={message.isOwn}
-                                        timestamp={getMessageTime()}
-                                        onDownload={() => !isMissingFile && window.open(mediaUrl, '_blank')}
-                                        onForward={onForward}
-                                        onReply={onReply}
-                                        onDelete={message.isOwn ? () => handleDelete() : undefined}
-                                    />
-                                </Box>
-                            );
-
-                        default:
-                            return (
-                                <Box key={index} sx={{ mb: 1 }}>
-                                    <Paper
-                                        elevation={0}
-                                        sx={{
-                                            p: 1.5,
-                                            borderRadius: 2,
-                                            bgcolor: alpha(theme.palette.background.paper, 0.5),
-                                            border: `1px solid ${theme.palette.divider}`,
-                                            cursor: 'pointer',
-                                            '&:hover': {
-                                                bgcolor: alpha(theme.palette.background.paper, 0.7),
-                                            }
-                                        }}
-                                        onClick={() => !isMissingFile && window.open(mediaUrl, '_blank')}
-                                    >
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Typography variant="body2" sx={{ flex: 1 }}>
-                                                {media.filename}
-                                            </Typography>
-                                        </Box>
-                                    </Paper>
-                                </Box>
-                            );
-                    }
-                })}
-            </Box>
+            <MediaMessageContainer
+                message={message}
+                onReply={onReply}
+                onForward={onForward}
+                onDelete={message.isOwn ? async (messageId: string) => { await handleDelete(); return true; } : undefined}
+                onDownload={(mediaUrl) => window.open(mediaUrl, '_blank')}
+                showActions={false} // Actions are handled by the message bubble context menu
+                showTimestamp={false} // Timestamp is shown in the message bubble
+                isOwn={message.isOwn}
+            />
         );
     };
 
@@ -535,95 +446,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
       );
     }
 
-    // If this is a voice message (audio type), render it differently
-    if (message.type === 'audio' && Array.isArray(message.media) && message.media.length > 0) {
-        const audioMedia = message.media[0];
-        // Additional check to satisfy TypeScript
-        if (!audioMedia) return null;
-        
-        return (
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: message.isOwn ? 'row' : 'row-reverse',
-                    alignItems: 'flex-end',
-                    gap: 1,
-                    mb: 1,
-                }}
-            >
-                {/* Avatar */}
-                {showAvatar && !message.isOwn && (
-                    <UserAvatar
-                        src={message.sender.avatarUrl || message.sender.avatar || undefined}
-                        alt={message.sender.displayName}
-                        size={32}
-                    />
-                )}
-                {!showAvatar && !message.isOwn && (
-                    <Box sx={{ width: 32 }} />
-                )}
 
-                {/* Voice Message Content */}
-                <Box
-                    sx={{
-                        maxWidth: { xs: '85%', sm: '70%' },
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: message.isOwn ? 'flex-start' : 'flex-end'
-                    }}
-                >
-                    {/* Sender Name (for group chats) */}
-                    {showAvatar && !message.isOwn && (
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ mb: 0.5, ml: 1 }}
-                        >
-                            {message.sender.displayName}
-                        </Typography>
-                    )}
-
-                    {audioMedia && (
-                    <VoiceMessageBubble
-                        audioUrl={audioMedia.url || ''}
-                        filename={audioMedia.filename || 'Audio message'}
-                        isOwn={message.isOwn}
-                        timestamp={getMessageTime()}
-                        onDownload={() => audioMedia.url ? window.open(audioMedia.url, '_blank') : undefined}
-                        onForward={onForward}
-                        onReply={onReply}
-                        onDelete={message.isOwn ? () => handleDelete() : undefined}
-                    />
-                    )}
-
-                    {/* Reactions */}
-                    {message.reactions && message.reactions.length > 0 && (
-                        <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
-                            {Object.entries(
-                                message.reactions.reduce((acc, reaction) => {
-                                    acc[reaction.emoji] = (acc[reaction.emoji] || 0) + 1;
-                                    return acc;
-                                }, {} as Record<string, number>)
-                            ).map(([emoji, count]) => (
-                                <Chip
-                                    key={emoji}
-                                    label={`${emoji} ${count}`}
-                                    size="small"
-                                    clickable
-                                    onClick={() => handleReaction(emoji)}
-                                    sx={{
-                                        height: 24,
-                                        fontSize: '0.7rem',
-                                        bgcolor: alpha(theme.palette.primary.main, 0.1)
-                                    }}
-                                />
-                            ))}
-                        </Stack>
-                    )}
-                </Box>
-            </Box>
-        );
-    }
 
     // Regular message rendering (text, images, videos, files)
     return (

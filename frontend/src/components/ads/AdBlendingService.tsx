@@ -206,6 +206,30 @@ export const useAdBlending = ({ userId, feedType = 'for-you', limit = 20 }: AdBl
       }
     };
     
+    const handleNewProductPost = (event: any) => {
+      if (event.detail?.productPost) {
+        setFeedItems(prevItems => {
+          // Check if this product post is already in the feed to avoid duplicates
+          const productPostExists = prevItems.some(item => 
+            item.id === event.detail.productPost.id || item.id === event.detail.productPost._id
+          );
+          
+          if (!productPostExists) {
+            const newProductPostItem = {
+              id: event.detail.productPost.id || event.detail.productPost._id,
+              type: 'product-post' as const,
+              data: event.detail.productPost,
+            };
+            
+            // Add the new product post at the beginning of the feed
+            return [newProductPostItem, ...prevItems];
+          }
+          
+          return prevItems;
+        });
+      }
+    };
+    
     const handleRefresh = (event: any) => {
       // Refresh the feed if it matches the current feed type
       if (!event.detail?.feedType || event.detail.feedType === feedType) {
@@ -214,11 +238,13 @@ export const useAdBlending = ({ userId, feedType = 'for-you', limit = 20 }: AdBl
     };
     
     window.addEventListener('posts:new', handleNewPost);
+    window.addEventListener('product-posts:new', handleNewProductPost);
     window.addEventListener('posts:refresh', handleRefresh);
     
     // Cleanup event listeners
     return () => {
       window.removeEventListener('posts:new', handleNewPost);
+      window.removeEventListener('product-posts:new', handleNewProductPost);
       window.removeEventListener('posts:refresh', handleRefresh);
     };
   }, [refreshFeed, feedType]);
