@@ -408,164 +408,29 @@ export const TopBar: React.FC<TopBarProps> = ({
             {/* Removed AI Demo Link */}
           </Box>
 
-          {/* Mobile Search Bar */}
-          {mobileSearchOpen && (
-            <Box
-              component="form"
-              onSubmit={handleSearch}
-              sx={{
-                display: { xs: 'flex', md: 'none' },
-                flexGrow: 1,
-                position: 'relative',
-                width: '100%',
-                mx: 'auto',
-                maxWidth: '100%'
-              }}
-            >
-              <TextField
-                id="mobile-search-input"
-                placeholder="Search TalkCart..."
-                size="small"
-                fullWidth
-                autoFocus
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  // Don't immediately show suggestions - let the useSearch hook handle it
-                }}
-                onFocus={() => {
-                  setShowSuggestions(true);
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      {searchLoading ? (
-                        <CircularProgress size={16} color="inherit" />
-                      ) : (
-                        <Search size={18} />
-                      )}
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        edge="end"
-                        size="small"
-                        onClick={handleToggleMobileSearch}
-                      >
-                        <CloseIcon size={18} />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  bgcolor: alpha(theme.palette.background.paper, 0.8),
-                  borderRadius: 1,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1,
-                  }
-                }}
-              />
 
-              {/* Mobile Search Suggestions */}
-              {showSuggestions && (
-                <Paper
-                  elevation={4}
-                  sx={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    mt: 0.5,
-                    zIndex: 1000,
-                    maxHeight: 300,
-                    overflow: 'auto',
-                    borderRadius: 1,
-                  }}
-                >
-                  <List dense>
-                    {searchLoading ? (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                        <CircularProgress size={24} />
-                      </Box>
-                    ) : searchSuggestions.length > 0 ? (
-                      searchSuggestions.map((suggestion, index) => (
-                        <ListItem
-                          key={`${suggestion.id || index}`}
-                          component="button"
-                          onClick={() => handleSuggestionClick(suggestion)}
-                          sx={{
-                            py: 1,
-                            px: 2,
-                            cursor: 'pointer',
-                            border: 'none',
-                            background: 'transparent',
-                            width: '100%',
-                            textAlign: 'left',
-                            '&:hover': {
-                              bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-                            }
-                          }}
-                        >
-                          <ListItemIcon sx={{ minWidth: 36 }}>
-                            {suggestion.icon}
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={suggestion.displayText || suggestion.text}
-                            secondary={suggestion.secondaryText}
-                            primaryTypographyProps={{
-                              variant: 'body2',
-                              noWrap: true
-                            }}
-                            secondaryTypographyProps={{
-                              variant: 'caption',
-                              noWrap: true,
-                              color: 'text.secondary'
-                            }}
-                          />
-                        </ListItem>
-                      ))
-                    ) : (
-                      <ListItem sx={{ py: 1, px: 2 }}>
-                        <ListItemText
-                          primary="No results found"
-                          primaryTypographyProps={{
-                            variant: 'body2',
-                            align: 'center',
-                            color: 'text.secondary'
-                          }}
-                        />
-                      </ListItem>
-                    )}
-                  </List>
-                </Paper>
-              )}
-            </Box>
-          )}
 
           {/* Top Action Icons - Wallet, User, Login */}
           <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: { xs: 'auto', md: '200px' }, justifyContent: 'space-between', width: '100%' }}>
             {/* Mobile Search Bar - appears between menu and user avatar when search icon is clicked */}
-            {!mobileSearchOpen && (
-              <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexGrow: 1, mx: 1 }}>
-                <IconButton
-                  color="inherit"
-                  size="small"
-                  sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}
-                  onClick={handleToggleMobileSearch}
-                >
-                  <Search size={20} />
-                </IconButton>
-              </Box>
-            )}
-            
-            {/* Mobile Search Bar - expanded view */}
-            {mobileSearchOpen && (
-              <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexGrow: 1, mx: 1 }}>
+            {mobileSearchOpen ? (
+              <Box
+                component="form"
+                onSubmit={handleSearch}
+                sx={{
+                  display: { xs: 'flex', md: 'none' },
+                  alignItems: 'center',
+                  flexGrow: 1,
+                  mx: 1,
+                  position: 'relative'
+                }}
+              >
                 <TextField
+                  id="mobile-search-input"
                   placeholder="Search TalkCart..."
                   size="small"
                   fullWidth
+                  autoFocus
                   value={searchQuery}
                   inputRef={mobileSearchInputRef}
                   onChange={(e) => {
@@ -605,8 +470,95 @@ export const TopBar: React.FC<TopBarProps> = ({
                     }
                   }}
                 />
+                
+                {/* Mobile Search Suggestions */}
+                {showSuggestions && (
+                  <Paper
+                    elevation={4}
+                    sx={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      mt: 0.5,
+                      zIndex: 1000,
+                      maxHeight: 300,
+                      overflow: 'auto',
+                      borderRadius: 1,
+                    }}
+                  >
+                    <List dense>
+                      {searchLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                          <CircularProgress size={24} />
+                        </Box>
+                      ) : searchSuggestions.length > 0 ? (
+                        searchSuggestions.map((suggestion, index) => (
+                          <ListItem
+                            key={`${suggestion.id || index}`}
+                            component="button"
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            sx={{
+                              py: 1,
+                              px: 2,
+                              cursor: 'pointer',
+                              border: 'none',
+                              background: 'transparent',
+                              width: '100%',
+                              textAlign: 'left',
+                              '&:hover': {
+                                bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                              }
+                            }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 36 }}>
+                              {suggestion.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={suggestion.displayText || suggestion.text}
+                              secondary={suggestion.secondaryText}
+                              primaryTypographyProps={{
+                                variant: 'body2',
+                                noWrap: true
+                              }}
+                              secondaryTypographyProps={{
+                                variant: 'caption',
+                                noWrap: true,
+                                color: 'text.secondary'
+                              }}
+                            />
+                          </ListItem>
+                        ))
+                      ) : (
+                        <ListItem sx={{ py: 1, px: 2 }}>
+                          <ListItemText
+                            primary="No results found"
+                            primaryTypographyProps={{
+                              variant: 'body2',
+                              align: 'center',
+                              color: 'text.secondary'
+                            }}
+                          />
+                        </ListItem>
+                      )}
+                    </List>
+                  </Paper>
+                )}
+              </Box>
+            ) : (
+              <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', flexGrow: 1, mx: 1 }}>
+                <IconButton
+                  color="inherit"
+                  size="small"
+                  sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}
+                  onClick={handleToggleMobileSearch}
+                >
+                  <Search size={20} />
+                </IconButton>
               </Box>
             )}
+            
+
                         
             {/* Desktop Navigation Text - Home, Cart, Messages, Notifications */}
             {isAuthenticated && (
