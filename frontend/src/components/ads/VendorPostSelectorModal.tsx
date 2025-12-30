@@ -94,7 +94,8 @@ const VendorPostSelectorModal: React.FC<VendorPostSelectorModalProps> = ({
     if (post.media && Array.isArray(post.media) && post.media.length > 0) {
       const mediaItem = post.media[0];
       if (mediaItem && typeof mediaItem === 'object') {
-        return (mediaItem as any).secure_url || (mediaItem as any).url || '/images/placeholder-image.png';
+        // For post selection, use the actual media (secure_url or url) rather than thumbnail
+        return mediaItem.secure_url || mediaItem.url || mediaItem.thumbnail_url || '/images/placeholder-image.png';
       }
     }
     return '/images/placeholder-image.png';

@@ -242,15 +242,13 @@ const VendorDashboardContent: React.FC = () => {
       setTicketsLoading(true);
       setTicketsError(null);
       
-      const response = await fetch('/api/support/tickets/vendor');
+      const response: any = await api.support.getVendorTickets();
       
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Received non-JSON response from server');
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to fetch support tickets');
       }
       
-      const data = await response.json();
+      const data = response;
       
       if (data.success) {
         setVendorTickets(data.tickets);
@@ -864,7 +862,7 @@ const VendorDashboardContent: React.FC = () => {
                             </Typography>
                           }
                           secondary={
-                            <Box sx={{ mt: 0.5 }}>
+                            <Box component="div" sx={{ mt: 0.5 }}>
                               <Typography 
                                 variant="body2" 
                                 color="text.secondary"

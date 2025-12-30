@@ -2208,6 +2208,84 @@ class ApiService {
     },
   };
 
+  // Support API
+  support = {
+    // Get vendor tickets
+    getVendorTickets: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.request(`${API_URL}/support/tickets/vendor?${queryParams}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+    },
+
+    // Get user tickets
+    getUserTickets: async (params?: any) => {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      return this.request(`${API_URL}/support/tickets?${queryParams}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+    },
+
+    // Create a support ticket
+    createTicket: async (ticketData: any) => {
+      return this.request(`${API_URL}/support/tickets`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(ticketData),
+      });
+    },
+
+    // Get specific ticket
+    getTicket: async (ticketId: string) => {
+      return this.request(`${API_URL}/support/tickets/${ticketId}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+    },
+
+    // Update ticket status
+    updateTicketStatus: async (ticketId: string, status: string, resolutionNotes?: string) => {
+      return this.request(`${API_URL}/support/tickets/${ticketId}/status`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ status, resolutionNotes }),
+      });
+    },
+
+    // Add message to ticket
+    addTicketMessage: async (ticketId: string, message: string) => {
+      return this.request(`${API_URL}/support/tickets/${ticketId}/messages`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ content: message }),
+      });
+    },
+
+    // Get ticket messages
+    getTicketMessages: async (ticketId: string) => {
+      return this.request(`${API_URL}/support/tickets/${ticketId}/messages`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+    },
+  };
+
   // Notifications API
   notifications = {
     // Get user notifications

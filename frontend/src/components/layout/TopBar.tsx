@@ -1550,14 +1550,16 @@ export const TopBar: React.FC<TopBarProps> = ({
                     )}
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2">
+                    <Box component="div" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       {notification.sender && (
                         <Typography component="span" fontWeight={600}>
                           {notification.sender.displayName}
                         </Typography>
                       )}{' '}
-                      {notification.content}
-                    </Typography>
+                      <Typography component="span">
+                        {notification.content}
+                      </Typography>
+                    </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
                       <Typography variant="caption" color="text.secondary">
                         {timeAgo(notification.createdAt)}
