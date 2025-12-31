@@ -46,6 +46,7 @@ import { usePosts } from '@/hooks/usePosts';
 import { useAdBlending } from '@/components/ads/AdBlendingService';
 import AdCard from '@/components/ads/AdCard';
 import ProductPostCard from '@/components/ads/ProductPostCard';
+import PostCard from '@/components/social/new/PostCard';
 import { CreatePostDialog } from '@/components/social/new/CreatePostDialog';
 import VendorProductPostCreator from '@/components/ads/VendorProductPostCreator';
 import ShareDialog from '@/components/share/ShareDialog';
@@ -285,200 +286,24 @@ const SocialPage: React.FC = () => {
       default:
         const post = item.data;
         return (
-          <Card 
-            sx={{ 
-              mb: 2, 
-              borderRadius: 3, 
-              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-              border: '1px solid rgba(0, 0, 0, 0.05)',
-              transition: 'box-shadow 0.2s',
-              '&:hover': {
-                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-              }
+          <PostCard
+            key={post.id}
+            post={post}
+            onLike={async (postId: string) => {
+              await likePost(postId);
             }}
-          >
-            <CardContent sx={{ pb: 1 }}>
-              {/* Post header */}
-              <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
-                <Box 
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    bgcolor: theme.palette.primary.main,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: '1rem',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => handleNavigation(`/profile/${post.author?.username}`)}
-                >
-                  {post.author?.displayName?.charAt(0) || post.author?.username?.charAt(0) || 'U'}
-                </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography 
-                    variant="subtitle2" 
-                    sx={{ fontWeight: 600, cursor: 'pointer' }}
-                    onClick={() => handleNavigation(`/profile/${post.author?.username}`)}
-                  >
-                    {post.author?.displayName || post.author?.username || 'Unknown User'}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    @{post.author?.username || 'unknown'} · Just now
-                  </Typography>
-                </Box>
-                <IconButton size="small" sx={{ ml: 'auto' }}>
-                  <MoreHorizontal size={18} />
-                </IconButton>
-              </Box>
-              
-              {/* Post content */}
-              <Box sx={{ mb: 1.5 }}>
-                <Typography variant="body1" sx={{ lineHeight: 1.5 }}>
-                  {post.content}
-                </Typography>
-              </Box>
-              
-              {/* Post media */}
-              {post.media && post.media.length > 0 && (
-                <Box 
-                  sx={{ 
-                    borderRadius: 2, 
-                    overflow: 'hidden', 
-                    mb: 1.5,
-                    maxHeight: 400,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  {post.media[0]?.resource_type === 'video' ? (
-                    <UnifiedVideoMedia 
-                      src={post.media[0]?.url || post.media[0]?.secure_url} 
-                      alt="Post media" 
-                      style={{ 
-                        width: '100%', 
-                        height: 'auto', 
-                        maxHeight: 'inherit',
-                        objectFit: 'cover',
-                        display: 'block'
-                      }} 
-                    />
-                  ) : (
-                    <UnifiedImageMedia 
-                      src={post.media[0]?.url || post.media[0]?.secure_url} 
-                      alt="Post media" 
-                      style={{ 
-                        width: '100%', 
-                        height: 'auto', 
-                        maxHeight: 'inherit',
-                        objectFit: 'cover',
-                        display: 'block'
-                      }} 
-                    />
-                  )}
-                </Box>
-              )}
-              
-              {/* Post stats */}
-              <Box display="flex" alignItems="center" gap={1} mb={1}>
-                <Typography variant="caption" color="text.secondary">
-                  {post.likeCount || 0} likes
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  ·
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {post.commentCount || 0} comments
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  ·
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {post.shareCount || 0} shares
-                </Typography>
-              </Box>
-              
-              <Divider sx={{ mb: 1 }} />
-              
-              {/* Post actions */}
-              <Box display="flex" justifyContent="space-around" sx={{ py: 0.5 }}>
-                <Button 
-                  startIcon={<Heart size={16} />}
-                  onClick={async () => await handleLikePost(post.id)}
-                  sx={{ 
-                    textTransform: 'none', 
-                    fontWeight: 600, 
-                    color: post.isLiked ? theme.palette.error.main : 'inherit',
-                    flex: 1,
-                    justifyContent: 'center',
-                    px: { xs: 0.5, sm: 1.5 },
-                    minWidth: 0,
-                    '&:hover': {
-                      backgroundColor: 'transparent',
-                    }
-                  }}
-                >
-                  <Box display={{ xs: 'none', sm: 'block' }}>Like</Box>
-                </Button>
-                <Button 
-                  startIcon={<MessageSquare size={16} />}
-                  onClick={() => handleCommentClick(post.id)}
-                  sx={{ 
-                    textTransform: 'none', 
-                    fontWeight: 600, 
-                    flex: 1,
-                    justifyContent: 'center',
-                    px: { xs: 0.5, sm: 1.5 },
-                    minWidth: 0,
-                    '&:hover': {
-                      backgroundColor: 'transparent',
-                    }
-                  }}
-                >
-                  <Box display={{ xs: 'none', sm: 'block' }}>Comment</Box>
-                </Button>
-                <Button 
-                  startIcon={<Bookmark size={16} />}
-                  onClick={async () => await handleBookmarkPost(post.id)}
-                  sx={{ 
-                    textTransform: 'none', 
-                    fontWeight: 600, 
-                    color: post.isBookmarked ? theme.palette.primary.main : 'inherit',
-                    flex: 1,
-                    justifyContent: 'center',
-                    px: { xs: 0.5, sm: 1.5 },
-                    minWidth: 0,
-                    '&:hover': {
-                      backgroundColor: 'transparent',
-                    }
-                  }}
-                >
-                  <Box display={{ xs: 'none', sm: 'block' }}>Bookmark</Box>
-                </Button>
-                <Button 
-                  startIcon={<ShareIcon size={16} />}
-                  onClick={() => handleSharePost(post.id)}
-                  sx={{ 
-                    textTransform: 'none', 
-                    fontWeight: 600, 
-                    flex: 1,
-                    justifyContent: 'center',
-                    px: { xs: 0.5, sm: 1.5 },
-                    minWidth: 0,
-                    '&:hover': {
-                      backgroundColor: 'transparent',
-                    }
-                  }}
-                >
-                  <Box display={{ xs: 'none', sm: 'block' }}>Share</Box>
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
+            onBookmark={async (postId: string) => {
+              await bookmarkPost(postId);
+            }}
+            onShare={(post: any) => {
+              setSelectedPost(post);
+              setShareDialogOpen(true);
+            }}
+            onComment={(postId: string) => {
+              // Navigate to post detail page for commenting
+              router.push(`/post/${postId}`);
+            }}
+          />
         );
     }
   };
