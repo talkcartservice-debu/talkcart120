@@ -64,6 +64,7 @@ export interface Message {
     content: string;
     editedAt: string;
   }[];
+  replies?: Message[];
   sender: Participant;
   isOwn: boolean;
   isRead: boolean;
@@ -92,8 +93,8 @@ export interface Conversation {
   title?: string; // For ForwardMessageDialog
   avatar?: string; // For ForwardMessageDialog
   settings?: {
-    allowInvites: boolean;
-    muteNotifications: boolean;
+    allowInvites?: boolean;
+    muteNotifications?: boolean;
   };
 }
 

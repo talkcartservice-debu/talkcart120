@@ -18,9 +18,11 @@ import {
     Chip,
     CircularProgress,
     InputAdornment,
-    Divider
+    Divider,
+    Tabs,
+    Tab
 } from '@mui/material';
-import { Search, Send, X } from 'lucide-react';
+import { Search, Send, X, Clock } from 'lucide-react';
 import { Conversation } from '@/types/message';
 
 interface ForwardMessageDialogProps {
@@ -44,6 +46,7 @@ const ForwardMessageDialog: React.FC<ForwardMessageDialogProps> = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [forwardMessage, setForwardMessage] = useState('');
     const [forwarding, setForwarding] = useState(false);
+    const [activeTab, setActiveTab] = useState(0); // 0: All, 1: Recent
 
     // Reset state when dialog opens/closes
     useEffect(() => {
@@ -51,26 +54,63 @@ const ForwardMessageDialog: React.FC<ForwardMessageDialogProps> = ({
             setSelectedConversations([]);
             setSearchQuery('');
             setForwardMessage('');
+            setActiveTab(0);
         }
     }, [open]);
 
-    // Filter conversations based on search query
-    const filteredConversations = (conversations || []).filter((conversation: any) => {
+    // Filter conversations based on search query and active tab
+    const getFilteredConversations = () => {
         const searchText = searchQuery.toLowerCase();
 
-        // Search in group name
-        if (conversation.isGroup && conversation.groupName) {
-            return conversation.groupName.toLowerCase().includes(searchText);
+        if (activeTab === 1) {
+            // Get recent conversations (top 5) and filter by search if needed
+            const recentConversations = conversations
+                .slice()
+                .sort((a, b) => {
+                    const aTime = new Date(a.lastActivity || '').getTime();
+                    const bTime = new Date(b.lastActivity || '').getTime();
+                    return bTime - aTime; // Sort in descending order (most recent first)
+                })
+                .slice(0, 5);
+
+            if (!searchText) {
+                return recentConversations;
+            }
+
+            return recentConversations.filter((conversation: any) => {
+                // Search in group name
+                if (conversation.isGroup && conversation.groupName) {
+                    return conversation.groupName.toLowerCase().includes(searchText);
+                }
+
+                // Search in participant names
+                const participantNames = conversation.participants
+                    .map((p: any) => `${p.displayName} ${p.username}`)
+                    .join(' ')
+                    .toLowerCase();
+
+                return participantNames.includes(searchText);
+            });
+        } else {
+            // All conversations tab
+            return conversations.filter((conversation: any) => {
+                // Search in group name
+                if (conversation.isGroup && conversation.groupName) {
+                    return conversation.groupName.toLowerCase().includes(searchText);
+                }
+
+                // Search in participant names
+                const participantNames = conversation.participants
+                    .map((p: any) => `${p.displayName} ${p.username}`)
+                    .join(' ')
+                    .toLowerCase();
+
+                return participantNames.includes(searchText);
+            });
         }
+    };
 
-        // Search in participant names
-        const participantNames = conversation.participants
-            .map((p: any) => `${p.displayName} ${p.username}`)
-            .join(' ')
-            .toLowerCase();
-
-        return participantNames.includes(searchText);
-    });
+    const filteredConversations = getFilteredConversations();
 
     const handleToggleConversation = (conversationId: string) => {
         setSelectedConversations(prev =>
@@ -160,6 +200,22 @@ const ForwardMessageDialog: React.FC<ForwardMessageDialogProps> = ({
             </DialogTitle>
 
             <DialogContent sx={{ p: 0 }}>
+                {/* Tabs for All/Recent */}
+                <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
+                    <Tabs 
+                        value={activeTab} 
+                        onChange={(e, newValue) => setActiveTab(newValue)}
+                        variant="fullWidth"
+                    >
+                        <Tab label="All Conversations" />
+                        <Tab 
+                            label="Recent" 
+                            icon={<Clock size={14} />} 
+                            iconPosition="start" 
+                        />
+                    </Tabs>
+                </Box>
+
                 {/* Search */}
                 <Box sx={{ p: 2, pb: 1 }}>
                     <TextField
@@ -186,7 +242,7 @@ const ForwardMessageDialog: React.FC<ForwardMessageDialogProps> = ({
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                             {selectedConversations.map(id => {
-                                const conversation = (conversations || []).find(c => c.id === id);
+                                const conversation = conversations.find(c => c.id === id);
                                 if (!conversation) return null;
 
                                 return (
@@ -214,7 +270,7 @@ const ForwardMessageDialog: React.FC<ForwardMessageDialogProps> = ({
                     ) : filteredConversations.length === 0 ? (
                         <Box sx={{ textAlign: 'center', p: 4 }}>
                             <Typography color="text.secondary">
-                                {searchQuery ? 'No conversations found' : 'No conversations available'}
+                                {searchQuery ? 'No conversations found' : activeTab === 1 ? 'No recent conversations' : 'No conversations available'}
                             </Typography>
                         </Box>
                     ) : (

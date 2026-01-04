@@ -33,13 +33,23 @@ class SocketService {
   private activeChatbotConversationId: string | null = null;
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = Infinity;
+  private reconnectTimeout: NodeJS.Timeout | null = null;
+  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private lastPing: number = 0;
+  private connectionTimeout: NodeJS.Timeout | null = null;
 
   // Connect to socket server
   connect(token: string, userId: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         this.userId = userId;
-
+  
+        // Clear any existing connection timeout
+        if (this.connectionTimeout) {
+          clearTimeout(this.connectionTimeout);
+          this.connectionTimeout = null;
+        }
+  
         // Ensure we're using the correct URL format
         let socketUrl = getWebSocketUrlLocal();
         if (!socketUrl || socketUrl.trim() === '') {
@@ -47,40 +57,55 @@ class SocketService {
             `${window.location.protocol}//${window.location.hostname}:8000` : 
             'http://localhost:8000';
         }
-
+  
         // Ensure the URL has a proper protocol
         if (!socketUrl.startsWith('ws://') && !socketUrl.startsWith('wss://')) {
           const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss://' : 'ws://';
           socketUrl = `${protocol}${socketUrl.replace(/^https?:\/\//, '').replace(/^http?:\/\//, '')}`;
         }
-
+  
         this.socket = io(socketUrl, {
           path: '/socket.io/',
           auth: {
             token
           },
-          transports: ['websocket', 'polling'], // Allow polling as fallback
+          transports: ['websocket'], // Prefer websocket for better performance
           reconnection: true,
-          reconnectionAttempts: Infinity,
+          reconnectionAttempts: 100, // Limit reconnection attempts to prevent infinite loops
           reconnectionDelay: 1000,
-          reconnectionDelayMax: 30000, // Increased from 15000 to 30000
-          timeout: 999999999, // Effectively disable timeout (Socket.IO ignores 0)
+          reconnectionDelayMax: 10000, // Cap maximum delay at 10 seconds
+          timeout: 20000, // 20 second timeout for connection
         });
-
+  
+        // Set a connection timeout
+        this.connectionTimeout = setTimeout(() => {
+          if (this.socket && !this.socket.connected) {
+            console.log('Socket connection timeout');
+            this.socket.disconnect();
+            reject(new Error('Socket connection timeout'));
+          }
+        }, 20000); // 20 second timeout
+  
         this.socket.on('connect', () => {
           console.log('Socket connected successfully');
           this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
-
+            
+          // Clear connection timeout on successful connection
+          if (this.connectionTimeout) {
+            clearTimeout(this.connectionTimeout);
+            this.connectionTimeout = null;
+          }
+  
           // Authenticate socket connection
           this.socket?.emit('authenticate', { userId });
-
+  
           resolve();
         });
-
+  
         this.socket.on('connect_error', (error) => {
           console.error('Socket connection error:', error);
           this.reconnectAttempts++;
-          
+                  
           // Log detailed error information with type safety
           console.error('Connection error details:', {
             message: error.message,
@@ -89,28 +114,26 @@ class SocketService {
             description: (error as any).description,
             context: (error as any).context
           });
-          
+                  
           // Implement exponential backoff with a maximum delay
-          const maxDelay = 30000; // 30 seconds
-          const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), maxDelay);
-          
+          const maxDelay = 10000; // 10 seconds max
+          const delay = Math.min(1000 * Math.pow(1.5, this.reconnectAttempts - 1), maxDelay);
+                  
           console.log(`Reconnection attempt ${this.reconnectAttempts} in ${delay}ms`);
-          
-          // Continue reconnection attempts indefinitely but with backoff
         });
-
+  
         this.socket.on('disconnect', (reason) => {
           console.log('Socket disconnected:', reason);
-          
+                  
           // If it's a forced disconnection from the server, don't try to reconnect
           if (reason === 'io server disconnect') {
             console.log('Server forced disconnection, not attempting to reconnect');
           }
         });
-
+  
         // Set up event listeners
         this.setupEventListeners();
-
+  
       } catch (error) {
         console.error('Socket initialization error:', error);
         reject(error);
@@ -206,6 +229,14 @@ class SocketService {
     // Chatbot user left
     this.socket.on('chatbot:user-left', (data) => {
       this.emit('chatbot:user-left', data);
+    });
+
+    // Ping response
+    this.socket.on('pong', (data) => {
+      console.log('Received pong:', data);
+      // Calculate round trip time
+      const roundTripTime = Date.now() - (data.timestamp || this.lastPing);
+      console.log('Round trip time:', roundTripTime, 'ms');
     });
   }
 
@@ -362,6 +393,26 @@ class SocketService {
         console.error(`Error in ${event} listener:`, error);
       }
     });
+  }
+
+  // Start heartbeat mechanism for connection health check
+  private startHeartbeat(): void {
+    this.stopHeartbeat(); // Clear any existing heartbeat
+    
+    this.heartbeatInterval = setInterval(() => {
+      if (this.socket && this.socket.connected) {
+        this.lastPing = Date.now();
+        this.socket.emit('ping', { timestamp: this.lastPing });
+      }
+    }, 15000); // Send ping every 15 seconds
+  }
+
+  // Stop heartbeat mechanism
+  private stopHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
   }
 }
 

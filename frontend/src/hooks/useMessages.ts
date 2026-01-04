@@ -21,14 +21,21 @@ interface UseMessagesReturn {
   typingUsers: Record<string, string[]>;
   searchResults: Message[];
   searching: boolean;
+  searchHistory: string[];
   totalUnread: number;
-  
+  messageHistory: Record<string, Message[]>;
+  scrollPositions: Record<string, number>;
+
   // Sound controls
   soundsEnabled: boolean;
   toggleSounds: () => void;
   soundVolume: number;
   setSoundVolume: (v: number) => void;
-  
+
+  // Real-time features
+  onlineUsers: Record<string, boolean>;
+  messageStatus: Record<string, 'sent' | 'delivered' | 'read'>;
+
   // Message actions
   fetchMessages: (loadMore?: boolean) => Promise<void>;
   sendMessage: (content: string, type?: string, media?: any, replyTo?: string) => Promise<boolean>;
@@ -46,6 +53,16 @@ interface UseMessagesReturn {
   createConversation: (participantIds: string[], options?: { isGroup?: boolean; groupName?: string; groupDescription?: string }) => Promise<any>;
   updateConversation: (conversationId: string, settings: { groupName?: string; groupDescription?: string; groupAvatar?: string }) => Promise<any>;
   fetchConversations: () => Promise<void>; // Add this new function
+  pinMessage: (messageId: string) => Promise<boolean>;
+  unpinMessage: (messageId: string) => Promise<boolean>;
+  archiveMessage: (messageId: string) => Promise<boolean>;
+  unarchiveMessage: (messageId: string) => Promise<boolean>;
+  getThreadMessages: (messageId: string) => Promise<Message[]>;
+  muteConversation: (conversationId: string) => Promise<void>;
+  unmuteConversation: (conversationId: string) => Promise<void>;
+  updateOnlineStatus: (userId: string, isOnline: boolean) => void;
+  updateMessageStatus: (messageId: string, status: 'delivered' | 'read') => void;
+  getRecentConversations: (limit?: number) => Conversation[];
 }
 
 const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
@@ -61,9 +78,14 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
   const [typingUsers, setTypingUsers] = useState<Record<string, string[]>>({});
   const [searchResults, setSearchResults] = useState<Message[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchHistory, setSearchHistory] = useLocalStorage<string[]>("message-search-history", []);
   const [totalUnread, setTotalUnread] = useState(0);
   const [soundsEnabled, setSoundsEnabled] = useLocalStorage<boolean>("sounds-enabled", true);
   const [soundVolume, setSoundVolumeState] = useLocalStorage("sound-volume", 100);
+  const [onlineUsers, setOnlineUsers] = useState<Record<string, boolean>>({});
+  const [messageStatus, setMessageStatus] = useState<Record<string, 'sent' | 'delivered' | 'read'>>({});
+  const [messageHistory, setMessageHistory] = useState<Record<string, Message[]>>({}); // Store message history for each conversation
+  const [scrollPositions, setScrollPositions] = useState<Record<string, number>>({}); // Store scroll position for each conversation
 
   // Add effect to fetch conversations when hook is initialized
   useEffect(() => {
@@ -107,7 +129,10 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     async (loadMore = false) => {
       // Use activeConversation.id if conversationId is not provided
       const currentConversationId = conversationId || activeConversation?.id;
-      if (!currentConversationId) return;
+      if (!currentConversationId) {
+        setError('No active conversation selected');
+        return;
+      }
 
       try {
         setLoading(true);
@@ -120,11 +145,17 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
             setMessages((prev) => [...(prev || []), ...res.data.messages]);
           } else {
             setMessages(res.data.messages);
+            // Store messages in history for this conversation
+            setMessageHistory(prev => ({
+              ...prev,
+              [currentConversationId]: res.data.messages
+            }));
           }
           setHasMore(res.data.pagination.hasMore);
         }
-      } catch (e) {
-        setError((e as Error).message);
+      } catch (e: any) {
+        setError(e.message || 'Failed to fetch messages. Please check your network connection.');
+        console.error('Fetch messages error:', e);
       } finally {
         setLoading(false);
       }
@@ -166,7 +197,10 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     async (content: string, type?: string, media?: any, replyTo?: string) => {
       // Use activeConversation.id if conversationId is not provided
       const currentConversationId = conversationId || activeConversation?.id;
-      if (!currentConversationId) return false;
+      if (!currentConversationId) {
+        setError('No active conversation selected');
+        return false;
+      }
 
       // Create a temporary message with a temporary ID
       const tempId = `temp-${Date.now()}-${Math.random()}`;
@@ -315,7 +349,12 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
 
   const handleEditMessage = useCallback(
     async (messageId: string, content: string) => {
-      if (!conversationId) return false;
+      // Use conversationId if provided, otherwise use activeConversation.id
+      const currentConversationId = conversationId || activeConversation?.id;
+      if (!currentConversationId) {
+        setError('No active conversation selected');
+        return false;
+      }
 
       try {
         const res = await client.editMessage(messageId, {
@@ -328,43 +367,67 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
                 ? {
                     ...m,
                     content,
+                    isEdited: true,
+                    editHistory: m.editHistory || []
                   }
                 : m
             )
           );
           return true;
+        } else {
+          setError(res.error || 'Failed to edit message');
+          return false;
         }
-        return false;
-      } catch (e) {
-        setError((e as Error).message);
+      } catch (e: any) {
+        setError(e.message || 'Failed to edit message. Please check your network connection.');
+        console.error('Edit message error:', e);
         return false;
       }
     },
-    [conversationId]
+    [conversationId, activeConversation?.id]
   );
 
   const handleDeleteMessage = useCallback(
     async (messageId: string) => {
-      if (!conversationId) return false;
+      // Use conversationId if provided, otherwise use activeConversation.id
+      const currentConversationId = conversationId || activeConversation?.id;
+      if (!currentConversationId) {
+        setError('No active conversation selected');
+        return false;
+      }
 
       try {
         const res = await client.deleteMessage(messageId);
         if (res.success) {
-          setMessages((prev) => (prev || []).filter((m) => m.id !== messageId));
+          setMessages((prev) => 
+            (prev || []).map(m => 
+              m.id === messageId 
+                ? { ...m, isDeleted: true, content: 'This message was deleted' } 
+                : m
+            )
+          );
           return true;
+        } else {
+          setError(res.error || 'Failed to delete message');
+          return false;
         }
-        return false;
-      } catch (e) {
-        setError((e as Error).message);
+      } catch (e: any) {
+        setError(e.message || 'Failed to delete message. Please check your network connection.');
+        console.error('Delete message error:', e);
         return false;
       }
     },
-    [conversationId]
+    [conversationId, activeConversation?.id]
   );
 
   const markAsRead = useCallback(
     async (messageId: string) => {
-      if (!conversationId) return;
+      // Use conversationId if provided, otherwise use activeConversation.id
+      const currentConversationId = conversationId || activeConversation?.id;
+      if (!currentConversationId) {
+        setError('No active conversation selected');
+        return;
+      }
 
       try {
         // Update local state immediately for better UX
@@ -379,14 +442,14 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         // Update conversation unread count
         setConversations(prev => 
           (prev || []).map(c => 
-            c.id === conversationId 
+            c.id === currentConversationId 
               ? { ...c, unreadCount: Math.max(0, (c.unreadCount || 0) - 1) } 
               : c
           )
         );
         
         // Update active conversation if applicable
-        if (activeConversation && activeConversation.id === conversationId) {
+        if (activeConversation && activeConversation.id === currentConversationId) {
           setActiveConversation(prev => 
             prev ? { ...prev, unreadCount: Math.max(0, (prev.unreadCount || 0) - 1) } : prev
           );
@@ -397,8 +460,9 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         
         // Use socket service to notify other users
         socketService.markMessageAsRead(messageId);
-      } catch (e) {
-        setError((e as Error).message);
+      } catch (e: any) {
+        setError(e.message || 'Failed to mark message as read. Please check your network connection.');
+        console.error('Mark as read error:', e);
         
         // Revert local state changes if API call fails
         setMessages(prev => 
@@ -414,7 +478,10 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
   );
 
   const markAllAsRead = useCallback(async () => {
-    if (!activeConversation?.id) return;
+    if (!activeConversation?.id) {
+      setError('No active conversation selected');
+      return;
+    }
 
     try {
       const res = await client.markAllAsRead(activeConversation.id);
@@ -424,7 +491,7 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
           (prev || []).map(m => ({
             ...m,
             isRead: true,
-            readBy: [...(m.readBy || []), { userId: 'current-user', readAt: new Date().toISOString() }]
+            readBy: [...(m.readBy || []), { userId: user?.id || 'current-user', readAt: new Date().toISOString() }]
           }))
         );
         
@@ -453,11 +520,16 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       setError(errorMessage);
       console.error('Mark all as read error:', e);
     }
-  }, [activeConversation]);
+  }, [activeConversation, user]);
 
   const handleAddReaction = useCallback(
     async (messageId: string, emoji: string) => {
-      if (!conversationId) return false;
+      // Use conversationId if provided, otherwise use activeConversation.id
+      const currentConversationId = conversationId || activeConversation?.id;
+      if (!currentConversationId) {
+        setError('No active conversation selected');
+        return false;
+      }
 
       try {
         const res = await client.addReaction(messageId, { emoji });
@@ -467,32 +539,46 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
               m.id === messageId
                 ? {
                     ...m,
-                    reactions: [...(m.reactions || []), res.data.reaction],
+                    reactions: [...(m.reactions || []), res.data?.reaction || { userId: user?.id, emoji, timestamp: new Date().toISOString() }],
                   }
                 : m
             )
           );
           return true;
+        } else {
+          setError(res.error || 'Failed to add reaction');
+          return false;
         }
-        return false;
-      } catch (e) {
-        setError((e as Error).message);
+      } catch (e: any) {
+        setError(e.message || 'Failed to add reaction. Please check your network connection.');
+        console.error('Add reaction error:', e);
         return false;
       }
     },
-    [conversationId]
+    [conversationId, activeConversation?.id, user]
   );
 
   const handleForwardMessage = useCallback(
     async (messageId: string, conversationIds: string[], message?: string) => {
+      if (!messageId || !conversationIds || conversationIds.length === 0) {
+        setError('Invalid message or conversation IDs provided');
+        return false;
+      }
+      
       try {
         const res = await client.forwardMessage(messageId, {
           conversationIds,
           message,
         });
-        return res.success;
-      } catch (e) {
-        setError((e as Error).message);
+        if (res.success) {
+          return true;
+        } else {
+          setError(res.error || 'Failed to forward message');
+          return false;
+        }
+      } catch (e: any) {
+        setError(e.message || 'Failed to forward message. Please check your network connection.');
+        console.error('Forward message error:', e);
         return false;
       }
     },
@@ -501,72 +587,117 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
 
   const handleSearchMessages = useCallback(
     async (query: string) => {
-      if (!conversationId) {
+      // Use conversationId if provided, otherwise use activeConversation.id
+      const currentConversationId = conversationId || activeConversation?.id;
+      if (!currentConversationId) {
+        setError('No active conversation selected');
+        return { messages: [], total: 0 };
+      }
+
+      if (!query.trim()) {
+        setError('Search query cannot be empty');
         return { messages: [], total: 0 };
       }
 
       try {
         setSearching(true);
-        const res = await client.searchMessages(conversationId, query);
+        const res = await client.searchMessages(currentConversationId, query);
         if (res.success) {
           setSearchResults(res.data.messages);
+          // Add to search history if not already present
+          if (!searchHistory.includes(query.trim())) {
+            const newSearchHistory = [query.trim(), ...searchHistory.slice(0, 9)]; // Keep only last 10 searches
+            setSearchHistory(newSearchHistory);
+          }
           return {
             messages: res.data.messages,
             total: res.data.total,
           };
+        } else {
+          setError(res.error || 'Failed to search messages');
+          return { messages: [], total: 0 };
         }
-        return { messages: [], total: 0 };
-      } catch (e) {
-        setError((e as Error).message);
+      } catch (e: any) {
+        setError(e.message || 'Failed to search messages. Please check your network connection.');
+        console.error('Search messages error:', e);
         return { messages: [], total: 0 };
       } finally {
         setSearching(false);
       }
     },
-    [conversationId]
+    [conversationId, activeConversation?.id, searchHistory, setSearchHistory]
   );
 
   const handleSearchAllMessages = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setError('Search query cannot be empty');
+      return { messages: [], total: 0 };
+    }
+
     try {
       setSearching(true);
       const res = await client.searchAllMessages(query);
       if (res.success) {
         setSearchResults(res.data.messages);
+        // Add to search history if not already present
+        if (!searchHistory.includes(query.trim())) {
+          const newSearchHistory = [query.trim(), ...searchHistory.slice(0, 9)]; // Keep only last 10 searches
+          setSearchHistory(newSearchHistory);
+        }
         return {
           messages: res.data.messages,
           total: res.data.total,
         };
       }
       return { messages: [], total: 0 };
-    } catch (e) {
-      setError((e as Error).message);
+    } catch (e: any) {
+      setError(e.message || 'Failed to search all messages. Please check your network connection.');
+      console.error('Search all messages error:', e);
       return { messages: [], total: 0 };
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [searchHistory, setSearchHistory]);
 
   const handleSendTypingIndicator = useCallback(
     (isTyping = true) => {
-      if (!conversationId) return;
+      // Use conversationId if provided, otherwise use activeConversation.id
+      const currentConversationId = conversationId || activeConversation?.id;
+      if (!currentConversationId) {
+        // Don't show error for typing indicators since they're non-critical
+        console.warn('No active conversation selected for typing indicator');
+        return;
+      }
 
-      client.sendTypingIndicator(conversationId, isTyping).catch((e) => {
-        console.error('Failed to send typing indicator:', e);
+      client.sendTypingIndicator(currentConversationId, isTyping).catch((e: any) => {
+        // Don't show error for typing indicators since they're non-critical
+        console.warn('Failed to send typing indicator:', e?.message || e);
       });
     },
-    [conversationId]
+    [conversationId, activeConversation?.id]
   );
 
   const openConversation = useCallback(async (conversation: any) => {
+    // Store current scroll position before switching conversations
+    if (activeConversation?.id) {
+      const currentScrollTop = document.querySelector('.messages-container')?.scrollTop || 0;
+      setScrollPositions(prev => ({
+        ...prev,
+        [activeConversation.id]: currentScrollTop
+      }));
+    }
+    
     setActiveConversation(conversation);
     setMessages([]);
     setLoading(true);
     setError(null);
     
     if (conversation?.id) {
-      await fetchMessages(conversation.id);
       // Join the conversation room via socket
       socketService.joinConversation(conversation.id);
+      
+      // The fetchMessages function will use activeConversation.id
+      // It's called in the useEffect when activeConversation changes
       
       // Mark all messages in this conversation as read
       try {
@@ -594,16 +725,17 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         console.error('Error marking all messages as read:', e);
       }
     }
-  }, [fetchMessages, client]);
+  }, [activeConversation, fetchMessages, client]);
 
   const handleCreateConversation = useCallback(
     async (participantIds: string[], options?: { isGroup?: boolean; groupName?: string; groupDescription?: string }) => {
+      if (!participantIds || participantIds.length === 0) {
+        const errorMessage = 'At least one participant is required';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
+      
       try {
-        // Validate input
-        if (!participantIds || participantIds.length === 0) {
-          throw new Error('At least one participant is required');
-        }
-        
         console.log('Creating conversation with:', { participantIds, options });
         const res = await client.createConversation(participantIds, options || {});
         console.log('Create conversation response:', res);
@@ -640,7 +772,8 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         }
         
         // Handle error responses
-        const errorMessage = res.error || 'Failed to create conversation';
+        const errorMessage = res.error || res.message || 'Failed to create conversation';
+        setError(errorMessage);
         throw new Error(errorMessage);
       } catch (e: any) {
         console.error('Error creating conversation:', e);
@@ -654,6 +787,11 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
 
   const handleUpdateConversation = useCallback(
     async (conversationId: string, settings: { groupName?: string; groupDescription?: string; groupAvatar?: string }) => {
+      if (!conversationId) {
+        setError('Conversation ID is required');
+        throw new Error('Conversation ID is required');
+      }
+      
       try {
         const res = await client.updateConversation(conversationId, settings);
         if (res.success) {
@@ -672,10 +810,15 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
           
           return res.data;
         }
-        throw new Error(res.error || 'Failed to update conversation');
-      } catch (e) {
-        setError((e as Error).message);
-        throw e;
+        
+        const errorMessage = res.error || res.message || 'Failed to update conversation';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      } catch (e: any) {
+        const errorMessage = e.message || 'Failed to update conversation';
+        setError(errorMessage);
+        console.error('Update conversation error:', e);
+        throw new Error(errorMessage);
       }
     },
     [activeConversation]
@@ -783,7 +926,7 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
                   avatar: null,
                   isVerified: false
                 },
-                isOwn: false, // This is not our own message
+                isOwn: data.message.senderId === user?.id || data.message.sender?.id === user?.id, // Check if message is from current user
                 isRead: false
               };
 
@@ -798,12 +941,13 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
               }
 
               // Update conversations list to show unread count
+              // Only increment if message is from another user (not the current user)
               setConversations(prev => 
                 (prev || []).map(conv => 
                   conv.id === data.conversationId 
                     ? { 
                         ...conv, 
-                        unreadCount: (conv.unreadCount || 0) + 1,
+                        unreadCount: newMessage.isOwn ? conv.unreadCount || 0 : (conv.unreadCount || 0) + 1,
                         lastMessage: newMessage
                       } 
                     : conv
@@ -963,6 +1107,178 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     };
   }, [activeConversation?.id, messages, activeConversation, user]);
 
+  // New functions for enhanced features
+  const pinMessage = async (messageId: string): Promise<boolean> => {
+    try {
+      const res = await client.pinMessage(messageId);
+      if (res.success) {
+        // Update local state to reflect pinned status
+        setMessages(prev => 
+          (prev || []).map(msg => 
+            msg.id === messageId ? { ...msg, isPinned: true } : msg
+          )
+        );
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error pinning message:', error);
+      setError((error as Error).message);
+      return false;
+    }
+  };
+  
+  const unpinMessage = async (messageId: string): Promise<boolean> => {
+    try {
+      const res = await client.unpinMessage(messageId);
+      if (res.success) {
+        // Update local state to reflect unpinned status
+        setMessages(prev => 
+          (prev || []).map(msg => 
+            msg.id === messageId ? { ...msg, isPinned: false } : msg
+          )
+        );
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error unpinning message:', error);
+      setError((error as Error).message);
+      return false;
+    }
+  };
+  
+  const archiveMessage = async (messageId: string): Promise<boolean> => {
+    try {
+      const res = await client.archiveMessage(messageId);
+      if (res.success) {
+        // Update local state to reflect archived status
+        setMessages(prev => 
+          (prev || []).map(msg => 
+            msg.id === messageId ? { ...msg, isArchived: true } : msg
+          )
+        );
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error archiving message:', error);
+      setError((error as Error).message);
+      return false;
+    }
+  };
+  
+  const unarchiveMessage = async (messageId: string): Promise<boolean> => {
+    try {
+      const res = await client.unarchiveMessage(messageId);
+      if (res.success) {
+        // Update local state to reflect unarchived status
+        setMessages(prev => 
+          (prev || []).map(msg => 
+            msg.id === messageId ? { ...msg, isArchived: false } : msg
+          )
+        );
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error unarchiving message:', error);
+      setError((error as Error).message);
+      return false;
+    }
+  };
+  
+  const getThreadMessages = async (messageId: string): Promise<Message[]> => {
+    try {
+      const res = await client.getThreadMessages(messageId);
+      if (res.success) {
+        return res.data.messages || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error getting thread messages:', error);
+      setError((error as Error).message);
+      return [];
+    }
+  };
+  
+  const muteConversation = async (conversationId: string): Promise<void> => {
+    try {
+      // Update conversation settings to mute notifications
+      await client.updateConversation(conversationId, { settings: { muteNotifications: true } });
+      
+      // Update local state
+      setConversations(prev => 
+        (prev || []).map(conv => 
+          conv.id === conversationId 
+            ? { ...conv, settings: { ...conv.settings, muteNotifications: true } } 
+            : conv
+        )
+      );
+      
+      // Update active conversation if applicable
+      if (activeConversation?.id === conversationId) {
+        setActiveConversation(prev => 
+          prev ? { ...prev, settings: { ...prev.settings, muteNotifications: true } } : null
+        );
+      }
+    } catch (error) {
+      console.error('Error muting conversation:', error);
+      setError((error as Error).message);
+    }
+  };
+  
+  const unmuteConversation = async (conversationId: string): Promise<void> => {
+    try {
+      // Update conversation settings to unmute notifications
+      await client.updateConversation(conversationId, { settings: { muteNotifications: false } });
+      
+      // Update local state
+      setConversations(prev => 
+        (prev || []).map(conv => 
+          conv.id === conversationId 
+            ? { ...conv, settings: { ...conv.settings, muteNotifications: false } } 
+            : conv
+        )
+      );
+      
+      // Update active conversation if applicable
+      if (activeConversation?.id === conversationId) {
+        setActiveConversation(prev => 
+          prev ? { ...prev, settings: { ...prev.settings, muteNotifications: false } } : null
+        );
+      }
+    } catch (error) {
+      console.error('Error unmuting conversation:', error);
+      setError((error as Error).message);
+    }
+  };
+  
+  const updateOnlineStatus = (userId: string, isOnline: boolean): void => {
+    setOnlineUsers(prev => ({
+      ...prev,
+      [userId]: isOnline
+    }));
+  };
+  
+  const updateMessageStatus = (messageId: string, status: 'delivered' | 'read'): void => {
+    setMessageStatus(prev => ({
+      ...prev,
+      [messageId]: status
+    }));
+  };
+  
+  const getRecentConversations = useCallback((limit: number = 5): Conversation[] => {
+    // Sort conversations by last message time and return the most recent ones
+    return [...(conversations || [])]
+      .sort((a, b) => {
+        const aTime = new Date(a.lastActivity || '').getTime();
+        const bTime = new Date(b.lastActivity || '').getTime();
+        return bTime - aTime; // Sort in descending order (most recent first)
+      })
+      .slice(0, limit);
+  }, [conversations]);
+  
   return {
     conversations,
     activeConversation,
@@ -974,13 +1290,20 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     typingUsers,
     searchResults,
     searching,
+    searchHistory,
     totalUnread,
+    messageHistory,
+    scrollPositions,
     
     // Sound controls
     soundsEnabled,
     toggleSounds,
     soundVolume,
     setSoundVolume,
+    
+    // Real-time features
+    onlineUsers,
+    messageStatus,
     
     // Message actions
     fetchMessages,
@@ -998,11 +1321,50 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     openConversation,
     createConversation: handleCreateConversation,
     updateConversation: handleUpdateConversation,
-    fetchConversations
+    fetchConversations,
+    pinMessage,
+    unpinMessage,
+    archiveMessage,
+    unarchiveMessage,
+    getThreadMessages,
+    muteConversation,
+    unmuteConversation,
+    updateOnlineStatus,
+    updateMessageStatus,
+    getRecentConversations
   };
 };
 
+
 export default useMessages;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

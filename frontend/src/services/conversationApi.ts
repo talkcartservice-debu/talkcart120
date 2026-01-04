@@ -11,7 +11,7 @@ console.log('Conversation API timeout configuration:', TIMEOUTS.API_REQUEST);
 // Create axios instance with default config
 const apiClient = axios.create({
     baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
-    timeout: TIMEOUTS.API_REQUEST, // Use config timeout instead of fallback to 0
+    timeout: 30000, // 30 seconds default timeout
 });
 
 // Log the actual axios instance configuration
@@ -79,6 +79,49 @@ export const getConversations = async (options: {
     limit?: number;
     page?: number;
 } = {}): Promise<GetConversationsResponse> => {
+    // Create a temporary axios instance with a longer timeout for this operation
+    const longTimeoutApi = axios.create({
+        baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+        timeout: 45000, // 45 seconds timeout for this operation
+    });
+    
+    // Add auth token to requests
+    longTimeoutApi.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+    
+    // Add response interceptor for better error handling
+    longTimeoutApi.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            // Handle network timeout errors specifically
+            if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+                console.error('Request timeout:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Request timeout. Please check your network connection and try again.',
+                    timeout: true
+                });
+            }
+            
+            // Handle network errors
+            if (!error.response) {
+                console.error('Network error:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Network error. Please check your connection and try again.',
+                    networkError: true
+                });
+            }
+            
+            return Promise.reject(error);
+        }
+    );
+    
     const params = new URLSearchParams();
     if (options.limit) params.append('limit', options.limit.toString());
     if (options.page) params.append('page', options.page.toString());
@@ -93,7 +136,7 @@ export const getConversations = async (options: {
     while (attempt <= maxRetries) {
         try {
             console.log(`Attempting to fetch conversations (attempt ${attempt + 1}/${maxRetries + 1})`);
-            const response = await apiClient.get(url);
+            const response = await longTimeoutApi.get(url);
             
             // Check if response is valid
             if (!response || !response.data) {
@@ -130,6 +173,49 @@ export const getConversations = async (options: {
 };
 
 export const getConversation = async (id: string): Promise<GetConversationResponse> => {
+    // Create a temporary axios instance with a longer timeout for this operation
+    const longTimeoutApi = axios.create({
+        baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+        timeout: 45000, // 45 seconds timeout for this operation
+    });
+    
+    // Add auth token to requests
+    longTimeoutApi.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+    
+    // Add response interceptor for better error handling
+    longTimeoutApi.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            // Handle network timeout errors specifically
+            if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+                console.error('Request timeout:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Request timeout. Please check your network connection and try again.',
+                    timeout: true
+                });
+            }
+            
+            // Handle network errors
+            if (!error.response) {
+                console.error('Network error:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Network error. Please check your connection and try again.',
+                    networkError: true
+                });
+            }
+            
+            return Promise.reject(error);
+        }
+    );
+    
     // Improved retry logic for transient errors/timeouts
     let attempt = 0;
     const maxRetries = 3;
@@ -138,7 +224,7 @@ export const getConversation = async (id: string): Promise<GetConversationRespon
     while (attempt <= maxRetries) {
         try {
             console.log(`Attempting to fetch conversation ${id} (attempt ${attempt + 1}/${maxRetries + 1})`);
-            const response = await apiClient.get(`/conversations/${id}`);
+            const response = await longTimeoutApi.get(`/conversations/${id}`);
             
             // Check if response is valid
             if (!response || !response.data) {

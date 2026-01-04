@@ -11,7 +11,7 @@ console.log('Messages API timeout configuration:', TIMEOUTS.API_REQUEST);
 // Create axios instance with default config
 const messageApi = axios.create({
     baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
-    timeout: 10000, // 10 seconds timeout instead of the default which might be longer
+    timeout: 30000, // 30 seconds timeout to handle operations that might take longer
 });
 
 // Log the actual axios instance configuration
@@ -76,16 +76,72 @@ export const searchAllMessages = async (
         };
     };
 }> => {
+    // Create a temporary axios instance with a longer timeout for this operation
+    const longTimeoutApi = axios.create({
+        baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+        timeout: 45000, // 45 seconds timeout for this operation
+    });
+    
+    // Add auth token to requests
+    longTimeoutApi.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+    
+    // Add response interceptor for better error handling
+    longTimeoutApi.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            // Handle network timeout errors specifically
+            if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+                console.error('Request timeout:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Request timeout. Please check your network connection and try again.',
+                    timeout: true
+                });
+            }
+            
+            // Handle network errors
+            if (!error.response) {
+                console.error('Network error:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Network error. Please check your connection and try again.',
+                    networkError: true
+                });
+            }
+            
+            return Promise.reject(error);
+        }
+    );
+    
     try {
         const params = new URLSearchParams();
         params.append('q', query);
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await messageApi.get(`/search?${params.toString()}`);
+        const response = await longTimeoutApi.get(`/search?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search all messages error:', error);
+        
+        // Handle network timeout errors specifically
+        if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+            console.error('Request timeout when searching all messages:', error.config?.url);
+            throw { success: false, error: 'Request timeout. Please check your network connection and try again.', timeout: true };
+        }
+        
+        // Handle network errors
+        if (!error.response) {
+            console.error('Network error when searching all messages:', error.config?.url);
+            throw { success: false, error: 'Network error. Please check your connection and try again.', networkError: true };
+        }
+        
         throw error.response?.data || { success: false, error: 'Failed to search messages across conversations' };
     }
 };
@@ -115,13 +171,56 @@ export const getMessages = async (
         };
     };
 }> => {
+    // Create a temporary axios instance with a longer timeout for this operation
+    const longTimeoutApi = axios.create({
+        baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+        timeout: 45000, // 45 seconds timeout for this operation
+    });
+    
+    // Add auth token to requests
+    longTimeoutApi.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+    
+    // Add response interceptor for better error handling
+    longTimeoutApi.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            // Handle network timeout errors specifically
+            if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+                console.error('Request timeout:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Request timeout. Please check your network connection and try again.',
+                    timeout: true
+                });
+            }
+            
+            // Handle network errors
+            if (!error.response) {
+                console.error('Network error:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Network error. Please check your connection and try again.',
+                    networkError: true
+                });
+            }
+            
+            return Promise.reject(error);
+        }
+    );
+    
     try {
         const params = new URLSearchParams();
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
         if (options.before) params.append('before', options.before);
 
-        const response = await messageApi.get(`/conversations/${conversationId}/messages?${params.toString()}`);
+        const response = await longTimeoutApi.get(`/conversations/${conversationId}/messages?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Get messages error:', error);
@@ -159,8 +258,51 @@ export const sendMessage = async (
         throw { success: false, error: 'Message content or media is required' };
     }
     
+    // Create a temporary axios instance with a longer timeout for this operation
+    const longTimeoutApi = axios.create({
+        baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+        timeout: 30000, // 30 seconds timeout for this operation
+    });
+    
+    // Add auth token to requests
+    longTimeoutApi.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+    
+    // Add response interceptor for better error handling
+    longTimeoutApi.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            // Handle network timeout errors specifically
+            if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+                console.error('Request timeout:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Request timeout. Please check your network connection and try again.',
+                    timeout: true
+                });
+            }
+            
+            // Handle network errors
+            if (!error.response) {
+                console.error('Network error:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Network error. Please check your connection and try again.',
+                    networkError: true
+                });
+            }
+            
+            return Promise.reject(error);
+        }
+    );
+    
     try {
-        const response = await messageApi.post(`/conversations/${conversationId}/messages`, data);
+        const response = await longTimeoutApi.post(`/conversations/${conversationId}/messages`, data);
         return response.data;
     } catch (error: any) {
         console.error('Send message error:', error);
@@ -242,16 +384,72 @@ export const searchMessages = async (
         page?: number;
     } = {}
 ): Promise<any> => {
+    // Create a temporary axios instance with a longer timeout for this operation
+    const longTimeoutApi = axios.create({
+        baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+        timeout: 45000, // 45 seconds timeout for this operation
+    });
+    
+    // Add auth token to requests
+    longTimeoutApi.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+    
+    // Add response interceptor for better error handling
+    longTimeoutApi.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            // Handle network timeout errors specifically
+            if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+                console.error('Request timeout:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Request timeout. Please check your network connection and try again.',
+                    timeout: true
+                });
+            }
+            
+            // Handle network errors
+            if (!error.response) {
+                console.error('Network error:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Network error. Please check your connection and try again.',
+                    networkError: true
+                });
+            }
+            
+            return Promise.reject(error);
+        }
+    );
+    
     try {
         const params = new URLSearchParams();
         params.append('q', query);
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await messageApi.get(`/conversations/${conversationId}/search?${params.toString()}`);
+        const response = await longTimeoutApi.get(`/conversations/${conversationId}/search?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search messages error:', error);
+        
+        // Handle network timeout errors specifically
+        if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+            console.error('Request timeout when searching messages:', error.config?.url);
+            throw { success: false, error: 'Request timeout. Please check your network connection and try again.', timeout: true };
+        }
+        
+        // Handle network errors
+        if (!error.response) {
+            console.error('Network error when searching messages:', error.config?.url);
+            throw { success: false, error: 'Network error. Please check your connection and try again.', networkError: true };
+        }
+        
         throw error.response?.data || { success: false, error: 'Failed to search messages' };
     }
 };
@@ -303,8 +501,51 @@ export const markMessageAsRead = async (messageId: string): Promise<any> => {
  * Mark all messages in a conversation as read
  */
 export const markAllAsRead = async (conversationId: string): Promise<any> => {
+    // Create a temporary axios instance with a longer timeout for this operation
+    const longTimeoutApi = axios.create({
+        baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+        timeout: 60000, // 60 seconds timeout for this operation
+    });
+    
+    // Add auth token to requests
+    longTimeoutApi.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+    
+    // Add response interceptor for better error handling
+    longTimeoutApi.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            // Handle network timeout errors specifically
+            if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+                console.error('Request timeout:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Request timeout. Please check your network connection and try again.',
+                    timeout: true
+                });
+            }
+            
+            // Handle network errors
+            if (!error.response) {
+                console.error('Network error:', error.config?.url);
+                return Promise.reject({
+                    success: false,
+                    error: 'Network error. Please check your connection and try again.',
+                    networkError: true
+                });
+            }
+            
+            return Promise.reject(error);
+        }
+    );
+    
     try {
-        const response = await messageApi.put(`/conversations/${conversationId}/read`, {});
+        const response = await longTimeoutApi.put(`/conversations/${conversationId}/read`, {});
         return response.data;
     } catch (error: any) {
         console.error('Mark all as read error:', error);
@@ -378,6 +619,10 @@ export const updateConversation = async (
         groupName?: string;
         groupDescription?: string;
         groupAvatar?: string;
+        settings?: {
+            allowInvites?: boolean;
+            muteNotifications?: boolean;
+        };
     }
 ): Promise<any> => {
     try {
@@ -405,6 +650,81 @@ export const sendTypingIndicator = async (
     }
 };
 
+/**
+ * Pin a message
+ */
+export const pinMessage = async (
+  messageId: string
+): Promise<any> => {
+  try {
+    const response = await messageApi.put(`/messages/${messageId}/pin`, {});
+    return response.data;
+  } catch (error: any) {
+    console.error('Pin message error:', error);
+    throw error.response?.data || { success: false, error: 'Failed to pin message' };
+  }
+};
+
+/**
+ * Unpin a message
+ */
+export const unpinMessage = async (
+  messageId: string
+): Promise<any> => {
+  try {
+    const response = await messageApi.put(`/messages/${messageId}/unpin`, {});
+    return response.data;
+  } catch (error: any) {
+    console.error('Unpin message error:', error);
+    throw error.response?.data || { success: false, error: 'Failed to unpin message' };
+  }
+};
+
+/**
+ * Archive a message
+ */
+export const archiveMessage = async (
+  messageId: string
+): Promise<any> => {
+  try {
+    const response = await messageApi.put(`/messages/${messageId}/archive`, {});
+    return response.data;
+  } catch (error: any) {
+    console.error('Archive message error:', error);
+    throw error.response?.data || { success: false, error: 'Failed to archive message' };
+  }
+};
+
+/**
+ * Unarchive a message
+ */
+export const unarchiveMessage = async (
+  messageId: string
+): Promise<any> => {
+  try {
+    const response = await messageApi.put(`/messages/${messageId}/unarchive`, {});
+    return response.data;
+  } catch (error: any) {
+    console.error('Unarchive message error:', error);
+    throw error.response?.data || { success: false, error: 'Failed to unarchive message' };
+  }
+};
+
+/**
+ * Get thread messages
+ */
+export const getThreadMessages = async (
+  messageId: string
+): Promise<any> => {
+  try {
+    const response = await messageApi.get(`/messages/${messageId}/thread`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get thread messages error:', error);
+    throw error.response?.data || { success: false, error: 'Failed to get thread messages' };
+  }
+};
+
 const messagesApi = {
     getMessages,
     sendMessage,
@@ -419,7 +739,12 @@ const messagesApi = {
     searchAllMessages,
     createConversation,
     updateConversation,
-    sendTypingIndicator
+    sendTypingIndicator,
+    pinMessage,
+    unpinMessage,
+    archiveMessage,
+    unarchiveMessage,
+    getThreadMessages
 };
 
 export default messagesApi;

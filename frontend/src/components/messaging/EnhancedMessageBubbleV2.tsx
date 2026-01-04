@@ -18,7 +18,12 @@ import {
     DialogActions,
     Button,
     Tooltip,
-    useMediaQuery
+    useMediaQuery,
+    Collapse,
+    LinearProgress,
+    Fab,
+    Badge,
+    Skeleton
 } from '@mui/material';
 import {
     Reply,
@@ -31,7 +36,22 @@ import {
     CheckCheck,
     Share2,
     ExternalLink,
-    FileText
+    FileText,
+    Heart,
+    ThumbsUp,
+    Laugh,
+    MessageCircle,
+    Download,
+    Pin,
+    Archive,
+    Volume2,
+    VolumeX,
+    Clock,
+    Shield,
+    Lock,
+    Eye,
+    EyeOff,
+    X
 } from 'lucide-react';
 import { Message } from '@/types/message';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -59,17 +79,38 @@ interface EnhancedMessageBubbleV2Props {
     onDelete?: (messageId: string) => Promise<boolean>;
     onReaction?: (messageId: string, emoji: string) => Promise<boolean>;
     onForward?: () => void;
+    onPin?: (messageId: string) => void;
+    onArchive?: (messageId: string) => void;
+    onDownload?: (mediaUrl: string) => void;
+    onMute?: (messageId: string) => void;
+    onUnmute?: (messageId: string) => void;
+    onCopy?: (content: string) => void;
+    onReplyAll?: () => void;
+    onReact?: (messageId: string, emoji: string) => void;
+    onThread?: () => void;
+    onSearch?: (query: string) => void;
 }
 
-const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
-    message,
-    showAvatar = true,
-    onReply,
-    onEdit,
-    onDelete,
-    onReaction,
-    onForward
-}) => {
+const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) => {
+    const {
+        message,
+        showAvatar = true,
+        onReply,
+        onEdit,
+        onDelete,
+        onReaction,
+        onForward,
+        onPin,
+        onArchive,
+        onDownload,
+        onMute,
+        onUnmute,
+        onCopy,
+        onReplyAll,
+        onReact,
+        onThread,
+        onSearch
+    } = props;
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isSmallMobile = useMediaQuery(theme.breakpoints.down('xs'));
@@ -82,7 +123,22 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
     const [showImageDialog, setShowImageDialog] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [audioStates, setAudioStates] = useState<Record<string, { playing: boolean; currentTime: number; duration: number; muted: boolean }>>({});
+    const [showThread, setShowThread] = useState(false);
+    const [showReplies, setShowReplies] = useState(false);
+    const [isPinned, setIsPinned] = useState(false);
+    const [isArchived, setIsArchived] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [showMediaPreview, setShowMediaPreview] = useState(true);
+    const [isHovering, setIsHovering] = useState(false);
+    const [showQuickReactions, setShowQuickReactions] = useState(false);
+    const [showTimestamp, setShowTimestamp] = useState(true);
+    const [isRead, setIsRead] = useState(message.isRead);
+    const [isDelivered, setIsDelivered] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [isDownloading, setIsDownloading] = useState(false);
     const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
+    const messageRef = useRef<HTMLDivElement>(null);
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
         event.stopPropagation();
@@ -91,6 +147,113 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
 
     const handleMenuClose = () => {
         setMenuAnchor(null);
+    };
+
+    const handlePinMessage = () => {
+        if (onPin) {
+            onPin(message.id);
+            setIsPinned(!isPinned);
+        }
+        handleMenuClose();
+    };
+
+    const handleArchiveMessage = () => {
+        if (onArchive) {
+            onArchive(message.id);
+            setIsArchived(!isArchived);
+        }
+        handleMenuClose();
+    };
+
+    const handleDownload = () => {
+        if (onDownload && message.media && Array.isArray(message.media) && message.media.length > 0) {
+            setIsDownloading(true);
+            setProgress(0);
+            
+            // Simulate download progress
+            const interval = setInterval(() => {
+                setProgress(prev => {
+                    if (prev >= 100) {
+                        clearInterval(interval);
+                        setIsDownloading(false);
+                        const mediaArray = message.media;
+                        if (mediaArray && Array.isArray(mediaArray) && mediaArray.length > 0 && mediaArray[0]?.url) {
+                            onDownload(mediaArray[0].url);
+                        }
+                        return 100;
+                    }
+                    return prev + 10;
+                });
+            }, 200);
+        }
+        handleMenuClose();
+    };
+
+    const handleMuteToggle = () => {
+        if (isMuted && onUnmute) {
+            onUnmute(message.id);
+        } else if (!isMuted && onMute) {
+            onMute(message.id);
+        }
+        setIsMuted(!isMuted);
+        handleMenuClose();
+    };
+
+    const handleCopy = () => {
+        if (onCopy) {
+            onCopy(message.content);
+        } else {
+            navigator.clipboard.writeText(message.content);
+        }
+        handleMenuClose();
+    };
+
+    const handleReplyAll = () => {
+        if (onReplyAll) {
+            onReplyAll();
+        }
+        handleMenuClose();
+    };
+
+    const handleThread = () => {
+        if (onThread) {
+            onThread();
+            setShowThread(!showThread);
+        }
+        handleMenuClose();
+    };
+
+    const handleQuickReaction = (emoji: string) => {
+        if (onReact) {
+            onReact(message.id, emoji);
+        } else if (onReaction) {
+            onReaction(message.id, emoji);
+        }
+        setShowQuickReactions(false);
+    };
+
+    const handleMouseEnter = () => {
+        setIsHovering(true);
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovering(false);
+    };
+
+    const handleExpand = () => {
+        setIsExpanded(!isExpanded);
+    };
+
+    const handleToggleMediaPreview = () => {
+        setShowMediaPreview(!showMediaPreview);
+    };
+
+    const handleToggleTimestamp = () => {
+        setShowTimestamp(!showTimestamp);
+    };
+
+    const handleShowReplies = () => {
+        setShowReplies(!showReplies);
     };
 
     const handleEdit = async () => {
@@ -103,6 +266,26 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
             setIsEditing(false);
         }
     };
+
+    // Update read status when message is viewed
+    useEffect(() => {
+        if (messageRef.current && !isRead && message.isOwn) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !isRead) {
+                        setIsRead(true);
+                        // In a real app, you would call an API to mark as read
+                        // props.onMarkAsRead && props.onMarkAsRead(message.id);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            observer.observe(messageRef.current);
+            return () => observer.disconnect();
+        }
+        // Return undefined when condition is not met
+        return undefined;
+    }, [isRead, message.id, message.isOwn]);
 
     const handleDelete = async () => {
         if (onDelete) {
@@ -118,10 +301,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
         setShowReactions(false);
     };
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(message.content);
-        handleMenuClose();
-    };
+
 
     const getMessageTime = () => {
         try {
@@ -258,6 +438,14 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
     };
 
     const commonReactions = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+    const quickReactions = [
+        { emoji: '👍', label: 'Like', icon: ThumbsUp },
+        { emoji: '❤️', label: 'Love', icon: Heart },
+        { emoji: '😂', label: 'Haha', icon: Laugh },
+        { emoji: '😮', label: 'Wow', icon: MessageCircle },
+        { emoji: '😢', label: 'Sad', icon: MessageCircle },
+        { emoji: '👏', label: 'Clap', icon: MessageCircle },
+    ];
 
     // If this is a pure text message, ensure no media content is rendered
     const isTextOnlyMessage = message.type === 'text' || (!Array.isArray(message.media) || message.media.length === 0);
@@ -826,7 +1014,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                             )}
                         </Paper>
 
-                        {/* Enhanced Message Actions */}
+                        {/* Enhanced Message Actions - Keep only More Options */}
                         <Box
                             className="message-actions"
                             sx={{
@@ -841,34 +1029,14 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                                 transform: `translateY(-50%) ${message.isOwn ? 'translateX(10px)' : 'translateX(-10px)'}`
                             }}
                         >
-                            <Tooltip title="Reply" placement="left">
-                                <IconButton
-                                    size="small"
-                                    onClick={() => onReply?.()}
-                                    sx={{
-                                        width: { xs: 32, sm: 36 },
-                                        height: { xs: 32, sm: 36 },
-                                        bgcolor: alpha(theme.palette.background.paper, 0.98),
-                                        backdropFilter: 'blur(20px)',
-                                        boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.12)}, 0 0 0 1px ${alpha(theme.palette.divider, 0.1)}`,
-                                        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                                        color: theme.palette.primary.main,
-                                        '&:hover': {
-                                            bgcolor: alpha(theme.palette.primary.main, 0.08),
-                                            transform: 'scale(1.15) rotate(-5deg)',
-                                            boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.2)}`,
-                                            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-                                        },
-                                        transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                                    }}
-                                >
-                                    <Reply size={16} />
-                                </IconButton>
-                            </Tooltip>
+                            {/* Add Reaction Button */}
                             <Tooltip title="Add Reaction" placement="left">
                                 <IconButton
                                     size="small"
-                                    onClick={() => setShowReactions(!showReactions)}
+                                    onClick={() => {
+                                        setShowReactions(!showReactions);
+                                        setMenuAnchor(null); // Close menu if open
+                                    }}
                                     sx={{
                                         width: { xs: 32, sm: 36 },
                                         height: { xs: 32, sm: 36 },
@@ -889,30 +1057,8 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                                     <Typography sx={{ fontSize: '1.1rem' }}>😊</Typography>
                                 </IconButton>
                             </Tooltip>
-                            <Tooltip title="Forward" placement="left">
-                                <IconButton
-                                    size="small"
-                                    onClick={() => onForward?.()}
-                                    sx={{
-                                        width: { xs: 32, sm: 36 },
-                                        height: { xs: 32, sm: 36 },
-                                        bgcolor: alpha(theme.palette.background.paper, 0.98),
-                                        backdropFilter: 'blur(20px)',
-                                        boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.12)}, 0 0 0 1px ${alpha(theme.palette.divider, 0.1)}`,
-                                        border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
-                                        color: theme.palette.info.main,
-                                        '&:hover': {
-                                            bgcolor: alpha(theme.palette.info.main, 0.08),
-                                            transform: 'scale(1.15) rotate(-5deg)',
-                                            boxShadow: `0 8px 25px ${alpha(theme.palette.info.main, 0.2)}`,
-                                            border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`
-                                        },
-                                        transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                                    }}
-                                >
-                                    <Forward size={16} />
-                                </IconButton>
-                            </Tooltip>
+                            
+                            {/* More Options Menu Button */}
                             <Tooltip title="More Options" placement="left">
                                 <IconButton
                                     size="small"
@@ -1032,6 +1178,46 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                             ))}
                         </Paper>
                     )}
+
+                    {/* Enhanced Thread View */}
+                    {showThread && (
+                        <Box sx={{ mt: 1.5, ml: 1, pl: 2, borderLeft: `2px solid ${alpha(theme.palette.primary.main, 0.3)}` }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+                                    Thread Replies
+                                </Typography>
+                                <IconButton size="small" onClick={() => setShowThread(false)}>
+                                    <X size={14} />
+                                </IconButton>
+                            </Box>
+                            {(message.replies || []).length > 0 ? (
+                                (message.replies || []).map((reply) => (
+                                    <Box key={reply.id} sx={{ mb: 1 }}>
+                                        <Paper
+                                            elevation={0}
+                                            sx={{
+                                                p: 1,
+                                                borderRadius: '12px',
+                                                background: alpha(theme.palette.grey[300], 0.2),
+                                                border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+                                            }}
+                                        >
+                                            <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                                                {reply.content}
+                                            </Typography>
+                                            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                                                {format(new Date(reply.createdAt), 'HH:mm')}
+                                            </Typography>
+                                        </Paper>
+                                    </Box>
+                                ))
+                            ) : (
+                                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontStyle: 'italic' }}>
+                                    No replies in this thread yet
+                                </Typography>
+                            )}
+                        </Box>
+                    )}
                 </Box>
 
                 {/* Sent message timestamp and status for own messages */}
@@ -1108,6 +1294,46 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = ({
                             <ListItemText>Delete</ListItemText>
                         </MenuItem>
                     )}
+                    
+                    {/* Pin/Unpin Message */}
+                    <MenuItem onClick={() => { handleMenuClose(); handlePinMessage(); }}>
+                        <ListItemIcon>
+                            <Pin size={16} />
+                        </ListItemIcon>
+                        <ListItemText>{isPinned ? 'Unpin' : 'Pin'}</ListItemText>
+                    </MenuItem>
+                    
+                    {/* Archive/Unarchive Message */}
+                    <MenuItem onClick={() => { handleMenuClose(); handleArchiveMessage(); }}>
+                        <ListItemIcon>
+                            <Archive size={16} />
+                        </ListItemIcon>
+                        <ListItemText>{isArchived ? 'Unarchive' : 'Archive'}</ListItemText>
+                    </MenuItem>
+                    
+                    {/* Mute/Unmute Conversation */}
+                    <MenuItem onClick={() => { handleMenuClose(); handleMuteToggle(); }}>
+                        <ListItemIcon>
+                            {isMuted ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                        </ListItemIcon>
+                        <ListItemText>{isMuted ? 'Unmute' : 'Mute'}</ListItemText>
+                    </MenuItem>
+                    
+                    {/* Reply All */}
+                    <MenuItem onClick={() => { handleMenuClose(); handleReplyAll(); }}>
+                        <ListItemIcon>
+                            <Reply size={16} />
+                        </ListItemIcon>
+                        <ListItemText>Reply All</ListItemText>
+                    </MenuItem>
+                    
+                    {/* Thread Message */}
+                    <MenuItem onClick={() => { handleMenuClose(); handleThread(); }}>
+                        <ListItemIcon>
+                            <MessageCircle size={16} />
+                        </ListItemIcon>
+                        <ListItemText>Thread</ListItemText>
+                    </MenuItem>
                 </Menu>
             </Box>
 
