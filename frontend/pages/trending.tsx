@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -29,7 +29,20 @@ import {
 import Layout from '@/components/layout/Layout';
 import PostCard from '@/components/social/new/PostCard';
 import { Post } from '@/types/social';
+import { API_URL } from '@/config';
 
+interface TrendingHashtag {
+  hashtag: string;
+  count: number;
+  totalLikes: number;
+  totalComments: number;
+  totalShares: number;
+  totalViews: number;
+  score: number;
+}
+
+import api from '@/lib/api';
+import { getTrendingHashtags } from '@/services/postsApi';
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -63,112 +76,99 @@ const TrendingPage: React.FC = () => {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState(0);
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month' | 'year'>('week');
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [hashtagData, setHashtagData] = useState<TrendingHashtag[]>([]);
+  const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingHashtags, setLoadingHashtags] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hashtagError, setHashtagError] = useState<string | null>(null);
+  const [userError, setUserError] = useState<string | null>(null);
 
-  // Mock trending posts
-  const mockPosts: Post[] = [
-    {
-      id: '1',
-      type: 'image',
-      content: 'Incredible NFT artwork just dropped! This piece is absolutely stunning. #NFT #DigitalArt #Crypto',
-      author: {
-        username: 'digital_creator',
-        displayName: 'Digital Creator',
-        avatar: '',
-        isVerified: true,
-        id: '1',
-      },
-      media: [
-        {
-          resource_type: 'image',
-          secure_url: '',
+  useEffect(() => {
+    const fetchTrendingData = async () => {
+      try {
+        // Fetch trending posts
+        setLoading(true);
+        setError(null);
+        
+        const postsResponse = await api.posts.getTrending({
+          limit: 10,
+          timeRange,
+        });
+        
+        if (postsResponse.success && postsResponse.data?.posts) {
+          setPosts(postsResponse.data.posts);
+        } else {
+          setPosts([]);
         }
-      ],
-      createdAt: new Date().toISOString(),
-      likes: 2450,
-      comments: 320,
-      shares: 180,
-      views: 12000,
-      isLiked: false,
-      isBookmarked: false,
-    },
-    {
-      id: '2',
-      type: 'video',
-      content: 'The future of decentralized social media is here! Web3 is changing everything. #Web3 #SocialMedia #Blockchain',
-      author: {
-        username: 'web3_pioneer',
-        displayName: 'Web3 Pioneer',
-        avatar: '',
-        isVerified: true,
-        id: '2',
-      },
-      media: [
-        {
-          resource_type: 'video',
-          secure_url: '',
-          thumbnail_url: '',
+      } catch (err: any) {
+        console.error('Error fetching trending posts:', err);
+        setError(err.message || 'Failed to fetch trending posts');
+        // Fallback to empty array
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+      
+      try {
+        // Fetch trending hashtags
+        setLoadingHashtags(true);
+        setHashtagError(null);
+        
+        // Try the dedicated hashtags endpoint
+        const hashtagsResponse = await getTrendingHashtags(10);
+        
+        if (hashtagsResponse) {
+          setHashtagData(hashtagsResponse);
+        } else {
+          setHashtagData([]);
         }
-      ],
-      createdAt: new Date(Date.now() - 3600000).toISOString(),
-      likes: 1890,
-      comments: 240,
-      shares: 120,
-      views: 8900,
-      isLiked: true,
-      isBookmarked: false,
-    },
-    {
-      id: '3',
-      type: 'image',
-      content: 'Behind the scenes of my latest NFT collection creation process. #Art #Process #NFT',
-      author: {
-        username: 'artistic_vision',
-        displayName: 'Artistic Vision',
-        avatar: '',
-        isVerified: false,
-        id: '3',
-      },
-      media: [
-        {
-          resource_type: 'image',
-          secure_url: '',
+      } catch (err: any) {
+        console.error('Error fetching trending hashtags:', err);
+        setHashtagError(err.message || 'Failed to fetch trending hashtags');
+        // Fallback to empty array
+        setHashtagData([]);
+      } finally {
+        setLoadingHashtags(false);
+      }
+      
+      try {
+        // Fetch suggested users
+        setLoadingUsers(true);
+        setUserError(null);
+        
+        // Use fetch to get suggested users from the suggestions endpoint
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        
+        const response = await fetch(`${API_URL}/users/suggestions?limit=6`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.data?.suggestions) {
+          setSuggestedUsers(data.data.suggestions);
+        } else {
+          setSuggestedUsers([]);
         }
-      ],
-      createdAt: new Date(Date.now() - 7200000).toISOString(),
-      likes: 3560,
-      comments: 420,
-      shares: 280,
-      views: 21000,
-      isLiked: false,
-      isBookmarked: true,
-    },
-    {
-      id: '4',
-      type: 'video',
-      content: 'Exploring the metaverse with friends! The future is here. #Metaverse #Web3 #VirtualReality',
-      author: {
-        username: 'metaverse_explorer',
-        displayName: 'Metaverse Explorer',
-        avatar: '',
-        isVerified: true,
-        id: '4',
-      },
-      media: [
-        {
-          resource_type: 'video',
-          secure_url: '',
-          thumbnail_url: '',
-        }
-      ],
-      createdAt: new Date(Date.now() - 10800000).toISOString(),
-      likes: 5670,
-      comments: 650,
-      shares: 420,
-      views: 34000,
-      isLiked: false,
-      isBookmarked: false,
-    },
-  ];
+      } catch (err: any) {
+        console.error('Error fetching suggested users:', err);
+        setUserError(err.message || 'Failed to fetch suggested users');
+        // Fallback to empty array
+        setSuggestedUsers([]);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+    
+    fetchTrendingData();
+  }, [timeRange]);
 
   const timeRanges = [
     { label: 'Today', value: 'today' },
@@ -179,6 +179,10 @@ const TrendingPage: React.FC = () => {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
+  };
+
+  const handleTimeRangeChange = (newTimeRange: 'today' | 'week' | 'month' | 'year') => {
+    setTimeRange(newTimeRange);
   };
 
   const handleBookmarkPost = (postId: string) => {
@@ -198,26 +202,26 @@ const TrendingPage: React.FC = () => {
 
   return (
     <Layout>
-      <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Container maxWidth="lg" sx={{ py: 2, px: 1 }}>
         {/* Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <TrendingUp size={24} color={theme.palette.primary.main} />
-            <Typography variant="h4" fontWeight={700}>
+            <Typography variant="h5" fontWeight={700}>
               Trending
             </Typography>
           </Box>
           
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', justifyContent: 'center' }}>
             {timeRanges.map((range) => (
               <Chip
                 key={range.value}
                 label={range.label}
                 size="small"
-                onClick={() => setTimeRange(range.value as any)}
+                onClick={() => handleTimeRangeChange(range.value as any)}
                 sx={{ 
                   height: 28, 
-                  fontSize: '0.8rem',
+                  fontSize: '0.7rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   bgcolor: timeRange === range.value 
@@ -238,8 +242,8 @@ const TrendingPage: React.FC = () => {
         </Box>
         
         {/* Stats Cards */}
-        <Grid container spacing={2} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
+        <Grid container spacing={1.5} sx={{ mb: 3 }}>
+          <Grid item xs={6} sm={3}>
             <Card 
               sx={{ 
                 borderRadius: 2, 
@@ -248,21 +252,21 @@ const TrendingPage: React.FC = () => {
                 bgcolor: alpha(theme.palette.primary.main, 0.05)
               }}
             >
-              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Heart size={18} color={theme.palette.error.main} fill={theme.palette.error.main} />
-                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                  <Heart size={14} color={theme.palette.error.main} fill={theme.palette.error.main} />
+                  <Typography variant="caption" color="text.secondary" fontWeight={500}>
                     Likes
                   </Typography>
                 </Box>
-                <Typography variant="h4" fontWeight={700}>
-                  24.5K
+                <Typography variant="h6" fontWeight={700}>
+                  {formatNumber(posts.reduce((sum, post) => sum + (post.likes || 0), 0))}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
           
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={3}>
             <Card 
               sx={{ 
                 borderRadius: 2, 
@@ -271,21 +275,21 @@ const TrendingPage: React.FC = () => {
                 bgcolor: alpha(theme.palette.info.main, 0.05)
               }}
             >
-              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <MessageSquare size={18} color={theme.palette.info.main} />
-                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                  <MessageSquare size={14} color={theme.palette.info.main} />
+                  <Typography variant="caption" color="text.secondary" fontWeight={500}>
                     Comments
                   </Typography>
                 </Box>
-                <Typography variant="h4" fontWeight={700}>
-                  3.2K
+                <Typography variant="h6" fontWeight={700}>
+                  {formatNumber(posts.reduce((sum, post) => sum + (post.comments || 0), 0))}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
           
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={3}>
             <Card 
               sx={{ 
                 borderRadius: 2, 
@@ -294,21 +298,21 @@ const TrendingPage: React.FC = () => {
                 bgcolor: alpha(theme.palette.warning.main, 0.05)
               }}
             >
-              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Share size={18} color={theme.palette.warning.main} />
-                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                  <Share size={14} color={theme.palette.warning.main} />
+                  <Typography variant="caption" color="text.secondary" fontWeight={500}>
                     Shares
                   </Typography>
                 </Box>
-                <Typography variant="h4" fontWeight={700}>
-                  1.8K
+                <Typography variant="h6" fontWeight={700}>
+                  {formatNumber(posts.reduce((sum, post) => sum + (post.shares || 0), 0))}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
           
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={3}>
             <Card 
               sx={{ 
                 borderRadius: 2, 
@@ -317,15 +321,15 @@ const TrendingPage: React.FC = () => {
                 bgcolor: alpha(theme.palette.success.main, 0.05)
               }}
             >
-              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Eye size={18} color={theme.palette.success.main} />
-                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                  <Eye size={14} color={theme.palette.success.main} />
+                  <Typography variant="caption" color="text.secondary" fontWeight={500}>
                     Views
                   </Typography>
                 </Box>
-                <Typography variant="h4" fontWeight={700}>
-                  125K
+                <Typography variant="h6" fontWeight={700}>
+                  {formatNumber(posts.reduce((sum, post) => sum + (post.views || 0), 0))}
                 </Typography>
               </CardContent>
             </Card>
@@ -338,11 +342,16 @@ const TrendingPage: React.FC = () => {
             <Tabs 
               value={activeTab} 
               onChange={handleTabChange} 
-              variant="fullWidth"
+              variant="scrollable"
+              scrollButtons="auto"
               sx={{
                 '& .MuiTabs-indicator': {
                   bgcolor: 'primary.main',
                   height: 3
+                },
+                '& .MuiTab-root': {
+                  fontSize: '0.875rem',
+                  minWidth: '100px',
                 }
               }}
             >
@@ -352,116 +361,150 @@ const TrendingPage: React.FC = () => {
             </Tabs>
             
             <TabPanel value={activeTab} index={0}>
-              <Box sx={{ p: 2 }}>
-                {mockPosts.map((post) => (
-                  <PostCard 
-                    key={post.id} 
-                    post={post} 
-                    onBookmark={handleBookmarkPost}
-                  />
-                ))}
+              <Box sx={{ p: 1 }}>
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : error ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                    <Typography color="error">Error loading trending posts: {error}</Typography>
+                  </Box>
+                ) : posts.length > 0 ? (
+                  posts.map((post) => (
+                    <PostCard 
+                      key={post.id} 
+                      post={post} 
+                      onBookmark={handleBookmarkPost}
+                    />
+                  ))
+                ) : (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                    <Typography>No trending posts found.</Typography>
+                  </Box>
+                )}
               </Box>
             </TabPanel>
             
             <TabPanel value={activeTab} index={1}>
-              <Box sx={{ p: 3 }}>
-                <Grid container spacing={3}>
-                  {[1, 2, 3, 4, 5, 6].map((item) => (
-                    <Grid item xs={12} sm={6} md={4} key={item}>
-                      <Card 
-                        sx={{ 
-                          borderRadius: 2, 
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          p: 3,
-                          textAlign: 'center',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`
-                          },
-                          transition: 'all 0.3s ease'
-                        }}
-                        onClick={() => window.open(`/profile/username${item}`, '_blank')}
-                      >
-                        <Box 
+              <Box sx={{ p: 1 }}>
+                {loadingUsers ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : userError ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                    <Typography color="error">Error loading suggested users: {userError}</Typography>
+                  </Box>
+                ) : suggestedUsers.length > 0 ? (
+                  <Grid container spacing={2}>
+                    {suggestedUsers.map((user, index) => (
+                      <Grid item xs={6} sm={4} md={3} key={user.id || index}>
+                        <Card 
                           sx={{ 
-                            width: 64, 
-                            height: 64, 
-                            borderRadius: '50%',
-                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            borderRadius: 2, 
                             display: 'flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            mb: 2
+                            p: 1.5,
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              transform: 'translateY(-4px)',
+                              boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`
+                            },
+                            transition: 'all 0.3s ease'
                           }}
+                          onClick={() => window.open(`/profile/${user.username}`, '_blank')}
                         >
-                          <Users size={24} color={theme.palette.primary.main} />
-                        </Box>
-                        <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
-                          User {item}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          @{'username' + item}
-                        </Typography>
-                        <Chip 
-                          label={`${Math.floor(Math.random() * 10000) + 1} followers`} 
-                          size="small" 
-                          sx={{ 
-                            bgcolor: alpha(theme.palette.primary.main, 0.1),
-                            color: 'primary.main',
-                            fontWeight: 600
-                          }} 
-                        />
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
+                          <Box 
+                            sx={{ 
+                              width: 48, 
+                              height: 48, 
+                              borderRadius: '50%',
+                              bgcolor: alpha(theme.palette.primary.main, 0.1),
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mb: 1
+                            }}
+                          >
+                            <Users size={18} color={theme.palette.primary.main} />
+                          </Box>
+                          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                            {user.displayName || user.username}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ mb: 1, wordBreak: 'break-all' }}>
+                            @{user.username}
+                          </Typography>
+                          <Chip 
+                            label={`${user.followerCount || 0} followers`} 
+                            size="small" 
+                            sx={{ 
+                              bgcolor: alpha(theme.palette.primary.main, 0.1),
+                              color: 'primary.main',
+                              fontWeight: 600,
+                              fontSize: '0.7rem'
+                            }} 
+                          />
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                    <Typography>No suggested users found.</Typography>
+                  </Box>
+                )}
               </Box>
             </TabPanel>
             
             <TabPanel value={activeTab} index={2}>
-              <Box sx={{ p: 3 }}>
-                <Grid container spacing={2}>
-                  {[
-                    { tag: 'NFT', posts: 125000 },
-                    { tag: 'Crypto', posts: 89000 },
-                    { tag: 'Web3', posts: 67000 },
-                    { tag: 'DigitalArt', posts: 45000 },
-                    { tag: 'Blockchain', posts: 38000 },
-                    { tag: 'Metaverse', posts: 32000 },
-                    { tag: 'DeFi', posts: 28000 },
-                    { tag: 'DAO', posts: 21000 },
-                  ].map((hashtag, index) => (
-                    <Grid item xs={12} sm={6} md={3} key={index}>
-                      <Card 
-                        sx={{ 
-                          borderRadius: 2, 
-                          height: '100%',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            borderColor: 'primary.main',
-                            bgcolor: alpha(theme.palette.primary.main, 0.05)
-                          }
-                        }}
-                        onClick={() => window.open(`/hashtag/${hashtag.tag}`, '_blank')}
-                      >
-                        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                            <HashIcon size={16} color={theme.palette.primary.main} />
-                            <Typography variant="subtitle1" fontWeight={600}>
-                              #{hashtag.tag}
+              <Box sx={{ p: 1 }}>
+                {loadingHashtags ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : hashtagError ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                    <Typography color="error">Error loading trending hashtags: {hashtagError}</Typography>
+                  </Box>
+                ) : hashtagData.length > 0 ? (
+                  <Grid container spacing={1.5}>
+                    {hashtagData.map((hashtag, index) => (
+                      <Grid item xs={6} sm={4} md={3} key={index}>
+                        <Card 
+                          sx={{ 
+                            borderRadius: 2, 
+                            height: '100%',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              borderColor: 'primary.main',
+                              bgcolor: alpha(theme.palette.primary.main, 0.05)
+                            }
+                          }}
+                          onClick={() => window.open(`/hashtag/${hashtag.hashtag}`, '_blank')}
+                        >
+                          <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                              <HashIcon size={14} color={theme.palette.primary.main} />
+                              <Typography variant="body2" fontWeight={600}>
+                                #{hashtag.hashtag}
+                              </Typography>
+                            </Box>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatNumber(hashtag.count)} posts
                             </Typography>
-                          </Box>
-                          <Typography variant="body2" color="text.secondary">
-                            {formatNumber(hashtag.posts)} posts
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                    <Typography>No trending hashtags found.</Typography>
+                  </Box>
+                )}
               </Box>
             </TabPanel>
           </CardContent>

@@ -17,6 +17,7 @@ import {
   Paper,
   Divider,
   Tooltip,
+  useMediaQuery,
 } from '@mui/material';
 import UnifiedVideoMedia from '@/components/media/UnifiedVideoMedia';
 import UnifiedImageMedia from '@/components/media/UnifiedImageMedia';
@@ -62,6 +63,7 @@ function a11yProps(index: number) {
 const SocialPage: React.FC = () => {
   const router = useRouter();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [createPostOpen, setCreatePostOpen] = useState(false);
@@ -367,7 +369,7 @@ const SocialPage: React.FC = () => {
       </Box>
       
       <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 }, px: { xs: 0.5, sm: 1, md: 2 } }}>
-        <Grid container spacing={{ xs: 0.5, sm: 1, md: 2 }}>
+        <Grid container spacing={{ xs: 0.25, sm: 0.5, md: 2 }}>
           {/* Left Sidebar - Hidden on mobile */}
           <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 3, md: 1 } }}>
             <Paper 
@@ -434,16 +436,16 @@ const SocialPage: React.FC = () => {
               
               <Box display="flex" justifyContent="space-around" textAlign="center" mt={2} flexWrap="wrap" gap={{ xs: 0.5, sm: 1 }}>
                 <Box textAlign="center">
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' } }}>{userStats.postCount}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}>Posts</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '1.0rem', md: '1.25rem' } }}>{userStats.postCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' } }}>Posts</Typography>
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' } }}>{userStats.followerCount}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}>Followers</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '1.0rem', md: '1.25rem' } }}>{userStats.followerCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' } }}>Followers</Typography>
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' } }}>{userStats.followingCount}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}>Following</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '1.0rem', md: '1.25rem' } }}>{userStats.followingCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' } }}>Following</Typography>
                 </Box>
               </Box>
             </Paper>
@@ -468,9 +470,9 @@ const SocialPage: React.FC = () => {
             {/* Feed tabs */}
             <Paper 
               sx={{ 
-                p: { xs: 0.5, sm: 1 },
-                borderRadius: 3, 
-                mb: 2,
+                p: { xs: 0.25, sm: 0.5 },
+                borderRadius: 2, 
+                mb: 1,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                 border: '1px solid rgba(0, 0, 0, 0.05)',
                 overflow: 'hidden'
@@ -479,98 +481,101 @@ const SocialPage: React.FC = () => {
               <Tabs
                 value={activeTab}
                 onChange={handleTabChange}
-                variant="fullWidth"
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
                 sx={{
-                  minHeight: 48,
+                  minHeight: 40,
                   '& .MuiTabs-indicator': {
-                    height: 3,
+                    height: 2,
                     bgcolor: theme.palette.primary.main
                   },
                   '& .MuiTab-root': {
-                    minHeight: 48,
+                    minHeight: 40,
                     textTransform: 'none',
                     fontWeight: 600,
-                    fontSize: '0.95rem',
+                    fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.95rem' },
                     color: theme.palette.text.secondary,
                     '&.Mui-selected': {
                       color: theme.palette.primary.main
-                    }
+                    },
+                    minWidth: { xs: 60, sm: 70, md: 80 }
                   }
                 }}
               >
-                <Tab icon={<Home size={18} />} iconPosition="start" label="For You" {...a11yProps(0)} />
-                <Tab icon={<Users size={18} />} iconPosition="start" label="Following" {...a11yProps(1)} />
-                <Tab icon={<Clock size={18} />} iconPosition="start" label="Recent" {...a11yProps(2)} />
-                <Tab icon={<Bookmark size={18} />} iconPosition="start" label="Bookmarks" {...a11yProps(3)} />
+                <Tab icon={<Home size={isMobile ? 12 : 14} />} iconPosition="start" label="For You" {...a11yProps(0)} />
+                <Tab icon={<Users size={isMobile ? 12 : 14} />} iconPosition="start" label="Following" {...a11yProps(1)} />
+                <Tab icon={<Clock size={isMobile ? 12 : 14} />} iconPosition="start" label="Recent" {...a11yProps(2)} />
+                <Tab icon={<Bookmark size={isMobile ? 12 : 14} />} iconPosition="start" label="Bookmarks" {...a11yProps(3)} />
               </Tabs>
             </Paper>
-
+            
             {/* Feed content */}
-              <Box>
-                {loading && feedItems.length === 0 ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress size={32} />
-                  </Box>
-                ) : error ? (
-                  <Paper 
-                    sx={{ 
-                      p: { xs: 2, sm: 4 }, 
-                      textAlign: 'center', 
-                      borderRadius: 3,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                      border: '1px solid rgba(0, 0, 0, 0.05)'
-                    }}
+            <Box>
+              {loading && feedItems.length === 0 ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress size={isMobile ? 24 : 32} />
+                </Box>
+              ) : error ? (
+                <Paper 
+                  sx={{ 
+                    p: { xs: 1, sm: 4 }, 
+                    textAlign: 'center', 
+                    borderRadius: 3,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                    border: '1px solid rgba(0, 0, 0, 0.05)'
+                  }}
+                >
+                  <AlertCircle size={isMobile ? 40 : 56} color={theme.palette.error.main} style={{ marginBottom: 16 }} />
+                  <Typography color="error" variant="h6" sx={{ mb: 2, fontSize: isMobile ? '1rem' : '1.25rem' }}>
+                    {error}
+                  </Typography>
+                  <Button 
+                    variant="outlined" 
+                    color="primary" 
+                    startIcon={<RefreshCw size={isMobile ? 14 : 18} />}
+                    sx={{ mt: 2, borderRadius: 2, px: 3, py: 1 }}
+                    onClick={handleRefresh}
                   >
-                    <AlertCircle size={56} color={theme.palette.error.main} style={{ marginBottom: 16 }} />
-                    <Typography color="error" variant="h6" sx={{ mb: 2 }}>
-                      {error}
-                    </Typography>
-                    <Button 
-                      variant="outlined" 
-                      color="primary" 
-                      startIcon={<RefreshCw size={18} />}
-                      sx={{ mt: 2, borderRadius: 2, px: 4 }}
-                      onClick={handleRefresh}
-                    >
-                      Try Again
-                    </Button>
-                  </Paper>
-                ) : displayFeedItems.length === 0 ? (
-                  <Paper 
-                    sx={{ 
-                      p: { xs: 2, sm: 4 }, 
-                      textAlign: 'center', 
-                      borderRadius: 3,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                      border: '1px solid rgba(0, 0, 0, 0.05)'
-                    }}
+                    Try Again
+                  </Button>
+                </Paper>
+              ) : displayFeedItems.length === 0 ? (
+                <Paper 
+                  sx={{ 
+                    p: { xs: 1, sm: 4 }, 
+                    textAlign: 'center', 
+                    borderRadius: 3,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                    border: '1px solid rgba(0, 0, 0, 0.05)'
+                  }}
+                >
+                  <Typography variant="h6" color="text.secondary" sx={{ mb: 2, fontSize: isMobile ? '1rem' : '1.25rem' }}>
+                    No posts found
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ mb: 3, fontSize: isMobile ? '0.8rem' : '1rem' }}>
+                    Be the first to post something!
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    size="large"
+                    startIcon={<Plus size={isMobile ? 16 : 20} />}
+                    onClick={() => setCreatePostOpen(true)}
+                    sx={{ borderRadius: 3, px: 3, py: 1.5, fontSize: isMobile ? '0.9rem' : '1rem' }}
                   >
-                    <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-                      No posts found
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                      Be the first to post something!
-                    </Typography>
-                    <Button 
-                      variant="contained" 
-                      size="large"
-                      startIcon={<Plus size={20} />}
-                      onClick={() => setCreatePostOpen(true)}
-                      sx={{ borderRadius: 3, px: 4, py: 1.5 }}
-                    >
-                      Create Your First Post
-                    </Button>
-                  </Paper>
-                ) : (
-                  <Box>
-                    {displayFeedItems.map((item) => (
-                      <Box key={item.id}>
-                        {renderFeedItem(item)}
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-              </Box>
+                    Create Your First Post
+                  </Button>
+                </Paper>
+              ) : (
+                <Box>
+                  {displayFeedItems.map((item) => (
+                    <Box key={item.id} sx={{ mb: { xs: 0.25, sm: 0.5 } }}>
+                      {renderFeedItem(item)}
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
           </Grid>
 
           {/* Right Sidebar - Hidden on mobile */}
@@ -586,7 +591,7 @@ const SocialPage: React.FC = () => {
                 border: '1px solid rgba(0, 0, 0, 0.05)'
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                 Trending Products
               </Typography>
               <TrendingProducts />
@@ -602,7 +607,7 @@ const SocialPage: React.FC = () => {
                 border: '1px solid rgba(0, 0, 0, 0.05)'
               }}
             >
-              <Typography variant="body2" color="text.secondary" align="center">
+              <Typography variant="body2" color="text.secondary" align="center" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
                 © 2023 TalkCart. All rights reserved.
               </Typography>
             </Paper>

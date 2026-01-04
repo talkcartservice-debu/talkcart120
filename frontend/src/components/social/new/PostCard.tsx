@@ -169,6 +169,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
   // Handle like action with animation
   const handleLike = useCallback(() => {
     console.log('Like button clicked for post:', post.id);
+    // Update local state immediately for better UX
+    setLiked(!liked);
+    // Update the like count immediately
+    const updatedLikeCount = liked ? (post.likeCount || 0) - 1 : (post.likeCount || 0) + 1;
+    // Update the post's like count directly
+    post.likeCount = updatedLikeCount;
+    post.isLiked = !liked;
+    
     // Trigger the animation
     if (!liked) {
       setLikeAnimation(true);
@@ -177,7 +185,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
     
     // Call the parent's like handler which will make the actual API call
     onLike?.(post.id);
-  }, [liked, onLike, post.id]);
+  }, [liked, onLike, post]);
 
   // Handle comment action by toggling comment section and opening dialog
   const handleComment = useCallback(() => {
@@ -729,7 +737,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
 
   return (
     <Card sx={{ 
-      minHeight: 80,
+      minHeight: isMobile ? 60 : 80,
       width: '100%',
       maxWidth: '100%',
       margin: 0,
@@ -766,18 +774,18 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
       )}
       
       {/* Post Header */}
-      <CardContent sx={{ pb: 0.25, pt: 0.5, px: 0.5, flexShrink: 0 }}>
+      <CardContent sx={{ pb: 0.25, pt: isMobile ? 0.25 : 0.5, px: 0.5, flexShrink: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.25 }}>
           <UserAvatar 
             src={post.author?.avatar}
             alt={post.author?.displayName || post.author?.username}
-            size={isMobile ? 16 : 20}
+            size={isMobile ? 14 : 20}
           />
-          <Box sx={{ ml: 0.25, flex: 1 }}>
-            <Typography variant={isMobile ? "caption" : "body2"} fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+          <Box sx={{ ml: 0.5, flex: 1 }}>
+            <Typography variant={isMobile ? "caption" : "body2"} fontWeight={600} sx={{ fontSize: isMobile ? '0.65rem' : '0.7rem' }}>
               {post.author?.displayName || post.author?.username || 'Unknown User'}
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.5rem' : '0.55rem' }}>
               {createdLabel}
             </Typography>
           </Box>
@@ -838,10 +846,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
       </CardContent>
 
       {/* Post Media Content - Takes available space */}
-      <Box sx={{ flexGrow: 1, minHeight: 50 }}>
+      <Box sx={{ flexGrow: 1, minHeight: isMobile ? 30 : 50 }}>
         {post.isAchievement ? (
           // Achievement post content
-          <Box sx={{ p: 2, textAlign: 'center' }}>
+          <Box sx={{ p: isMobile ? 0.5 : 2, textAlign: 'center' }}>
             <Box sx={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -850,12 +858,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
               color: 'primary.main'
             }}>
               {getAchievementIcon(post.achievementType || 'milestone')}
-              <Typography variant="h6" sx={{ ml: 1, fontWeight: 'bold' }}>
+              <Typography variant="h6" sx={{ ml: 1, fontWeight: 'bold', fontSize: isMobile ? '0.8rem' : '1rem' }}>
                 {post.achievementData?.title || 'Achievement'}
               </Typography>
             </Box>
             {post.achievementData?.description && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>
                 {post.achievementData.description}
               </Typography>
             )}
@@ -883,7 +891,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
       <Box sx={{ 
         height: '1px', 
         bgcolor: 'divider', 
-        my: 0.5, 
+        my: 0.25,  // Reduced margin on mobile
         position: 'relative', 
         zIndex: 5,
         flexShrink: 0
@@ -892,169 +900,164 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
       {/* Post Stats */}
       <CardContent 
         sx={{ 
-          pt: 0.25, 
-          pb: isMobile ? 0.1 : 0.25,
-          px: 0.5,
+          pt: 0.05,  // Further reduced padding on mobile
+          pb: isMobile ? 0.025 : 0.1,
+          px: 0.1, // Further reduced padding on mobile
           position: 'relative', 
           zIndex: 10,
           bgcolor: 'background.paper',
           flexShrink: 0
         }}
       >
-        <Box sx={{ display: 'flex', gap: isMobile ? 0.1 : 0.25 }}>
-          {!post.hideLikes && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.5rem' }}>
-              {parseNumericValue(post.likeCount)} likes
+        <Box sx={{ display: 'flex', gap: isMobile ? 0.025 : 0.1, flexWrap: 'wrap' }}>
+          {!post.hideLikes && post.likeCount !== undefined && post.likeCount > 0 && (
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.35rem' : '0.4rem' }}>
+              {parseNumericValue(post.likeCount)}
             </Typography>
           )}
-          {!post.hideComments && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.5rem' }}>
-              {parseNumericValue(post.commentCount)} comments
+          {!post.hideComments && post.commentCount !== undefined && post.commentCount > 0 && (
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.35rem' : '0.4rem' }}>
+              {parseNumericValue(post.commentCount)}
             </Typography>
           )}
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.5rem' }}>
-            {parseNumericValue(post.shareCount)} shares
-          </Typography>
+          {post.shareCount !== undefined && post.shareCount > 0 && (
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.35rem' : '0.4rem' }}>
+              {parseNumericValue(post.shareCount)}
+            </Typography>
+          )}
           {post.bookmarkCount !== undefined && post.bookmarkCount > 0 && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.5rem' }}>
-              {parseNumericValue(post.bookmarkCount)} saves
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.35rem' : '0.4rem' }}>
+              {parseNumericValue(post.bookmarkCount)}
             </Typography>
           )}
         </Box>
       </CardContent>
 
-      {/* Vertical Action Bar at Bottom */}
+      {/* Horizontal Action Bar at Bottom */}
       <Box sx={{ 
         display: 'flex', 
-        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        p: 0.5,
-        gap: 0.75,
+        justifyContent: 'space-around',
+        p: isMobile ? 0.1 : 0.25,
+        gap: isMobile ? 0.1 : 0.25,
         bgcolor: 'background.paper',
         borderTop: '1px solid rgba(0,0,0,0.05)',
-        minHeight: 60
+        minHeight: isMobile ? 30 : 40
       }}>
-        <Box sx={{ display: 'flex', width: '100%', justifyContent: 'space-around' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <IconButton 
-              size="small"
-              onClick={handleLike}
-              sx={{ 
-                color: liked ? 'error.main' : 'text.secondary',
-                animation: likeAnimation ? `${pulse} 0.6s ease` : 'none',
-                minWidth: isMobile ? 16 : 20,
-                minHeight: isMobile ? 16 : 20,
-                padding: isMobile ? 0.05 : 0.1,
-                zIndex: 10
-              }}
-            >
-              <Heart size={isMobile ? 12 : 16} fill={liked ? 'currentColor' : 'none'} />
-            </IconButton>
-            {!post.hideLikes && (post.likeCount !== undefined && post.likeCount > 0) && (
-              <Typography variant="caption" sx={{ 
-                fontSize: 6, 
-                fontWeight: 'bold',
-                color: 'text.secondary',
-                mt: 0.25
-              }}>
-                {parseNumericValue(post.likeCount)}
-              </Typography>
-            )}
-          </Box>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <IconButton 
-              size="small"
-              onClick={handleComment}
-              sx={{ 
-                minWidth: isMobile ? 16 : 20,
-                minHeight: isMobile ? 16 : 20,
-                padding: isMobile ? 0.05 : 0.1,
-                zIndex: 10
-              }}
-            >
-              <MessageCircle size={isMobile ? 12 : 16} />
-            </IconButton>
-            {!post.hideComments && (post.commentCount !== undefined && post.commentCount > 0) && (
-              <Typography variant="caption" sx={{ 
-                fontSize: 6, 
-                fontWeight: 'bold',
-                color: 'text.secondary',
-                mt: 0.25
-              }}>
-                {parseNumericValue(post.commentCount)}
-              </Typography>
-            )}
-          </Box>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <IconButton 
-              size="small"
-              onClick={() => {
-                console.log('Share button clicked for post:', post.id);
-                onShare?.(post);
-              }}
-              sx={{ 
-                minWidth: isMobile ? 16 : 20,
-                minHeight: isMobile ? 16 : 20,
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.05 : 0.1 }}>
+          <IconButton 
+            size="small"
+            onClick={handleLike}
+            sx={{ 
+              color: liked ? 'error.main' : 'text.secondary',
+              animation: likeAnimation ? `${pulse} 0.6s ease` : 'none',
+              minWidth: isMobile ? 16 : 20,
+              minHeight: isMobile ? 16 : 20,
+              padding: isMobile ? 0.05 : 0.1,
+              zIndex: 10
+            }}
+          >
+            <Heart size={isMobile ? 10 : 12} fill={liked ? 'currentColor' : 'none'} />
+          </IconButton>
+          {!post.hideLikes && post.likeCount !== undefined && post.likeCount > 0 && (
+            <Typography variant="caption" sx={{ 
+              fontSize: isMobile ? '0.5rem' : '0.6rem', 
+              fontWeight: 'bold',
+              color: 'text.secondary'
+            }}>
+              {parseNumericValue(post.likeCount)}
+            </Typography>
+          )}
+        </Box>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.05 : 0.1 }}>
+          <IconButton 
+            size="small"
+            onClick={handleComment}
+            sx={{ 
+              minWidth: isMobile ? 16 : 20,
+              minHeight: isMobile ? 16 : 20,
+              padding: isMobile ? 0.05 : 0.1,
+              zIndex: 10
+            }}
+          >
+            <MessageCircle size={isMobile ? 10 : 12} />
+          </IconButton>
+          {!post.hideComments && post.commentCount !== undefined && post.commentCount > 0 && (
+            <Typography variant="caption" sx={{ 
+              fontSize: isMobile ? '0.5rem' : '0.6rem', 
+              fontWeight: 'bold',
+              color: 'text.secondary'
+            }}>
+              {parseNumericValue(post.commentCount)}
+            </Typography>
+          )}
+        </Box>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.05 : 0.1 }}>
+          <IconButton 
+            size="small"
+            onClick={() => {
+              console.log('Share button clicked for post:', post.id);
+              onShare?.(post);
+            }}
+            sx={{ 
+              minWidth: isMobile ? 16 : 20,
+              minHeight: isMobile ? 16 : 20,
+              position: 'relative',
+              padding: isMobile ? 0.05 : 0.1,
+              zIndex: 10
+            }}
+          >
+            <Share2 size={isMobile ? 10 : 12} />
+          </IconButton>
+          {post.shareCount !== undefined && post.shareCount > 0 && (
+            <Box
+              sx={{
                 position: 'relative',
-                padding: isMobile ? 0.05 : 0.1,
-                zIndex: 10
-              }}
-            >
-              <Share2 size={isMobile ? 12 : 16} />
-            </IconButton>
-            {(post.shareCount !== undefined && post.shareCount > 0) && (
-              <Box
-                sx={{
-                  position: 'relative',
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  borderRadius: '50%',
-                  width: 12,
-                  height: 12,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 6,
-                  fontWeight: 'bold',
-                  zIndex: 11,
-                  mt: 0.25
-                }}
-              >
-                {parseNumericValue(post.shareCount)}
-              </Box>
-            )}
-          </Box>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <IconButton 
-              size="small"
-              onClick={() => {
-                console.log('Bookmark button clicked for post:', post.id);
-                onBookmark?.(post.id);
-              }}
-              sx={{ 
-                minWidth: isMobile ? 16 : 20,
-                minHeight: isMobile ? 16 : 20,
-                padding: isMobile ? 0.05 : 0.1,
-                zIndex: 10
-              }}
-            >
-              <Bookmark size={isMobile ? 12 : 16} />
-            </IconButton>
-            {(post.bookmarkCount !== undefined && post.bookmarkCount > 0) && (
-              <Typography variant="caption" sx={{ 
-                fontSize: 6, 
+                bgcolor: 'primary.main',
+                color: 'white',
+                borderRadius: '8px',
+                width: isMobile ? 10 : 12,
+                height: isMobile ? 10 : 12,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: isMobile ? '0.4rem' : '0.5rem',
                 fontWeight: 'bold',
-                color: 'text.secondary',
-                mt: 0.25
-              }}>
-                {parseNumericValue(post.bookmarkCount)}
-              </Typography>
-            )}
-          </Box>
+                zIndex: 11
+              }}
+            >
+              {parseNumericValue(post.shareCount)}
+            </Box>
+          )}
+        </Box>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.05 : 0.1 }}>
+          <IconButton 
+            size="small"
+            onClick={() => {
+              console.log('Bookmark button clicked for post:', post.id);
+              onBookmark?.(post.id);
+            }}
+            sx={{ 
+              minWidth: isMobile ? 16 : 20,
+              minHeight: isMobile ? 16 : 20,
+              padding: isMobile ? 0.05 : 0.1,
+              zIndex: 10
+            }}
+          >
+            <Bookmark size={isMobile ? 10 : 12} />
+          </IconButton>
+          {post.bookmarkCount !== undefined && post.bookmarkCount > 0 && (
+            <Typography variant="caption" sx={{ 
+              fontSize: isMobile ? '0.5rem' : '0.6rem', 
+              fontWeight: 'bold',
+              color: 'text.secondary'
+            }}>
+              {parseNumericValue(post.bookmarkCount)}
+            </Typography>
+          )}
         </Box>
       </Box>
       
