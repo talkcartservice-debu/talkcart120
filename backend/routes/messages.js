@@ -309,7 +309,7 @@ router.get('/conversations/:id', authenticateTokenStrict, async (req, res) => {
     }
 
     const transformedConversation = {
-      ...conversation.toObject({ virtuals: true }),
+      ...conversation,
       id: conversation._id,
       otherParticipant,
       isOnline: otherParticipant ? otherParticipant.isOnline : false,
@@ -587,7 +587,11 @@ router.post('/conversations/:id/messages', authenticateTokenStrict, async (req, 
     // Update conversation's last message and activity
     conversation.lastMessage = newMessage._id;
     conversation.updatedAt = new Date();
-    conversation.unreadCount = conversation.unreadCount + 1;
+    
+    // Only increment unread count if message is from another user
+    if (newMessage.senderId.toString() !== userId) {
+      conversation.unreadCount = conversation.unreadCount + 1;
+    }
     await conversation.save();
 
     // Broadcast new message to all participants in the conversation via sockets
@@ -867,6 +871,703 @@ router.delete('/messages/:id', authenticateTokenStrict, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to delete message'
+    });
+  }
+});
+
+// @route   POST /api/messages/conversations/:id/typing
+// @desc    Send typing indicator
+// @access  Private
+router.post('/conversations/:id/typing', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isTyping = true } = req.body;
+    const userId = req.user.userId;
+
+    // Validate conversation ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid conversation ID'
+      });
+    }
+
+    // Check if user is participant in conversation
+    const conversation = await Conversation.findOne({
+      _id: id,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Broadcast typing indicator to all participants in the conversation via sockets
+    try {
+      if (global.io) {
+        const roomName = `conversation_${id}`;
+        global.io.to(roomName).emit('typing', {
+          conversationId: id,
+          userId: userId,
+          isTyping: isTyping
+        });
+      } else {
+        console.log('Global io instance not available for typing indicator');
+      }
+    } catch (socketError) {
+      console.error('Failed to broadcast typing indicator via socket:', socketError);
+      // Continue with the response even if socket broadcast fails
+    }
+
+    res.json({
+      success: true,
+      data: {
+        conversationId: id,
+        userId: userId,
+        isTyping: isTyping
+      },
+      message: 'Typing indicator sent successfully'
+    });
+  } catch (error) {
+    console.error('Send typing indicator error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send typing indicator'
+    });
+  }
+});
+
+// @route   POST /api/messages/messages/:id/reactions
+// @desc    Add reaction to a message
+// @access  Private
+router.post('/messages/:id/reactions', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user.userId;
+
+    // Validate message ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid message ID'
+      });
+    }
+
+    // Validate emoji
+    if (!emoji || typeof emoji !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Emoji is required'
+      });
+    }
+
+    // Find the message
+    const message = await Message.findById(id);
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    // Find the conversation to check if user has access
+    const conversation = await Conversation.findOne({
+      _id: message.conversationId,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Check if user already reacted with this emoji
+    const existingReactionIndex = message.reactions.findIndex(
+      reaction => reaction.userId.toString() === userId && reaction.emoji === emoji
+    );
+
+    if (existingReactionIndex > -1) {
+      // Remove the reaction (toggle off)
+      message.reactions.splice(existingReactionIndex, 1);
+    } else {
+      // Add the reaction
+      message.reactions.push({
+        userId: new mongoose.Types.ObjectId(userId),
+        emoji: emoji
+      });
+    }
+
+    await message.save();
+
+    // Broadcast the reaction to conversation participants via socket
+    try {
+      if (global.io) {
+        const roomName = `conversation_${message.conversationId}`;
+        global.io.to(roomName).emit('reaction', {
+          messageId: id,
+          userId: userId,
+          emoji: emoji,
+          isAdded: existingReactionIndex === -1 // true if added, false if removed
+        });
+      }
+    } catch (socketError) {
+      console.error('Failed to broadcast reaction via socket:', socketError);
+      // Continue with the response even if socket broadcast fails
+    }
+
+    res.json({
+      success: true,
+      data: {
+        message: message.toObject({ virtuals: true }),
+        reaction: {
+          userId: userId,
+          emoji: emoji,
+          isAdded: existingReactionIndex === -1
+        }
+      },
+      message: existingReactionIndex === -1 ? 'Reaction added successfully' : 'Reaction removed successfully'
+    });
+  } catch (error) {
+    console.error('Add reaction error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to add reaction'
+    });
+  }
+});
+
+// @route   PUT /api/messages/messages/:id/pin
+// @desc    Pin a message
+// @access  Private
+router.put('/messages/:id/pin', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Validate message ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid message ID'
+      });
+    }
+
+    // Find the message
+    const message = await Message.findById(id);
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    // Find the conversation to check if user has access
+    const conversation = await Conversation.findOne({
+      _id: message.conversationId,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Pin the message
+    message.isPinned = true;
+    await message.save();
+
+    // Broadcast the pin to conversation participants via socket
+    try {
+      if (global.io) {
+        const roomName = `conversation_${message.conversationId}`;
+        global.io.to(roomName).emit('message:pinned', {
+          messageId: id,
+          userId: userId,
+          isPinned: true
+        });
+      }
+    } catch (socketError) {
+      console.error('Failed to broadcast message pin via socket:', socketError);
+      // Continue with the response even if socket broadcast fails
+    }
+
+    res.json({
+      success: true,
+      data: {
+        message: message.toObject({ virtuals: true })
+      },
+      message: 'Message pinned successfully'
+    });
+  } catch (error) {
+    console.error('Pin message error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to pin message'
+    });
+  }
+});
+
+// @route   PUT /api/messages/messages/:id/unpin
+// @desc    Unpin a message
+// @access  Private
+router.put('/messages/:id/unpin', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Validate message ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid message ID'
+      });
+    }
+
+    // Find the message
+    const message = await Message.findById(id);
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    // Find the conversation to check if user has access
+    const conversation = await Conversation.findOne({
+      _id: message.conversationId,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Unpin the message
+    message.isPinned = false;
+    await message.save();
+
+    // Broadcast the unpin to conversation participants via socket
+    try {
+      if (global.io) {
+        const roomName = `conversation_${message.conversationId}`;
+        global.io.to(roomName).emit('message:pinned', {
+          messageId: id,
+          userId: userId,
+          isPinned: false
+        });
+      }
+    } catch (socketError) {
+      console.error('Failed to broadcast message unpin via socket:', socketError);
+      // Continue with the response even if socket broadcast fails
+    }
+
+    res.json({
+      success: true,
+      data: {
+        message: message.toObject({ virtuals: true })
+      },
+      message: 'Message unpinned successfully'
+    });
+  } catch (error) {
+    console.error('Unpin message error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to unpin message'
+    });
+  }
+});
+
+// @route   PUT /api/messages/messages/:id/archive
+// @desc    Archive a message
+// @access  Private
+router.put('/messages/:id/archive', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Validate message ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid message ID'
+      });
+    }
+
+    // Find the message
+    const message = await Message.findById(id);
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    // Find the conversation to check if user has access
+    const conversation = await Conversation.findOne({
+      _id: message.conversationId,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Archive the message
+    message.isArchived = true;
+    await message.save();
+
+    // Broadcast the archive to conversation participants via socket
+    try {
+      if (global.io) {
+        const roomName = `conversation_${message.conversationId}`;
+        global.io.to(roomName).emit('message:archived', {
+          messageId: id,
+          userId: userId,
+          isArchived: true
+        });
+      }
+    } catch (socketError) {
+      console.error('Failed to broadcast message archive via socket:', socketError);
+      // Continue with the response even if socket broadcast fails
+    }
+
+    res.json({
+      success: true,
+      data: {
+        message: message.toObject({ virtuals: true })
+      },
+      message: 'Message archived successfully'
+    });
+  } catch (error) {
+    console.error('Archive message error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to archive message'
+    });
+  }
+});
+
+// @route   PUT /api/messages/messages/:id/unarchive
+// @desc    Unarchive a message
+// @access  Private
+router.put('/messages/:id/unarchive', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Validate message ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid message ID'
+      });
+    }
+
+    // Find the message
+    const message = await Message.findById(id);
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    // Find the conversation to check if user has access
+    const conversation = await Conversation.findOne({
+      _id: message.conversationId,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Unarchive the message
+    message.isArchived = false;
+    await message.save();
+
+    // Broadcast the unarchive to conversation participants via socket
+    try {
+      if (global.io) {
+        const roomName = `conversation_${message.conversationId}`;
+        global.io.to(roomName).emit('message:archived', {
+          messageId: id,
+          userId: userId,
+          isArchived: false
+        });
+      }
+    } catch (socketError) {
+      console.error('Failed to broadcast message unarchive via socket:', socketError);
+      // Continue with the response even if socket broadcast fails
+    }
+
+    res.json({
+      success: true,
+      data: {
+        message: message.toObject({ virtuals: true })
+      },
+      message: 'Message unarchived successfully'
+    });
+  } catch (error) {
+    console.error('Unarchive message error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to unarchive message'
+    });
+  }
+});
+
+// @route   POST /api/messages/conversations/:id/messages/reply-all
+// @desc    Send a reply-all message in conversation
+// @access  Private
+router.post('/conversations/:id/messages/reply-all', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params; // conversation id
+    const { content, type = 'text', media, originalMessageId } = req.body;
+    const userId = req.user.userId;
+
+    // Validation
+    // Either content or media must be provided
+    if ((!content || content.trim().length === 0) && (!media || media.length === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Message must have content or media'
+      });
+    }
+
+    // Validate conversation ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid conversation ID'
+      });
+    }
+
+    // Check if user is participant in conversation
+    const conversation = await Conversation.findOne({
+      _id: id,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Create new message
+    const newMessage = new Message({
+      conversationId: id,
+      senderId: userId,
+      content: content.trim(),
+      type,
+      media,
+      replyTo: originalMessageId ? new mongoose.Types.ObjectId(originalMessageId) : undefined
+    });
+
+    await newMessage.save();
+
+    // Populate sender data
+    await newMessage.populate({
+      path: 'senderId',
+      select: 'username displayName avatar isVerified'
+    });
+
+    // Update conversation's last message and activity
+    conversation.lastMessage = newMessage._id;
+    conversation.updatedAt = new Date();
+    
+    // Only increment unread count if message is from another user
+    if (newMessage.senderId.toString() !== userId) {
+      conversation.unreadCount = conversation.unreadCount + 1;
+    }
+    await conversation.save();
+
+    // Broadcast new message to all participants in the conversation via sockets
+    try {
+      console.log('Broadcasting reply-all message via socket to conversation:', id);
+      // Emit the new message to the conversation room using the global io instance
+      if (global.io) {
+        const roomName = `conversation_${id}`;
+        console.log(`Emitting to room ${roomName}`);
+        global.io.to(roomName).emit('message:new', {
+          conversationId: id,
+          message: newMessage.toObject({ virtuals: true })
+        });
+        console.log(`Reply-all message emitted to room ${roomName}`);
+      } else {
+        console.log('Global io instance not available for broadcasting');
+      }
+    } catch (socketError) {
+      console.error('Failed to broadcast reply-all message via socket:', socketError);
+      // Continue with the response even if socket broadcast fails
+    }
+
+    res.status(201).json({
+      success: true,
+      data: {
+        message: newMessage.toObject({ virtuals: true })
+      },
+      message: 'Reply-all message sent successfully'
+    });
+  } catch (error) {
+    console.error('Send reply-all message error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send reply-all message'
+    });
+  }
+});
+
+// @route   GET /api/messages/messages/:id/thread
+// @desc    Get message thread (replies to a message)
+// @access  Private
+router.get('/messages/:id/thread', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Validate message ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid message ID'
+      });
+    }
+
+    // Find the original message
+    const originalMessage = await Message.findById(id);
+    if (!originalMessage) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+
+    // Find the conversation to check if user has access
+    const conversation = await Conversation.findOne({
+      _id: originalMessage.conversationId,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Get all replies to this message (messages that have this message as replyTo)
+    const threadMessages = await Message.find({
+      conversationId: originalMessage.conversationId,
+      replyTo: new mongoose.Types.ObjectId(id),
+      isDeleted: false
+    })
+    .populate({
+      path: 'senderId',
+      select: 'username displayName avatar isVerified'
+    })
+    .sort({ createdAt: 1 }); // Sort chronologically
+
+    res.json({
+      success: true,
+      data: {
+        message: originalMessage.toObject({ virtuals: true }),
+        messages: threadMessages.map(msg => msg.toObject({ virtuals: true }))
+      },
+      message: 'Thread messages retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Get thread messages error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get thread messages'
+    });
+  }
+});
+
+// @route   PUT /api/messages/conversations/:id/mute
+// @desc    Mute or unmute a conversation
+// @access  Private
+router.put('/conversations/:id/mute', authenticateTokenStrict, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { mute } = req.body;
+    const userId = req.user.userId;
+
+    // Validate conversation ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid conversation ID'
+      });
+    }
+
+    // Validate mute parameter
+    if (typeof mute !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        message: 'Mute parameter must be a boolean'
+      });
+    }
+
+    // Find conversation and ensure user is participant
+    const conversation = await Conversation.findOne({
+      _id: id,
+      participants: { $in: [new mongoose.Types.ObjectId(userId)] },
+      isActive: true
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found or access denied'
+      });
+    }
+
+    // Update mute status
+    conversation.muteNotifications = mute;
+    await conversation.save();
+
+    res.json({
+      success: true,
+      data: {
+        conversationId: id,
+        muteNotifications: mute
+      },
+      message: `Conversation ${mute ? 'muted' : 'unmuted'} successfully`
+    });
+  } catch (error) {
+    console.error('Mute conversation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mute conversation'
     });
   }
 });
