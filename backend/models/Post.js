@@ -505,4 +505,81 @@ postSchema.statics.getByFeedType = async function(feedType, userId, options = {}
   return posts;
 };
 
+// Static method to get trending hashtags
+postSchema.statics.getTrendingHashtags = async function(limit = 10, timeRange = 'week') {
+  // Calculate date range
+  const now = new Date();
+  let startDate = new Date(now);
+
+  switch (timeRange) {
+    case 'day':
+      startDate.setDate(startDate.getDate() - 1);
+      break;
+    case 'week':
+      startDate.setDate(startDate.getDate() - 7);
+      break;
+    case 'month':
+      startDate.setMonth(startDate.getMonth() - 1);
+      break;
+    case 'year':
+      startDate.setFullYear(startDate.getFullYear() - 1);
+      break;
+    default:
+      startDate.setDate(startDate.getDate() - 7);
+  }
+
+  // Aggregation pipeline to get trending hashtags
+  const trendingHashtags = await this.aggregate([
+    {
+      $match: {
+        privacy: 'public',
+        isActive: true,
+        createdAt: { $gte: startDate },
+        hashtags: { $exists: true, $ne: [] } // Only posts with hashtags
+      }
+    },
+    { $unwind: '$hashtags' }, // Unwind the hashtags array
+    {
+      $group: {
+        _id: '$hashtags', // Group by hashtag
+        count: { $sum: 1 }, // Count occurrences
+        totalLikes: { $sum: { $cond: { if: { $isArray: '$likes' }, then: { $size: '$likes' }, else: 0 } } }, // Sum total likes
+        totalComments: { $sum: { $cond: { if: { $isArray: '$comments' }, then: { $size: '$comments' }, else: 0 } } }, // Sum total comments
+        totalShares: { $sum: { $cond: { if: { $isArray: '$shares' }, then: { $size: '$shares' }, else: 0 } } }, // Sum total shares
+        totalViews: { $sum: { $ifNull: ['$views', 0] } }, // Sum total views
+        posts: { $push: '$_id' } // Keep track of post IDs
+      }
+    },
+    {
+      $addFields: {
+        hashtag: '$_id',
+        score: { // Calculate a score based on engagement metrics
+          $add: [
+            { $multiply: [{ $ifNull: ['$totalLikes', 0] }, 1] }, // Likes count
+            { $multiply: [{ $ifNull: ['$totalComments', 0] }, 1.5] }, // Comments count (higher weight)
+            { $multiply: [{ $ifNull: ['$totalShares', 0] }, 2] }, // Shares count (highest weight)
+            { $multiply: [{ $ifNull: ['$totalViews', 0] }, 0.1] } // Views count (lower weight)
+          ]
+        }
+      }
+    },
+    { $sort: { score: -1, count: -1 } }, // Sort by score first, then by count
+    { $limit: parseInt(limit) },
+    {
+      $project: {
+        _id: 0,
+        hashtag: 1,
+        count: 1,
+        totalLikes: 1,
+        totalComments: 1,
+        totalShares: 1,
+        totalViews: 1,
+        score: 1
+      }
+    }
+  ]);
+
+  return trendingHashtags;
+};
+
 module.exports = mongoose.model('Post', postSchema);

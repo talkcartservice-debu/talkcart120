@@ -1163,6 +1163,44 @@ router.get('/trending', async (req, res) => {
   }
 });
 
+// @route   GET /api/posts/trending/hashtags
+// @desc    Get trending hashtags
+// @access  Public
+router.get('/trending/hashtags', async (req, res) => {
+  try {
+    console.log('GET /api/posts/trending/hashtags - Request received');
+    const {
+      limit = 10,
+      timeRange = 'week'
+    } = req.query;
+
+    // Use the static method to get trending hashtags
+    const hashtags = await Post.getTrendingHashtags(
+      parseInt(limit),
+      timeRange
+    );
+
+    res.json({
+      success: true,
+      data: {
+        hashtags,
+        pagination: {
+          limit: parseInt(limit),
+          timeRange,
+        },
+      },
+      message: `Found ${hashtags.length} trending hashtags`
+    });
+  } catch (error) {
+    console.error('Get trending hashtags error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get trending hashtags',
+      message: error.message,
+    });
+  }
+});
+
 // @route   GET /api/posts/bookmarks/:userId
 // @desc    Get bookmarked posts for a user
 // @access  Private
