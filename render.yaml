@@ -11,3 +11,7 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # This will be set in the Render dashboard
+      - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
+        sync: false  # This will be set in the Render dashboard
