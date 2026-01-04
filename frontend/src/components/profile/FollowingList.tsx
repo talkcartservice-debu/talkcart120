@@ -82,7 +82,7 @@ const FollowingList: React.FC<FollowingListProps> = ({ userId, limit = 20 }) => 
       const response = await api.users.getFollowing(userId, limit, (pageNum - 1) * limit);
       
       if (response.success) {
-        let newFollowing = response.data.items || [];
+        let newFollowing = response.data?.data?.following || response.data?.data?.items || response.data?.following || response.data?.items || [];
         
         // Fetch relationship data for each following
         newFollowing = await fetchRelationshipData(newFollowing);
@@ -95,7 +95,7 @@ const FollowingList: React.FC<FollowingListProps> = ({ userId, limit = 20 }) => 
         
         setHasMore(newFollowing.length === limit);
       } else {
-        throw new Error(response.message || 'Failed to fetch following');
+        throw new Error(response.message || response.error || 'Failed to fetch following');
       }
     } catch (err: any) {
       console.error('Error fetching following:', err);
@@ -117,7 +117,9 @@ const FollowingList: React.FC<FollowingListProps> = ({ userId, limit = 20 }) => 
   };
 
   useEffect(() => {
-    fetchFollowing(1, true);
+    if (userId) {
+      fetchFollowing(1, true);
+    }
   }, [userId]);
 
   if (loading && following.length === 0) {

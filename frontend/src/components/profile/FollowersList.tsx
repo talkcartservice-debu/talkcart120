@@ -15,7 +15,7 @@ import {
   useTheme,
   alpha,
 } from '@mui/material';
-import { Refresh as RefreshIcon } from '@mui/icons-material';
+import { Refresh as RefreshIcon, Block as BlockIcon } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import UserAvatar from '@/components/common/UserAvatar';
 import FollowButton from '@/components/common/FollowButton';
@@ -82,7 +82,7 @@ const FollowersList: React.FC<FollowersListProps> = ({ userId, limit = 20 }) => 
       const response = await api.users.getFollowers(userId, limit, (pageNum - 1) * limit);
       
       if (response.success) {
-        let newFollowers = response.data.items || [];
+        let newFollowers = response.data?.data?.followers || response.data?.data?.items || response.data?.followers || response.data?.items || [];
         
         // Fetch relationship data for each follower
         newFollowers = await fetchRelationshipData(newFollowers);
@@ -95,7 +95,7 @@ const FollowersList: React.FC<FollowersListProps> = ({ userId, limit = 20 }) => 
         
         setHasMore(newFollowers.length === limit);
       } else {
-        throw new Error(response.message || 'Failed to fetch followers');
+        throw new Error(response.message || response.error || 'Failed to fetch followers');
       }
     } catch (err: any) {
       console.error('Error fetching followers:', err);
@@ -116,8 +116,30 @@ const FollowersList: React.FC<FollowersListProps> = ({ userId, limit = 20 }) => 
     fetchFollowers(nextPage);
   };
 
+  const handleRemoveFollower = async (followerId: string, followerUsername: string) => {
+    if (!window.confirm(`Are you sure you want to remove ${followerUsername} from your followers?`)) {
+      return;
+    }
+    
+    try {
+      // Remove the follower
+      await api.users.removeFollower(followerId);
+      
+      // Update the followers list by removing the user
+      setFollowers(prev => prev.filter(follower => follower.id !== followerId));
+      
+      // Update the follower count in the parent component if needed
+      // This would require a callback prop to update the profile page follower count
+    } catch (error) {
+      console.error('Error removing follower:', error);
+      setError('Failed to remove follower');
+    }
+  };
+
   useEffect(() => {
-    fetchFollowers(1, true);
+    if (userId) {
+      fetchFollowers(1, true);
+    }
   }, [userId]);
 
   if (loading && followers.length === 0) {
@@ -232,22 +254,32 @@ const FollowersList: React.FC<FollowersListProps> = ({ userId, limit = 20 }) => 
               />
               
               <ListItemSecondaryAction>
-                <FollowButton
-                  user={{
-                    id: follower.id,
-                    username: follower.username,
-                    displayName: follower.displayName,
-                    isFollowing: follower.isFollowing || false
-                  }}
-                  variant="button"
-                  size="small"
-                  onFollowChange={(isFollowing) => {
-                    // Update the follower's isFollowing status in state
-                    setFollowers(prev => prev.map(f => 
-                      f.id === follower.id ? { ...f, isFollowing } : f
-                    ));
-                  }}
-                />
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <FollowButton
+                    user={{
+                      id: follower.id,
+                      username: follower.username,
+                      displayName: follower.displayName,
+                      isFollowing: follower.isFollowing || false
+                    }}
+                    variant="button"
+                    size="small"
+                    onFollowChange={(isFollowing) => {
+                      // Update the follower's isFollowing status in state
+                      setFollowers(prev => prev.map(f => 
+                        f.id === follower.id ? { ...f, isFollowing } : f
+                      ));
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemoveFollower(follower.id, follower.username)}
+                    title={`Remove ${follower.username} from followers`}
+                    sx={{ color: theme.palette.error.main }}
+                  >
+                    <BlockIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </ListItemSecondaryAction>
             </ListItem>
             

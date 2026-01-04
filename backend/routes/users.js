@@ -1279,4 +1279,98 @@ router.get('/:id/relationship', authenticateTokenStrict, async (req, res) => {
   }
 });
 
+// @route   DELETE /api/users/:id/follower
+// @desc    Remove a follower (remove the relationship where target user is following current user)
+// @access  Private
+router.delete('/:id/follower', authenticateTokenStrict, async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const currentUserId = req.user.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid user ID'
+      });
+    }
+
+    if (targetUserId === currentUserId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot remove yourself as follower'
+      });
+    }
+
+    console.log(`User ${currentUserId} attempting to remove follower ${targetUserId}`);
+
+    // Check if target user exists
+    const targetUser = await User.findById(targetUserId);
+    if (!targetUser || !targetUser.isActive) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Check if target user is actually following current user
+    const existingFollow = await Follow.findOne({ 
+      follower: targetUserId, 
+      following: currentUserId, 
+      isActive: true 
+    });
+    
+    if (!existingFollow) {
+      return res.status(200).json({ 
+        success: true, 
+        message: 'User is not following you' 
+      });
+    }
+
+    // Remove the follow relationship
+    await Follow.removeFollow(targetUserId, currentUserId);
+
+    // Update counters atomically
+    await User.findByIdAndUpdate(targetUserId, { $inc: { followingCount: -1 } });
+    await User.findByIdAndUpdate(currentUserId, { $inc: { followerCount: -1 } });
+
+    // Get updated counts
+    const updatedTargetUser = await User.findById(targetUserId);
+    const updatedCurrentUser = await User.findById(currentUserId);
+    
+    // Emit real-time update via Socket.IO
+    const io = req.app.get('io');
+    if (io) {
+      // Update follower count for the current user
+      io.to(`user_${currentUserId}`).emit('user:followers-update', {
+        userId: currentUserId,
+        followerCount: updatedCurrentUser.followerCount
+      });
+
+      // Update following count for the target user
+      io.to(`user_${targetUserId}`).emit('user:following-update', {
+        userId: targetUserId,
+        followingCount: updatedTargetUser.followingCount
+      });
+    }
+
+    console.log(`User ${currentUserId} successfully removed follower ${targetUserId}`);
+
+    res.json({
+      success: true,
+      message: 'Follower removed successfully',
+      data: {
+        followerCount: updatedCurrentUser.followerCount,
+        followingCount: updatedTargetUser.followingCount
+      }
+    });
+  } catch (error) {
+    console.error('Remove follower error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to remove follower',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

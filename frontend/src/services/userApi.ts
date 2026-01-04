@@ -296,6 +296,23 @@ class UserService {
       throw error;
     }
   }
+
+  // Remove a follower
+  async removeFollower(userId: string): Promise<{ followerCount: number; followingCount: number } | null> {
+    try {
+      const response = await userApi.delete(`/${userId}/follower`);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.error || 'Failed to remove follower');
+      }
+      
+      // Return the counts from the response data
+      return response.data.data || null;
+    } catch (error) {
+      console.error('Remove follower error:', error);
+      throw error;
+    }
+  }
 }
 
 export const userService = new UserService();

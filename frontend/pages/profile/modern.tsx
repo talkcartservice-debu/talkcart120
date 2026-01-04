@@ -94,7 +94,7 @@ const StatsCard: React.FC<{ label: string; value: number; icon: React.ReactNode;
         <div
             onClick={onClick}
             style={{
-                padding: isMobile ? '4px' : '20px',
+                padding: isMobile ? '6px' : '20px',
                 textAlign: 'center',
                 background: cardBackground,
                 border: cardBorder,
@@ -104,17 +104,18 @@ const StatsCard: React.FC<{ label: string; value: number; icon: React.ReactNode;
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                minHeight: isMobile ? '60px' : 'auto',
             }}
             className="stats-card"
         >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
-                <Box sx={{ color: theme.palette.primary.main, marginRight: '4px' }}>{icon}</Box>
-                <Typography variant={isMobile ? "h6" : "h4"} fontWeight="bold" color="primary.main">
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: isMobile ? '2px' : '4px' }}>
+                <Box sx={{ color: theme.palette.primary.main, marginRight: isMobile ? '2px' : '4px' }}>{icon}</Box>
+                <Typography variant={isMobile ? "h6" : "h4"} fontWeight="bold" color="primary.main" style={{ fontSize: isMobile ? '0.9rem' : 'inherit' }}>
                     {value.toLocaleString()}
                 </Typography>
             </Box>
-            <Typography variant="body2" color="text.secondary" fontWeight="medium" style={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>
+            <Typography variant="body2" color="text.secondary" fontWeight="medium" style={{ fontSize: isMobile ? '0.65rem' : '0.875rem' }}>
                 {label}
             </Typography>
         </div>
@@ -147,34 +148,57 @@ const ProfileHeader: React.FC<{
             className="profile-header-paper"
             style={{
                 position: 'relative',
-                overflow: 'hidden',
+                overflow: 'visible', // Changed from 'hidden' to 'visible' to ensure avatar is not clipped
                 borderRadius: isMobile ? 0 : 24,
                 background: '#f5f5f5',
                 border: isMobile ? 'none' : '1px solid #e0e0e0',
                 boxShadow: isMobile ? 'none' : '0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)',
+                paddingTop: isMobile ? '30px' : '50px', // Extra padding to accommodate larger avatar
             }}
         >
             {/* Profile Content */}
-            <Box sx={{ p: { xs: 0.5, sm: 1.5, md: 3 }, pt: 0 }}>
+            <Box sx={{ p: { xs: 0.5, sm: 1.5, md: 3 }, pt: { xs: 4, sm: 6 }, overflow: 'visible', pb: { xs: 1, sm: 2 } }}>
                 {/* Avatar and Basic Info */}
                 <Box sx={{ 
                     display: 'flex', 
                     alignItems: { xs: 'center', sm: 'flex-end' }, 
                     flexDirection: { xs: 'column', sm: 'row' },
                     mb: 2, 
-                    mt: { xs: -2, sm: -4 },
-                    textAlign: { xs: 'center', sm: 'left' }
+                    mt: { xs: 2, sm: 0 },
+                    textAlign: { xs: 'center', sm: 'left' },
+                    position: 'relative', // Ensure proper positioning context
+                    overflow: 'visible', // Ensure content is not clipped
+                    width: '100%',
+                    justifyContent: 'center',
+                    maxWidth: '100%',
                 }}>
-                    <Box sx={{ position: 'relative', mr: { xs: 0, sm: 3 }, mb: { xs: 2, sm: 0 } }}>
+                    <Box sx={{ 
+                        position: 'relative', 
+                        mr: { xs: 0, sm: 3 }, 
+                        mb: { xs: 2, sm: 0 },
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        alignSelf: 'center',
+                    }}>
                         <Avatar
                             src={profile.avatar}
                             sx={{
-                                width: { xs: 56, sm: 90, md: 120 },
-                                height: { xs: 56, sm: 90, md: 120 },
+                                width: { xs: 80, sm: 100, md: 120 },
+                                height: { xs: 80, sm: 100, md: 120 },
                                 border: '4px solid ' + theme.palette.background.paper,
                                 boxShadow: theme.shadows[8],
-                                fontSize: { xs: '1rem', sm: '1.5rem', md: '2.5rem' },
+                                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
                                 fontWeight: 'bold',
+                                overflow: 'visible', // Ensure avatar is not clipped
+                                // Ensure avatar container doesn't clip content
+                                '& img': {
+                                    objectFit: 'cover',
+                                    width: '100%',
+                                    height: '100%',
+                                },
+                                // Ensure the avatar is centered within its container
+                                margin: '0 auto',
                             }}
                         >
                             {profile.displayName?.charAt(0) || profile.username?.charAt(0)}
@@ -182,8 +206,8 @@ const ProfileHeader: React.FC<{
                         {isOwnProfile && (
                             <Box sx={{
                                 position: 'absolute',
-                                bottom: -8,
-                                right: -8,
+                                bottom: isMobile ? -12 : -10,
+                                right: isMobile ? -12 : -10,
                             }}>
                                 <ProfilePictureUpload
                                     user={{
@@ -193,7 +217,7 @@ const ProfileHeader: React.FC<{
                                         cover: undefined
                                     } as any}
                                     onUploadSuccess={handleAvatarUploadSuccess}
-                                    size={isMobile ? 56 : 120}
+                                    size={isMobile ? 80 : 120}
                                     showUploadButton={true}
                                     allowRemove={true}
                                     disabled={false}
@@ -205,8 +229,11 @@ const ProfileHeader: React.FC<{
                     <Box sx={{ 
                         ml: { xs: 0, sm: 3 }, 
                         flex: 1,
-                        width: '100%',
-                        mt: { xs: 1, sm: 0 }
+                        width: { xs: '100%', sm: 'auto' },
+                        mt: { xs: 1, sm: 0 },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: { xs: 'center', sm: 'flex-start' },
                     }}>
                         <Box sx={{ 
                             display: 'flex', 
@@ -214,9 +241,11 @@ const ProfileHeader: React.FC<{
                             gap: 0.5, 
                             mb: 1,
                             justifyContent: { xs: 'center', sm: 'flex-start' },
-                            flexWrap: 'wrap'
+                            flexWrap: 'wrap',
+                            width: '100%',
+                            textAlign: 'center',
                         }}>
-                        <Typography variant={isMobile ? "h6" : "h5"} fontWeight="bold" noWrap sx={{ maxWidth: '100%' }}>
+                        <Typography variant={isMobile ? "h6" : "h5"} fontWeight="bold" noWrap sx={{ maxWidth: '100%', textAlign: 'center' }}>
                                 {profile.displayName || profile.username}
                             </Typography>
                             {profile.isVerified && (
@@ -253,11 +282,12 @@ const ProfileHeader: React.FC<{
                         }}>
                         <Box sx={{ 
                             display: 'flex', 
-                            flexDirection: 'row',
+                            flexDirection: { xs: 'column', sm: 'row' },
                             flexWrap: 'wrap',
                             gap: { xs: 0.5, sm: 1 },
                             width: '100%',
-                            justifyContent: { xs: 'center', sm: 'flex-start' }
+                            justifyContent: { xs: 'center', sm: 'flex-start' },
+                            alignItems: 'center',
                         }}>
                             {isOwnProfile ? (
                                 <Button
@@ -267,10 +297,11 @@ const ProfileHeader: React.FC<{
                                     size={isMobile ? "small" : "medium"}
                                     sx={{ 
                                         borderRadius: 2,
-                                        mb: { xs: 0, sm: 0 },
-                                        minWidth: { xs: '40%', sm: 'auto' },
+                                        mb: { xs: 0.5, sm: 0 },
+                                        minWidth: { xs: '100%', sm: 'auto' },
                                         fontSize: { xs: '0.7rem', sm: '0.8rem', md: '1rem' },
-                                        py: isMobile ? 0.5 : 1
+                                        py: isMobile ? 0.5 : 1,
+                                        width: { xs: '100%', sm: 'auto' },
                                     }}
                                 >
                                     {isMobile ? "Edit" : "Edit Profile"}
@@ -285,10 +316,11 @@ const ProfileHeader: React.FC<{
                                         size={isMobile ? "small" : "medium"}
                                         sx={{ 
                                             borderRadius: 2,
-                                            mb: { xs: 0, sm: 0 },
-                                            minWidth: { xs: '40%', sm: 'auto' },
+                                            mb: { xs: 0.5, sm: 0 },
+                                            minWidth: { xs: '100%', sm: 'auto' },
                                             fontSize: { xs: '0.7rem', sm: '0.8rem', md: '1rem' },
-                                            py: isMobile ? 0.5 : 1
+                                            py: isMobile ? 0.5 : 1,
+                                            width: { xs: '100%', sm: 'auto' },
                                         }}
                                     >
                                         {profile.isFollowing ? (isMobile ? 'Unfollow' : 'Unfollow') : (isMobile ? 'Follow' : 'Follow')}
@@ -300,10 +332,11 @@ const ProfileHeader: React.FC<{
                                         size={isMobile ? "small" : "medium"}
                                         sx={{ 
                                             borderRadius: 2,
-                                            mb: { xs: 0, sm: 0 },
-                                            minWidth: { xs: '40%', sm: 'auto' },
+                                            mb: { xs: 0.5, sm: 0 },
+                                            minWidth: { xs: '100%', sm: 'auto' },
                                             fontSize: { xs: '0.7rem', sm: '0.8rem', md: '1rem' },
-                                            py: isMobile ? 0.5 : 1
+                                            py: isMobile ? 0.5 : 1,
+                                            width: { xs: '100%', sm: 'auto' },
                                         }}
                                     >
                                         {isMobile ? "Message" : "Message"}
@@ -335,16 +368,18 @@ const ProfileHeader: React.FC<{
                     display: 'flex',
                     flexDirection: { xs: 'column', sm: 'row' },
                     alignItems: { xs: 'center', sm: 'flex-start' },
-                    gap: { xs: 0.5, sm: 1 }
+                    gap: { xs: 0.5, sm: 1 },
+                    flexWrap: 'wrap',
                 }}>
                     <Box sx={{ 
                         display: 'flex', 
                         alignItems: 'center', 
                         gap: 0.5,
-                        mb: { xs: 0.5, sm: 0 }
+                        mb: { xs: 0.5, sm: 0 },
+                        minWidth: 0,
                     }}>
                         <LocationOn sx={{ fontSize: { xs: 12, sm: 14, md: 18 }, color: 'text.secondary' }} />
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' }, wordBreak: 'break-word' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' }, wordBreak: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {profile.location}
                         </Typography>
                     </Box>
@@ -354,7 +389,8 @@ const ProfileHeader: React.FC<{
                             display: 'flex', 
                             alignItems: 'center', 
                             gap: 0.5,
-                            mb: { xs: 0.5, sm: 0 }
+                            mb: { xs: 0.5, sm: 0 },
+                            minWidth: 0,
                         }}>
                             <LinkIcon sx={{ fontSize: { xs: 12, sm: 14, md: 18 }, color: 'text.secondary' }} />
                             <Typography
@@ -367,7 +403,9 @@ const ProfileHeader: React.FC<{
                                     textDecoration: 'none', 
                                     '&:hover': { textDecoration: 'underline' },
                                     wordBreak: 'break-all',
-                                    fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' }
+                                    fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' },
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
                                 }}
                             >
                                 {profile.website.replace(/^https?:\/\//, '').substring(0, isMobile ? 15 : 30)}
@@ -379,10 +417,11 @@ const ProfileHeader: React.FC<{
                     <Box sx={{ 
                         display: 'flex', 
                         alignItems: 'center', 
-                        gap: 0.5
+                        gap: 0.5,
+                        minWidth: 0,
                     }}>
                         <CalendarToday sx={{ fontSize: { xs: 12, sm: 14, md: 18 }, color: 'text.secondary' }} />
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' }, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', {
                                 month: 'short',
                                 year: 'numeric'
@@ -392,7 +431,7 @@ const ProfileHeader: React.FC<{
                 </Box>
 
                 {/* Stats - Responsive grid */}
-                <Grid container spacing={1}>
+                <Grid container spacing={isMobile ? 0.5 : 1} justifyContent="center">
                     <Grid item xs={6} sm={3}>
                         <StatsCard
                             label="Posts"
@@ -447,12 +486,9 @@ const ContentTabs: React.FC<{
 
     const tabs = [
         { label: 'Posts', icon: <GridOn />, disabled: false },
-        { label: 'Media', icon: <ImageIcon />, disabled: false },
-        { label: 'Videos', icon: <PlayArrow />, disabled: false },
         { label: 'Followers', icon: <PersonAdd />, disabled: false },
         { label: 'Following', icon: <PersonRemove />, disabled: false },
         { label: 'Liked', icon: <Favorite />, disabled: !isOwnProfile },
-        { label: 'Saved', icon: <Bookmark />, disabled: !isOwnProfile },
     ];
 
     return (
@@ -468,18 +504,20 @@ const ContentTabs: React.FC<{
                 value={value}
                 onChange={onChange}
                 variant={isMobile ? "scrollable" : "fullWidth"}
-                scrollButtons={isMobile ? "auto" : false}
-                allowScrollButtonsMobile={isMobile}
+                scrollButtons="auto"
+                allowScrollButtonsMobile={true}
                 sx={{
                     '& .MuiTab-root': {
                         minHeight: { xs: 40, sm: 64 },
                         textTransform: 'none',
                         fontWeight: 600,
-                        fontSize: { xs: '0.75rem', sm: '0.95rem' },
+                        fontSize: { xs: '0.7rem', sm: '0.85rem' },
                         '&.Mui-selected': {
                             color: 'primary.main',
                         },
-                        minWidth: { xs: 'auto', sm: 'auto' }
+                        minWidth: { xs: 80, sm: 120 },
+                        px: { xs: 1, sm: 2 },
+                        py: { xs: 1, sm: 1.5 },
                     },
                     '& .MuiTabs-indicator': {
                         height: 3,
@@ -491,7 +529,7 @@ const ContentTabs: React.FC<{
                     <Tab
                         key={index}
                         value={index}
-                        label={isMobile && tab.label.length > 6 ? tab.label.substring(0, 6) + '...' : tab.label}
+                        label={isMobile && tab.label.length > 5 ? tab.label.substring(0, 5) + '...' : tab.label}
                         icon={tab.icon}
                         iconPosition="start"
                         disabled={tab.disabled}
@@ -684,8 +722,8 @@ const ModernProfilePage: React.FC = () => {
     if (!profile) return null;
 
     return (
-        <Container maxWidth="lg" sx={{ py: { xs: 0.5, sm: 2, md: 4 } }}>
-            <Box>
+        <Container maxWidth="lg" sx={{ py: { xs: 0.5, sm: 2, md: 4 }, px: { xs: 0, sm: 2 }, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ width: '100%', maxWidth: '800px' }}>
                 {/* Profile Header */}
                 <ProfileHeader
                     profile={profile}
@@ -694,8 +732,8 @@ const ModernProfilePage: React.FC = () => {
                     onFollow={handleFollow}
                     onMessage={() => router.push(`/messages?user=${profile.username}`)}
                     onAvatarUpdate={handleAvatarUpdate} // Use the new handler
-                    onFollowersClick={() => setTab(3)}
-                    onFollowingClick={() => setTab(4)}
+                    onFollowersClick={() => setTab(1)}
+                    onFollowingClick={() => setTab(2)}
                 />
 
                 {/* Content Tabs */}
@@ -714,7 +752,7 @@ const ModernProfilePage: React.FC = () => {
                             borderRadius: isMobile ? '0px' : '0 0 12px 12px',
                             border: isMobile ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                             borderTop: 'none',
-                            minHeight: isMobile ? '250px' : '400px',
+                            minHeight: isMobile ? '200px' : '400px',
                         }}
                         className="tab-content"
                     >
@@ -726,57 +764,24 @@ const ModernProfilePage: React.FC = () => {
                         </TabPanel>
                     
                         <TabPanel value={tab} index={1}>
-                            <Box p={isMobile ? 1 : 3}>
-                                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
-                                    Media
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Media content will be loaded here...
-                                </Typography>
-                            </Box>
-                        </TabPanel>
-                    
-                        <TabPanel value={tab} index={2}>
-                            <Box p={isMobile ? 1 : 3}>
-                                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
-                                    Videos
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Video content will be loaded here...
-                                </Typography>
-                            </Box>
-                        </TabPanel>
-                    
-                        <TabPanel value={tab} index={3}>
                             {profile && (
                                 <FollowersList userId={profile.id} />
                             )}
                         </TabPanel>
                     
-                        <TabPanel value={tab} index={4}>
+                        <TabPanel value={tab} index={2}>
                             {profile && (
                                 <FollowingList userId={profile.id} />
                             )}
                         </TabPanel>
                     
-                        <TabPanel value={tab} index={5}>
-                            <Box p={isMobile ? 1 : 3}>
+                        <TabPanel value={tab} index={3}>
+                            <Box p={isMobile ? 0.5 : 3}>
                                 <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
                                     Liked Posts
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Liked posts will be loaded here...
-                                </Typography>
-                            </Box>
-                        </TabPanel>
-                    
-                        <TabPanel value={tab} index={6}>
-                            <Box p={isMobile ? 1 : 3}>
-                                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
-                                    Saved Posts
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Saved posts will be loaded here...
                                 </Typography>
                             </Box>
                         </TabPanel>

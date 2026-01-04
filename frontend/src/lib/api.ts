@@ -737,6 +737,13 @@ class ApiService {
       return this.safeJsonParse(response);
     },
 
+    removeFollower: async (userId: string) => {
+      return this.request(`${API_URL}/users/${userId}/follower`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders(),
+      }, TIMEOUTS.API_REQUEST);
+    },
+
     getById: async (id: string) => {
       return this.request(`${API_URL}/users/${id}`, {
         method: 'GET',
