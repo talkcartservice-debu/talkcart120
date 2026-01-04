@@ -53,6 +53,11 @@ import UserPosts from '@/components/profile/UserPosts';
 import ProfilePictureUpload from '@/components/profile/ProfilePictureUpload';
 import FollowersList from '@/components/profile/FollowersList';
 import FollowingList from '@/components/profile/FollowingList';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 // Enhanced TabPanel with animations
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -561,6 +566,15 @@ const ModernProfilePage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [tab, setTab] = useState(0);
     const [editMode, setEditMode] = useState(false);
+    
+    // Edit profile state
+    const [editProfileData, setEditProfileData] = useState({
+        displayName: '',
+        bio: '',
+        location: '',
+        website: '',
+    });
+    const [editLoading, setEditLoading] = useState(false);
 
     // Posts state
     const [posts, setPosts] = useState<Post[]>([]);
@@ -592,6 +606,74 @@ const ModernProfilePage: React.FC = () => {
             window.removeEventListener('user-profile-updated', handleUserUpdate as EventListener);
         };
     }, []);
+    
+    // Handle opening edit profile modal
+    const handleOpenEditProfile = () => {
+        if (profile) {
+            setEditProfileData({
+                displayName: profile.displayName || profile.username,
+                bio: profile.bio || '',
+                location: profile.location || '',
+                website: profile.website || '',
+            });
+            setEditMode(true);
+        }
+    };
+    
+    // Handle input changes in edit form
+    const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setEditProfileData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+    
+    // Handle saving profile updates
+    const handleSaveProfile = async () => {
+        if (!profile) return;
+        
+        setEditLoading(true);
+        try {
+            const response: any = await api.users.updateProfile(editProfileData);
+            
+            if (response.success) {
+                // Update profile in state
+                setProfile(prev => prev ? { ...prev, ...editProfileData } : null);
+                
+                // Update in ProfileContext which will sync with AuthContext
+                if (currentUser) {
+                    // Update the profile context to ensure all contexts are in sync
+                    await updateProfileContext(editProfileData);
+                    
+                    // Trigger event to update other components
+                    window.dispatchEvent(new CustomEvent('user-profile-updated', {
+                        detail: { user: { ...profile, ...editProfileData } }
+                    }));
+                }
+                
+                setEditMode(false);
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        } finally {
+            setEditLoading(false);
+        }
+    };
+    
+    // Handle canceling edit
+    const handleCancelEdit = () => {
+        setEditMode(false);
+        // Reset form data
+        if (profile) {
+            setEditProfileData({
+                displayName: profile.displayName || profile.username,
+                bio: profile.bio || '',
+                location: profile.location || '',
+                website: profile.website || '',
+            });
+        }
+    };
 
     // Load profile data
     useEffect(() => {
@@ -722,73 +804,138 @@ const ModernProfilePage: React.FC = () => {
     if (!profile) return null;
 
     return (
-        <Container maxWidth="lg" sx={{ py: { xs: 0.5, sm: 2, md: 4 }, px: { xs: 0, sm: 2 }, display: 'flex', justifyContent: 'center' }}>
-            <Box sx={{ width: '100%', maxWidth: '800px' }}>
-                {/* Profile Header */}
-                <ProfileHeader
-                    profile={profile}
-                    isOwnProfile={isOwnProfile}
-                    onEditProfile={() => setEditMode(true)}
-                    onFollow={handleFollow}
-                    onMessage={() => router.push(`/messages?user=${profile.username}`)}
-                    onAvatarUpdate={handleAvatarUpdate} // Use the new handler
-                    onFollowersClick={() => setTab(1)}
-                    onFollowingClick={() => setTab(2)}
-                />
-
-                {/* Content Tabs */}
-                <Box sx={{ mt: { xs: 0.5, sm: 2, md: 4 } }}>
-                    <ContentTabs
-                        value={tab}
-                        onChange={handleTabChange}
-                        isOwnProfile={isOwnProfile}
+        <>
+            <Container maxWidth="lg" sx={{ py: { xs: 0.5, sm: 2, md: 4 }, px: { xs: 0, sm: 2 }, display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{ width: '100%', maxWidth: '800px' }}>
+                    {/* Profile Header */}
+                    <ProfileHeader
                         profile={profile}
+                        isOwnProfile={isOwnProfile}
+                        onEditProfile={handleOpenEditProfile}
+                        onFollow={handleFollow}
+                        onMessage={() => router.push(`/messages?user=${profile.username}`)}
+                        onAvatarUpdate={handleAvatarUpdate} // Use the new handler
+                        onFollowersClick={() => setTab(1)}
+                        onFollowingClick={() => setTab(2)}
                     />
-                
-                    {/* Tab Content */}
-                    <div
-                        style={{
-                            marginTop: 0,
-                            borderRadius: isMobile ? '0px' : '0 0 12px 12px',
-                            border: isMobile ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                            borderTop: 'none',
-                            minHeight: isMobile ? '200px' : '400px',
-                        }}
-                        className="tab-content"
-                    >
-                        <TabPanel value={tab} index={0}>
-                            <UserPosts 
-                              username={profile.username} 
-                              isOwnProfile={isOwnProfile} 
-                            />
-                        </TabPanel>
+
+                    {/* Content Tabs */}
+                    <Box sx={{ mt: { xs: 0.5, sm: 2, md: 4 } }}>
+                        <ContentTabs
+                            value={tab}
+                            onChange={handleTabChange}
+                            isOwnProfile={isOwnProfile}
+                            profile={profile}
+                        />
                     
-                        <TabPanel value={tab} index={1}>
-                            {profile && (
-                                <FollowersList userId={profile.id} />
-                            )}
-                        </TabPanel>
-                    
-                        <TabPanel value={tab} index={2}>
-                            {profile && (
-                                <FollowingList userId={profile.id} />
-                            )}
-                        </TabPanel>
-                    
-                        <TabPanel value={tab} index={3}>
-                            <Box p={isMobile ? 0.5 : 3}>
-                                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
-                                    Liked Posts
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Liked posts will be loaded here...
-                                </Typography>
-                            </Box>
-                        </TabPanel>
-                    </div>
+                        {/* Tab Content */}
+                        <div
+                            style={{
+                                marginTop: 0,
+                                borderRadius: isMobile ? '0px' : '0 0 12px 12px',
+                                border: isMobile ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                                borderTop: 'none',
+                                minHeight: isMobile ? '200px' : '400px',
+                            }}
+                            className="tab-content"
+                        >
+                            <TabPanel value={tab} index={0}>
+                                <UserPosts 
+                                  username={profile.username} 
+                                  isOwnProfile={isOwnProfile} 
+                                />
+                            </TabPanel>
+                        
+                            <TabPanel value={tab} index={1}>
+                                {profile && (
+                                    <FollowersList userId={profile.id} />
+                                )}
+                            </TabPanel>
+                        
+                            <TabPanel value={tab} index={2}>
+                                {profile && (
+                                    <FollowingList userId={profile.id} />
+                                )}
+                            </TabPanel>
+                        
+                            <TabPanel value={tab} index={3}>
+                                <Box p={isMobile ? 0.5 : 3}>
+                                    <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
+                                        Liked Posts
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Liked posts will be loaded here...
+                                    </Typography>
+                                </Box>
+                            </TabPanel>
+                        </div>
+                    </Box>
                 </Box>
-            </Box>
-        </Container>
+            </Container>
+            
+            {/* Edit Profile Dialog */}
+            <Dialog open={editMode} onClose={handleCancelEdit} maxWidth="sm" fullWidth>
+              <DialogTitle>Edit Profile</DialogTitle>
+              <DialogContent dividers>
+                <DialogContentText sx={{ mb: 2 }}>
+                  Update your profile information
+                </DialogContentText>
+                
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  name="displayName"
+                  label="Display Name"
+                  fullWidth
+                  variant="outlined"
+                  value={editProfileData.displayName}
+                  onChange={handleEditInputChange}
+                  sx={{ mb: 2 }}
+                />
+                
+                <TextField
+                  margin="dense"
+                  name="bio"
+                  label="Bio"
+                  fullWidth
+                  variant="outlined"
+                  multiline
+                  rows={3}
+                  value={editProfileData.bio}
+                  onChange={handleEditInputChange}
+                  sx={{ mb: 2 }}
+                />
+                
+                <TextField
+                  margin="dense"
+                  name="location"
+                  label="Location"
+                  fullWidth
+                  variant="outlined"
+                  value={editProfileData.location}
+                  onChange={handleEditInputChange}
+                  sx={{ mb: 2 }}
+                />
+                
+                <TextField
+                  margin="dense"
+                  name="website"
+                  label="Website"
+                  fullWidth
+                  variant="outlined"
+                  value={editProfileData.website}
+                  onChange={handleEditInputChange}
+                  sx={{ mb: 2 }}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCancelEdit} disabled={editLoading}>Cancel</Button>
+                <Button onClick={handleSaveProfile} variant="contained" disabled={editLoading}>
+                  {editLoading ? 'Saving...' : 'Save'}
+                </Button>
+              </DialogActions>
+            </Dialog>
+        </>
     );
 };
 
