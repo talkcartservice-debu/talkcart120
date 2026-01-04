@@ -125,8 +125,17 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
     const [audioStates, setAudioStates] = useState<Record<string, { playing: boolean; currentTime: number; duration: number; muted: boolean }>>({});
     const [showThread, setShowThread] = useState(false);
     const [showReplies, setShowReplies] = useState(false);
-    const [isPinned, setIsPinned] = useState(false);
-    const [isArchived, setIsArchived] = useState(false);
+    const [isPinned, setIsPinned] = useState(message.isPinned || false);
+    const [isArchived, setIsArchived] = useState(message.isArchived || false);
+    
+    // Sync local state with message props when they change
+    useEffect(() => {
+        setIsPinned(message.isPinned || false);
+    }, [message.isPinned]);
+    
+    useEffect(() => {
+        setIsArchived(message.isArchived || false);
+    }, [message.isArchived]);
     const [isMuted, setIsMuted] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const [showMediaPreview, setShowMediaPreview] = useState(true);
@@ -152,6 +161,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
     const handlePinMessage = () => {
         if (onPin) {
             onPin(message.id);
+            // Toggle the local state immediately for better UX
             setIsPinned(!isPinned);
         }
         handleMenuClose();
@@ -160,6 +170,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
     const handleArchiveMessage = () => {
         if (onArchive) {
             onArchive(message.id);
+            // Toggle the local state immediately for better UX
             setIsArchived(!isArchived);
         }
         handleMenuClose();
@@ -954,6 +965,13 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
                                         opacity: 0.85
                                     }}
                                 >
+                                    {message.isPinned && (
+                                        <Tooltip title="Pinned Message" placement="top">
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mr: 1 }}>
+                                                <Pin size={14} color={theme.palette.warning.main} style={{ opacity: 0.9, strokeWidth: 2.5 }} />
+                                            </Box>
+                                        </Tooltip>
+                                    )}
                                     {message.isEdited && (
                                         <Chip
                                             label="edited"

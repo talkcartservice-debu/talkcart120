@@ -31,6 +31,7 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
+  Tooltip,
 } from '@mui/material';
 import {
   Search,
@@ -48,7 +49,8 @@ import {
   Plus,
   CheckCheck,
   Reply,
-  X
+  X,
+  Pin
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import data from '@emoji-mart/data';
@@ -107,6 +109,12 @@ const MessagesPage: React.FC = () => {
     sending,
     hasMore,
     updateConversation,
+    replyAll,
+    pinMessage,
+    unpinMessage,
+    archiveMessage,
+    unarchiveMessage,
+    getPinnedMessage,
     // Sound controls
     soundsEnabled,
     toggleSounds,
@@ -175,6 +183,7 @@ const MessagesPage: React.FC = () => {
 
   // Reply state
   const [replyToMessage, setReplyToMessage] = useState<any | null>(null);
+  const [isReplyAll, setIsReplyAll] = useState(false);
 
   // Conversation update state
   const [isEditingConversation, setIsEditingConversation] = useState(false);
@@ -412,7 +421,16 @@ const MessagesPage: React.FC = () => {
       // Prepare replyTo parameter if we're replying to a message
       const replyToId = replyToMessage?.id || undefined;
       
-      const success = await sendMessage(trimmedMessage, 'text', undefined, replyToId);
+      let success;
+      if (isReplyAll) {
+        // Use replyAll function when in reply-all mode
+        success = await replyAll(trimmedMessage, 'text', undefined, replyToId);
+        // Reset reply-all state
+        setIsReplyAll(false);
+      } else {
+        success = await sendMessage(trimmedMessage, 'text', undefined, replyToId);
+      }
+      
       if (success) {
         setNewMessage('');
         setReplyToMessage(null);
@@ -467,6 +485,7 @@ const MessagesPage: React.FC = () => {
   // Handle cancel reply
   const handleCancelReply = () => {
     setReplyToMessage(null);
+    setIsReplyAll(false);
   };
 
   // Handle conversation update
@@ -1307,31 +1326,59 @@ const MessagesPage: React.FC = () => {
                   </Box>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
-                  {/* Sound toggle - hide on mobile */}
-                  <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', mr: 1 }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5 }}>
-                      Sounds
-                    </Typography>
-                    <Switch size="small" checked={!!soundsEnabled} onChange={toggleSounds} />
-                  </Box>
-                  {/* Volume - hide on mobile */}
-                  <Box sx={{ width: { xs: 80, sm: 120 }, display: { xs: 'none', sm: 'flex' }, alignItems: 'center' }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
-                      Vol
-                    </Typography>
-                    <Slider
-                      size="small"
-                      value={Math.round((soundVolume ?? 0.6) * 100)}
-                      onChange={(_, v) => {
-                        const num = Array.isArray(v) ? v[0] : v;
-                        if (typeof num === 'number') setSoundVolume(num / 100);
-                      }}
-                      min={0}
-                      max={100}
-                      step={5}
-                      sx={{ width: { xs: 60, sm: 80 } }}
-                    />
-                  </Box>
+                  {/* Pinned Message Indicator */}
+                  {activeConversation && (() => {
+                    const pinnedMessage = getPinnedMessage(activeConversation.id);
+                    if (pinnedMessage) {
+                      return (
+                        <Tooltip title={`Pinned: ${pinnedMessage.content.substring(0, 30)}${pinnedMessage.content.length > 30 ? '...' : ''}`} placement="bottom">
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              mr: 1,
+                              px: 1,
+                              py: 0.5,
+                              borderRadius: 1,
+                              backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                              border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+                              cursor: 'pointer',
+                              '&:hover': {
+                                backgroundColor: alpha(theme.palette.warning.main, 0.15),
+                              }
+                            }}
+                            onClick={() => {
+                              // Scroll to the pinned message
+                              const messageElement = document.getElementById(`message-${pinnedMessage.id}`);
+                              if (messageElement) {
+                                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                messageElement.style.backgroundColor = alpha(theme.palette.warning.main, 0.2);
+                                setTimeout(() => {
+                                  if (messageElement) {
+                                    messageElement.style.backgroundColor = '';
+                                  }
+                                }, 2000);
+                              }
+                            }}
+                          >
+                            <Pin size={14} color={theme.palette.warning.main} style={{ opacity: 0.9, strokeWidth: 2.5 }} />
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                ml: 0.5,
+                                color: theme.palette.warning.main,
+                                fontWeight: 600,
+                                fontSize: '0.75rem'
+                              }}
+                            >
+                              Pinned
+                            </Typography>
+                          </Box>
+                        </Tooltip>
+                      );
+                    }
+                    return null;
+                  })()}
                   <IconButton
                     onClick={handleAudioCall}
                     disabled={isCallActive}
@@ -1412,6 +1459,8 @@ const MessagesPage: React.FC = () => {
                   )}
                 </Box>
               </Box>
+              
+
               
               {/* Mobile Menu */}
               <Menu
@@ -1593,6 +1642,7 @@ const MessagesPage: React.FC = () => {
                       return (
                         <Box
                           key={message.id}
+                          id={`message-${message.id}`}
                           sx={{
                             display: 'flex',
                             justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
@@ -1653,6 +1703,38 @@ const MessagesPage: React.FC = () => {
                                 console.error('Failed to add reaction:', error);
                                 return false;
                               }
+                            }}
+                            onPin={async (messageId: string) => {
+                              try {
+                                // Determine if this is a pin or unpin action based on current message state
+                                const shouldPin = !message.isPinned;
+                                if (shouldPin) {
+                                  await pinMessage(messageId);
+                                } else {
+                                  await unpinMessage(messageId);
+                                }
+                              } catch (error) {
+                                console.error('Failed to toggle pin status:', error);
+                              }
+                            }}
+                            onArchive={async (messageId: string) => {
+                              try {
+                                // Determine if this is an archive or unarchive action based on current message state
+                                const shouldArchive = !message.isArchived;
+                                if (shouldArchive) {
+                                  await archiveMessage(messageId);
+                                } else {
+                                  await unarchiveMessage(messageId);
+                                }
+                              } catch (error) {
+                                console.error('Failed to toggle archive status:', error);
+                              }
+                            }}
+                            onReplyAll={async () => {
+                              // For replyAll, we need to set the reply-all state
+                              // and the message to reply to
+                              setIsReplyAll(true);
+                              handleReplyToMessage(message);
                             }}
                           />
                         </Box>
@@ -1782,7 +1864,7 @@ const MessagesPage: React.FC = () => {
                             lineHeight: 1.2
                           }}
                         >
-                          Replying to {replyToMessage.sender?.displayName || 'Unknown'}
+                          {isReplyAll ? 'Replying to all in' : 'Replying to'} {replyToMessage.sender?.displayName || 'Unknown'}
                         </Typography>
                         <Typography
                           variant="body2"

@@ -63,6 +63,8 @@ interface UseMessagesReturn {
   updateOnlineStatus: (userId: string, isOnline: boolean) => void;
   updateMessageStatus: (messageId: string, status: 'delivered' | 'read') => void;
   getRecentConversations: (limit?: number) => Conversation[];
+  replyAll: (content: string, type?: string, media?: any[], originalMessageId?: string) => Promise<boolean>;
+  getPinnedMessage: (conversationId: string) => Message | null;
 }
 
 const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
@@ -1205,13 +1207,13 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
   const muteConversation = async (conversationId: string): Promise<void> => {
     try {
       // Update conversation settings to mute notifications
-      await client.updateConversation(conversationId, { settings: { muteNotifications: true } });
+      await client.muteConversation(conversationId, true);
       
       // Update local state
       setConversations(prev => 
         (prev || []).map(conv => 
           conv.id === conversationId 
-            ? { ...conv, settings: { ...conv.settings, muteNotifications: true } } 
+            ? { ...conv, muteNotifications: true } 
             : conv
         )
       );
@@ -1219,7 +1221,7 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       // Update active conversation if applicable
       if (activeConversation?.id === conversationId) {
         setActiveConversation(prev => 
-          prev ? { ...prev, settings: { ...prev.settings, muteNotifications: true } } : null
+          prev ? { ...prev, muteNotifications: true } : null
         );
       }
     } catch (error) {
@@ -1231,13 +1233,13 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
   const unmuteConversation = async (conversationId: string): Promise<void> => {
     try {
       // Update conversation settings to unmute notifications
-      await client.updateConversation(conversationId, { settings: { muteNotifications: false } });
+      await client.muteConversation(conversationId, false);
       
       // Update local state
       setConversations(prev => 
         (prev || []).map(conv => 
           conv.id === conversationId 
-            ? { ...conv, settings: { ...conv.settings, muteNotifications: false } } 
+            ? { ...conv, muteNotifications: false } 
             : conv
         )
       );
@@ -1245,7 +1247,7 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       // Update active conversation if applicable
       if (activeConversation?.id === conversationId) {
         setActiveConversation(prev => 
-          prev ? { ...prev, settings: { ...prev.settings, muteNotifications: false } } : null
+          prev ? { ...prev, muteNotifications: false } : null
         );
       }
     } catch (error) {
@@ -1279,6 +1281,64 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
       .slice(0, limit);
   }, [conversations]);
   
+  // Function to get the currently pinned message for a conversation
+  const getPinnedMessage = useCallback((conversationId: string): Message | null => {
+    const conversationMessages = messageHistory[conversationId] || messages;
+    const pinnedMessage = conversationMessages.find(msg => msg.isPinned && !msg.isDeleted);
+    return pinnedMessage || null;
+  }, [messages, messageHistory]);
+  
+  // Handle reply all functionality
+  const handleReplyAll = async (content: string, type: string = 'text', media?: any[], originalMessageId?: string): Promise<boolean> => {
+    // Use activeConversation.id if conversationId is not provided
+    const currentConversationId = conversationId || activeConversation?.id;
+    if (!currentConversationId) {
+      setError('No active conversation selected');
+      return false;
+    }
+    
+    try {
+      setSending(true);
+      const res = await client.replyAll(currentConversationId, content, type, media, originalMessageId);
+      
+      if (res.success) {
+        // Add to local messages
+        const newMessage = {
+          ...res.data.message,
+          isOwn: true,
+          sender: user // Add current user as sender
+        };
+        
+        setMessages(prev => [...(prev || []), newMessage]);
+        
+        // Update conversation's last message
+        setConversations(prev => 
+          (prev || []).map(conv => 
+            conv.id === currentConversationId 
+              ? { ...conv, lastMessage: newMessage, lastActivity: new Date().toISOString() } 
+              : conv
+          )
+        );
+        
+        // Update active conversation if applicable
+        if (activeConversation?.id === currentConversationId) {
+          setActiveConversation(prev => 
+            prev ? { ...prev, lastMessage: newMessage, lastActivity: new Date().toISOString() } : null
+          );
+        }
+        
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Reply all error:', error);
+      setError((error as Error).message);
+      return false;
+    } finally {
+      setSending(false);
+    }
+  };
+  
   return {
     conversations,
     activeConversation,
@@ -1294,17 +1354,17 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     totalUnread,
     messageHistory,
     scrollPositions,
-    
+  
     // Sound controls
     soundsEnabled,
     toggleSounds,
     soundVolume,
     setSoundVolume,
-    
+  
     // Real-time features
     onlineUsers,
     messageStatus,
-    
+  
     // Message actions
     fetchMessages,
     sendMessage: handleSendMessage,
@@ -1331,7 +1391,9 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
     unmuteConversation,
     updateOnlineStatus,
     updateMessageStatus,
-    getRecentConversations
+    getRecentConversations,
+    replyAll: handleReplyAll,
+    getPinnedMessage
   };
 };
 

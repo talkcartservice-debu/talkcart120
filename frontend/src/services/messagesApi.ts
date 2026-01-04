@@ -725,6 +725,46 @@ export const getThreadMessages = async (
   }
 };
 
+/**
+ * Reply to all participants in a conversation
+ */
+export const replyAll = async (
+  conversationId: string,
+  content: string,
+  type: string = 'text',
+  media?: any[],
+  originalMessageId?: string
+): Promise<any> => {
+  try {
+    const response = await messageApi.post(`/conversations/${conversationId}/messages/reply-all`, {
+      content,
+      type,
+      media,
+      originalMessageId
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Reply all error:', error);
+    throw error.response?.data || { success: false, error: 'Failed to reply to all' };
+  }
+}
+
+/**
+ * Mute or unmute a conversation
+ */
+export const muteConversation = async (
+  conversationId: string,
+  mute: boolean
+): Promise<any> => {
+  try {
+    const response = await messageApi.put(`/conversations/${conversationId}/mute`, { mute });
+    return response.data;
+  } catch (error: any) {
+    console.error('Mute conversation error:', error);
+    throw error.response?.data || { success: false, error: `Failed to ${mute ? 'mute' : 'unmute'} conversation` };
+  }
+};
+
 const messagesApi = {
     getMessages,
     sendMessage,
@@ -744,7 +784,9 @@ const messagesApi = {
     unpinMessage,
     archiveMessage,
     unarchiveMessage,
-    getThreadMessages
+    getThreadMessages,
+    replyAll,
+    muteConversation
 };
 
 export default messagesApi;
