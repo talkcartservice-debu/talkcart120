@@ -272,6 +272,7 @@ async function seedMarketplaceData() {
 
     const productsWithVendors = filtered.map((product, index) => ({
       ...product,
+      isActive: true,  // Set products as active so they appear in marketplace
       vendorId: users[index % users.length]._id,
       createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // Random date within last week
       updatedAt: new Date()

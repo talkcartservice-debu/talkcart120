@@ -410,7 +410,7 @@ const VendorAdminChatPage = () => {
             </Avatar>
             <Box>
               <Typography variant="h4" component="h1">
-                Chat with Admin Support
+                Talk to Us
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Get help with your vendor account and products

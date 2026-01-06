@@ -11,12 +11,15 @@ import {
   Chip,
   Button,
   useMediaQuery,
+  Stack,
+  Badge,
 } from '@mui/material';
 import {
   Eye,
   AlertCircle,
-  MessageCircle,
-  Star,
+  Heart,
+  Share2,
+  Sparkles,
   ShoppingCart,
 } from 'lucide-react';
 import OptimizedImage from '@/components/media/OptimizedImage';
@@ -255,31 +258,32 @@ const ProductCard: React.FC<ProductCardProps> = ({
     e.stopPropagation();
   };
 
-  // Loading skeleton
+  // Loading skeleton - Updated for modern design
   if (loading || !product) {
     return (
       <Card
         sx={{
-          height: 320,
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: 2,
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+          borderRadius: 3,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          border: 'none',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
           position: 'relative',
           overflow: 'hidden',
-          transition: 'all 0.3s ease',
+          backgroundColor: '#ffffff',
           '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 24px rgba(0, 0, 0, 0.15)',
           },
         }}
       >
-        <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 0 }} />
-        <CardContent sx={{ flexGrow: 1, p: 1.5 }}>
-          <Skeleton variant="text" width="80%" height={20} sx={{ mb: 0.5 }} />
-          <Skeleton variant="text" width="60%" height={18} sx={{ mb: 1.5 }} />
-          <Skeleton variant="rectangular" width="100%" height={32} />
+        <Skeleton variant="rectangular" height={240} sx={{ borderRadius: 0 }} />
+        <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2 }, pt: { xs: 1.25, sm: 1.75 } }}>
+          <Skeleton variant="text" width="70%" height={20} sx={{ mb: 1, borderRadius: 1 }} />
+          <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1.5, borderRadius: 1 }} />
+          <Skeleton variant="rectangular" width="100%" height={40} sx={{ borderRadius: 2 }} />
         </CardContent>
       </Card>
     );
@@ -292,32 +296,36 @@ const ProductCard: React.FC<ProductCardProps> = ({
         display: 'flex',
         flexDirection: 'column',
         borderRadius: 2,
-        transition: 'all 0.3s ease',
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        border: '1px solid',
+        borderColor: 'divider',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         position: 'relative',
         overflow: 'hidden',
         backgroundColor: '#ffffff',
         cursor: 'pointer',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
+          transform: 'translateY(-4px)',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
         },
       }}
       onClick={handleCardClick}
     >
-      {/* Product Image - Ensuring rectangular shape */}
+      {/* Product Image - Enhanced styling */}
       <Box sx={{ 
         position: 'relative', 
-        height: { xs: 160, sm: 180, md: 200 },
-        backgroundColor: '#f8f8f8',
+        height: { xs: 180, sm: 200, md: 220, lg: 240 },
+        backgroundColor: '#f8f9fa',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
         '&:hover .product-image': {
           transform: 'scale(1.05)'
-        }
+        },
+        '&:hover .product-overlay': {
+          opacity: 1,
+        },
       }}>
         {!imageError ? (
           <OptimizedImage
@@ -326,14 +334,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             style={{ 
-              objectFit: 'cover', 
+              objectFit: 'contain', 
               width: '100%', 
               height: '100%',
-              transition: 'transform 0.3s ease'
+              transition: 'transform 0.3s ease-in-out'
             }}
             className="product-image"
             onError={() => setImageError(true)}
-            quality={85}
+            quality={90}
           />
         ) : (
           <Box
@@ -346,44 +354,272 @@ const ProductCard: React.FC<ProductCardProps> = ({
               backgroundColor: alpha(theme.palette.grey[300], 0.3),
             }}
           >
-            <AlertCircle size={32} color={theme.palette.text.secondary} />
+            <AlertCircle size={36} color={theme.palette.text.secondary} />
+          </Box>
+        )}
+        
+        {/* Product overlay with quick actions */}
+        <Box 
+          className="product-overlay"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 0,
+            transition: 'opacity 0.3s ease-in-out',
+            gap: 1,
+            zIndex: 1,
+          }}
+        >
+          <Button
+            size="small"
+            variant="contained"
+            color="primary"
+            startIcon={<Heart size={16} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              toast.success('Added to favorites!');
+            }}
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              color: theme.palette.primary.main,
+              '&:hover': {
+                backgroundColor: 'white',
+              },
+              borderRadius: '50px',
+              minWidth: 'auto',
+              p: 0.5,
+            }}
+          >
+            <Heart size={16} />
+          </Button>
+          <Button
+            size="small"
+            variant="contained"
+            color="primary"
+            startIcon={<Share2 size={16} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              toast.success('Link copied to clipboard!');
+            }}
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              color: theme.palette.primary.main,
+              '&:hover': {
+                backgroundColor: 'white',
+              },
+              borderRadius: '50px',
+              minWidth: 'auto',
+              p: 0.5,
+            }}
+          >
+            <Share2 size={16} />
+          </Button>
+        </Box>
+        
+        {/* Special badges */}
+        <Box sx={{
+          position: 'absolute',
+          top: 8,
+          left: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0.5,
+          zIndex: 2,
+        }}>
+          {product?.featured && (
+            <Chip
+              icon={<Sparkles size={14} />}
+              label="Featured"
+              size="small"
+              color="primary"
+              variant="filled"
+              sx={{
+                height: 24,
+                fontSize: '0.65rem',
+                fontWeight: 600,
+                backgroundColor: theme.palette.primary.main,
+                color: 'white',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                },
+              }}
+            />
+          )}
+          {product?.discount && product.discount > 0 && (
+            <Chip
+              label={`${Math.round(product.discount)}% OFF`}
+              size="small"
+              color="error"
+              variant="filled"
+              sx={{
+                height: 24,
+                fontSize: '0.65rem',
+                fontWeight: 600,
+                backgroundColor: '#e53e3e',
+                color: 'white',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                },
+              }}
+            />
+          )}
+          {product?.prime && (
+            <Chip
+              label="Prime"
+              size="small"
+              color="info"
+              variant="filled"
+              sx={{
+                height: 24,
+                fontSize: '0.65rem',
+                fontWeight: 600,
+                backgroundColor: '#00a8e1',
+                color: 'white',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                },
+              }}
+            />
+          )}
+        </Box>
+        
+        {/* Free Shipping Badge */}
+        {product?.freeShipping && (
+          <Box sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            zIndex: 2,
+          }}>
+            <Chip
+              label="Free Shipping"
+              size="small"
+              color="success"
+              variant="outlined"
+              sx={{
+                height: 24,
+                fontSize: '0.65rem',
+                fontWeight: 600,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                color: '#2e7d32',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                },
+              }}
+            />
           </Box>
         )}
       </Box>
               
-      {/* Product Name and Price */}
-      <CardContent sx={{ flexGrow: 1, p: { xs: 1, sm: 1.5 }, pt: { xs: 0.75, sm: 1 } }}>
+      {/* Product Info - Enhanced layout */}
+      <CardContent sx={{ 
+        flexGrow: 1, 
+        p: { xs: 1.25, sm: 1.5 }, 
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.75,
+      }}>
+        {/* Vendor Information */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Typography 
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            by {product?.vendor?.displayName || product?.vendor?.username || 'Unknown'}
+          </Typography>
+          {product?.vendor?.isVerified && (
+            <Box component="span" sx={{ color: '#1877F2' }}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M16 8.016a8 8 0 11-8-8 8 8 0 018 8zM6.5 12l7.5-7.5-1.414-1.414L6.5 9.172 4.414 7.086 3 8.5l3.5 3.5z" />
+              </svg>
+            </Box>
+          )}
+        </Box>
+        
+        {/* Product Name */}
         <Typography 
-          variant="subtitle1"
+          variant="subtitle2"
           sx={{ 
             fontWeight: 600, 
             mb: 0.5, 
             overflow: 'hidden', 
             textOverflow: 'ellipsis', 
             display: '-webkit-box', 
-            WebkitLineClamp: 1, // Reduced to 1 line
+            WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
-            lineHeight: '1.4em',
-            height: '1.4em', // Adjusted height
-            fontSize: { xs: '0.875rem', sm: '1rem' },
-            color: theme.palette.text.primary
+            lineHeight: '1.3em',
+            fontSize: { xs: '0.85rem', sm: '0.9rem' },
+            color: theme.palette.text.primary,
+            minHeight: '2.6em',
           }}
         >
           {product?.name || 'Product'}
         </Typography>
         
-        {/* Price Information - Simplified */}
-        <Box sx={{ mb: 1.5 }}>
+        {/* Rating and Reviews */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {[...Array(5)].map((_, i) => (
+              <svg 
+                key={i}
+                width="12" 
+                height="12" 
+                viewBox="0 0 24 24" 
+                fill={i < Math.floor(product?.rating || 0) ? '#FFC107' : '#E0E0E0'}
+                stroke={i < Math.floor(product?.rating || 0) ? '#FFC107' : '#BDBDBD'}
+                strokeWidth="1"
+              >
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+              </svg>
+            ))}
+          </Box>
+          <Typography 
+            variant="caption" 
+            color="text.secondary"
+            sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}
+          >
+            {product?.rating?.toFixed(1)} ({product?.reviewCount || 0})
+          </Typography>
+        </Box>
+        
+        {/* Category */}
+        <Typography 
+          variant="caption" 
+          color="text.secondary"
+          sx={{ 
+            textTransform: 'uppercase',
+            fontSize: { xs: '0.65rem', sm: '0.7rem' },
+            mb: 0.5,
+          }}
+        >
+          {product?.category || 'Uncategorized'}
+        </Typography>
+        
+        {/* Price Information - Enhanced */}
+        <Box sx={{ mb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
             {/* Discounted Price Display */}
             {product?.discount && product.discount > 0 ? (
               <>
                 <Typography 
-                  variant="h6"
+                  variant="subtitle1"
                   color="#B12704"
                   sx={{ 
                     fontWeight: 700,
-                    fontSize: { xs: '1rem', sm: '1.1rem' },
+                    fontSize: { xs: '0.95rem', sm: '1.05rem' },
                   }}
                   component="p"
                 >
@@ -398,7 +634,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   sx={{ 
                     textDecoration: 'line-through', 
                     color: 'text.secondary',
-                    fontSize: { xs: '0.8rem', sm: '0.9rem' }
+                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                    ml: 0.5,
                   }}
                 >
                   {product?.currency === 'ETH' 
@@ -411,73 +648,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
             ) : (
               /* Regular Price Display */
               <>
-                {/* For Rwanda users, show converted price as primary and original as secondary */}
-                {effectiveUserCurrency === 'RWF' && convertedPrice !== null ? (
-                  <>
-                    <Typography 
-                      variant="h6"
-                      color="#B12704"
-                      sx={{ 
-                        fontWeight: 700,
-                        fontSize: { xs: '1rem', sm: '1.1rem' },
-                      }}
-                      component="p"
-                    >
-                      {isConverting 
-                        ? `Converting...` 
-                        : `${formatCurrencyAmount(convertedPrice, effectiveUserCurrency)}`}
-                    </Typography>
-                  </>
-                ) : (
-                  <>
-                    {/* Converted price in user's currency - Make it more visible */}
-                    {convertedPrice !== null ? (
-                      <Typography 
-                        variant="h6"
-                        color="#B12704"
-                        sx={{ 
-                          fontWeight: 700,
-                          fontSize: { xs: '1rem', sm: '1.1rem' },
-                        }}
-                        component="p"
-                      >
-                        {isConverting 
-                          ? `Converting...` 
-                          : `${formatCurrencyAmount(convertedPrice, effectiveUserCurrency)}`}
-                      </Typography>
-                    ) : product?.currency !== effectiveUserCurrency ? (
-                      <Typography 
-                        variant="h6"
-                        color="#B12704"
-                        sx={{ 
-                          fontWeight: 700,
-                          fontSize: { xs: '1rem', sm: '1.1rem' },
-                          fontStyle: 'italic',
-                        }}
-                        component="p"
-                      >
-                        (Conversion failed)
-                      </Typography>
-                    ) : (
-                      // Show original price when currencies are the same
-                      <Typography 
-                        variant="h6"
-                        color="#B12704"
-                        sx={{ 
-                          fontWeight: 700,
-                          fontSize: { xs: '1rem', sm: '1.1rem' },
-                        }}
-                        component="p"
-                      >
-                        {product?.currency === 'ETH' 
-                          ? `${product?.price || 0} ETH` 
-                          : product?.currency === 'USD' 
-                            ? `$${(product?.price || 0).toFixed(2)}` 
-                            : `${product?.price || 0} ${product?.currency || ''}`}
-                      </Typography>
-                    )}
-                  </>
-                )}
+                {/* Show original product price instead of converted price to avoid mock data */}
+                <Typography 
+                  variant="subtitle1"
+                  color="#B12704"
+                  sx={{ 
+                    fontWeight: 700,
+                    fontSize: { xs: '0.95rem', sm: '1.05rem' },
+                  }}
+                  component="p"
+                >
+                  {product?.currency === 'ETH' 
+                    ? `${product?.price || 0} ETH` 
+                    : product?.currency === 'USD' 
+                      ? `$${(product?.price || 0).toFixed(2)}` 
+                      : `${product?.price || 0} ${product?.currency || ''}`}
+                </Typography>
               </>
             )}
           </Box>
@@ -485,22 +671,35 @@ const ProductCard: React.FC<ProductCardProps> = ({
         
         {/* Recommendation Reason */}
         {product?.recommendationReason && (
-          <Box sx={{ mb: 1 }}>
+          <Box sx={{ mb: 0.5 }}>
             <Chip 
               label={product.recommendationReason}
               size="small"
+              variant="outlined"
               sx={{ 
-                fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                fontSize: { xs: '0.6rem', sm: '0.65rem' },
                 height: { xs: '18px', sm: '20px' },
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                backgroundColor: 'transparent',
                 color: theme.palette.primary.main,
+                borderColor: alpha(theme.palette.primary.main, 0.3),
                 '& .MuiChip-label': {
-                  px: 0.5
+                  px: 0.75
                 }
               }}
             />
           </Box>
         )}
+        
+        {/* Stock Information */}
+        <Box sx={{ mb: 0.5 }}>
+          <Typography 
+            variant="caption" 
+            color={product?.stock > 10 ? 'success.main' : product?.stock > 0 ? 'warning.main' : 'error.main'}
+            sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}
+          >
+            {product?.stock > 10 ? 'In Stock' : product?.stock > 0 ? `Only ${product?.stock} left` : 'Out of Stock'}
+          </Typography>
+        </Box>
         
         {/* Feedback Buttons */}
         {onFeedback && product?.id && (
@@ -513,14 +712,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 onFeedback(product.id, 'like', product.recommendationReason);
               }}
               sx={{ 
-                minWidth: 0, 
-                px: 0.5, 
-                py: 0.25, 
-                fontSize: { xs: '0.6rem', sm: '0.7rem' },
-                minHeight: { xs: '20px', sm: '24px' }
+                flex: 1,
+                fontSize: { xs: '0.6rem', sm: '0.65rem' },
+                minHeight: { xs: '24px', sm: '28px' },
+                py: 0.25,
+                borderRadius: 1,
               }}
             >
-              👍
+              👍 Like
             </Button>
             <Button 
               size="small" 
@@ -530,45 +729,43 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 onFeedback(product.id, 'dislike', product.recommendationReason);
               }}
               sx={{ 
-                minWidth: 0, 
-                px: 0.5, 
-                py: 0.25, 
-                fontSize: { xs: '0.6rem', sm: '0.7rem' },
-                minHeight: { xs: '20px', sm: '24px' }
+                flex: 1,
+                fontSize: { xs: '0.6rem', sm: '0.65rem' },
+                minHeight: { xs: '24px', sm: '28px' },
+                py: 0.25,
+                borderRadius: 1,
               }}
             >
-              👎
+              👎 Dislike
             </Button>
           </Box>
         )}
 
-        <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+        {/* Action Buttons - Enhanced layout */}
+        <Stack direction="row" spacing={1} sx={{ mt: 'auto' }}>
           <Button
             variant="contained"
             size="small"
             startIcon={<ShoppingCart size={isMobile ? 10 : 12} />}
             onClick={handleAddToCart}
+            disabled={product?.stock <= 0}
             sx={{
               flex: 1,
-              py: { xs: 0.4, sm: 0.5 },
-              px: { xs: 0.4, sm: 0.5 },
-              fontSize: { xs: '0.65rem', sm: '0.7rem' },
+              py: { xs: 0.5, sm: 0.75 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
               fontWeight: 500,
-              borderRadius: 1,
+              borderRadius: 1.5,
               textTransform: 'none',
-              backgroundColor: '#FF9900',
+              backgroundColor: product?.stock <= 0 ? '#ccc' : '#FF9900',
               color: 'white',
-              boxShadow: '0 1px 2px rgba(255, 153, 0, 0.2)',
               '&:hover': {
-                backgroundColor: '#e68a00',
-                boxShadow: '0 2px 4px rgba(255, 153, 0, 0.3)',
+                backgroundColor: product?.stock <= 0 ? '#ccc' : '#e68a00',
               }
             }}
           >
-            Add to Cart
+            {product?.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
           </Button>
-
-        </Box>
+        </Stack>
       </CardContent>
     </Card>
   );

@@ -97,7 +97,7 @@ import { api } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { SupportAgent as SupportAgentIcon } from '@mui/icons-material';
 import PersistentChatContainer from '@/components/chatbot/PersistentChatContainer';
-import EnhancedVendorAnalyticsDashboard from '@/components/marketplace/EnhancedVendorAnalyticsDashboard';
+import DashboardAnalytics from '@/components/marketplace/DashboardAnalytics';
 import VendorProductPostCreator from '@/components/ads/VendorProductPostCreator';
 import VendorPostSelectorModal from '@/components/ads/VendorPostSelectorModal';
 
@@ -507,19 +507,19 @@ const VendorDashboardContent: React.FC = () => {
               fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.125rem' }
             }}
           >
-            My Store Dashboard
+            Board Store
           </Typography>
           <Typography 
             variant="body1" 
             color="text.secondary"
             sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
           >
-            Manage your products and store
+            Manage your store and products
           </Typography>
         </Box>
         
         {/* Vendor Analytics Dashboard */}
-        <EnhancedVendorAnalyticsDashboard />
+        <DashboardAnalytics />
 
         <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', mb: 4 }}>
           <CardHeader
@@ -620,31 +620,6 @@ const VendorDashboardContent: React.FC = () => {
                 </Button>
                 <Button
                   variant="outlined"
-                  startIcon={<MessageCircle size={16} />}
-                  onClick={() => router.push('/marketplace/vendor-messaging')}
-                  sx={{ 
-                    minWidth: { xs: '100%', sm: 120, md: 140 },
-                    mb: { xs: 0.5, sm: 0.5, md: 0 },
-                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                    py: { xs: 0.75, sm: 1 },
-                    px: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Messaging
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Msg
-                  </Box>
-                </Button>
-                <Button
-                  variant="outlined"
                   startIcon={<SupportAgentIcon fontSize="small" />}
                   onClick={() => router.push('/marketplace/vendor-admin-chat')}
                   sx={{ 
@@ -662,16 +637,10 @@ const VendorDashboardContent: React.FC = () => {
                   }}
                 >
                   <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Chat
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    with
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Admin
+                    Talk to Us
                   </Box>
                   <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Admin
+                    Talk to Us
                   </Box>
                 </Button>
                 <Button

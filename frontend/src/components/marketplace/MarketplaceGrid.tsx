@@ -56,6 +56,13 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   
+  // Calculate grid columns based on screen size for better responsiveness
+  const getGridColumns = () => {
+    if (isMobile) return { xs: 6, sm: 6 }; // 2 items per row on mobile
+    if (isTablet) return { xs: 6, sm: 6, md: 4 }; // 3 items per row on tablet
+    return { xs: 6, sm: 6, md: 4, lg: 3 }; // 4 items per row on desktop
+  };
+  
   if (loading) {
     return (
       <Box sx={{ mb: 4 }}>
@@ -63,10 +70,7 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
           {Array.from(new Array(8)).map((_, index) => (
             <Grid 
               item 
-              xs={12} 
-              sm={6} 
-              md={4} 
-              lg={3}
+              {...getGridColumns()}
               key={index}
             >
               <ProductCard loading={true} />
@@ -84,10 +88,7 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
           products.map((product) => (
             <Grid 
               item 
-              xs={12} 
-              sm={6} 
-              md={4} 
-              lg={3}
+              {...getGridColumns()}
               key={product.id}
             >
               <ProductCard

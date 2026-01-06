@@ -144,7 +144,7 @@ interface AnalyticsData {
   performanceBenchmarks: PerformanceBenchmarksData;
 }
 
-const EnhancedVendorAnalyticsDashboard: React.FC = () => {
+const DashboardAnalytics: React.FC = () => {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState(0);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -359,7 +359,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
           fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' }
         }}
       >
-        Enhanced Vendor Analytics Dashboard
+        Dashboard Analytics
       </Typography>
       
       {/* Tabs for different analytics sections */}
@@ -1003,7 +1003,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
               </Card>
             </Grid>
             
-            {/* Spending Distribution */}
+            {/* Spending Patterns */}
             <Grid item xs={12} md={6}>
               <Card elevation={3}>
                 <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
@@ -1015,27 +1015,28 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
-                    Customer Spending Distribution
+                    Customer Spending Patterns
                   </Typography>
                   <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
                     {spendingRangeData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={spendingRangeData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="name" 
-                            tick={{ fontSize: 10 }} 
-                          />
-                          <YAxis 
-                            tick={{ fontSize: 10 }} 
-                          />
+                        <PieChart>
+                          <Pie
+                            data={spendingRangeData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={true}
+                            outerRadius={70}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
+                          >
+                            {spendingRangeData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
                           <Tooltip />
-                          <Legend />
-                          <Bar dataKey="value" name="Customers" fill={COLORS[2]} />
-                        </BarChart>
+                        </PieChart>
                       </ResponsiveContainer>
                     ) : (
                       <Box sx={{ 
@@ -1065,108 +1066,7 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
         <Box>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {/* Inventory Overview */}
-            <Grid item xs={6} sm={6} md={3}>
-              <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-                  <Typography 
-                    variant="h6" 
-                    color="text.secondary" 
-                    gutterBottom
-                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
-                  >
-                    Total Products
-                  </Typography>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      fontWeight: 700, 
-                      color: theme.palette.info.main,
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
-                    }}
-                  >
-                    {analytics.inventory.totalProducts}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={6} sm={6} md={3}>
-              <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-                  <Typography 
-                    variant="h6" 
-                    color="text.secondary" 
-                    gutterBottom
-                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
-                  >
-                    Total Stock
-                  </Typography>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      fontWeight: 700, 
-                      color: theme.palette.success.main,
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
-                    }}
-                  >
-                    {analytics.inventory.totalStock}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={6} sm={6} md={3}>
-              <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-                  <Typography 
-                    variant="h6" 
-                    color="text.secondary" 
-                    gutterBottom
-                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
-                  >
-                    Low Stock Items
-                  </Typography>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      fontWeight: 700, 
-                      color: theme.palette.warning.main,
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
-                    }}
-                  >
-                    {analytics.inventory.lowStockItems}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={6} sm={6} md={3}>
-              <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-                  <Typography 
-                    variant="h6" 
-                    color="text.secondary" 
-                    gutterBottom
-                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
-                  >
-                    Out of Stock
-                  </Typography>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      fontWeight: 700, 
-                      color: theme.palette.error.main,
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
-                    }}
-                  >
-                    {analytics.inventory.outOfStockItems}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            {/* Inventory Value */}
-            <Grid item xs={12} md={12}>
+            <Grid item xs={12} md={4}>
               <Card elevation={3}>
                 <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
@@ -1177,34 +1077,96 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
-                    Inventory Value
+                    Inventory Overview
                   </Typography>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography 
-                      variant="h3" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        color: theme.palette.primary.main,
-                        mb: 1,
-                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
-                      }}
-                    >
-                      ${analytics.inventory.totalValue.toFixed(2)}
-                    </Typography>
-                    <Typography 
-                      variant="h6" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
-                    >
-                      Total Inventory Value
-                    </Typography>
-                  </Box>
+                  <Grid container spacing={1}>
+                    <Grid item xs={6}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Total Products
+                      </Typography>
+                      <Typography 
+                        variant="h4" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.info.main,
+                          fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
+                        }}
+                      >
+                        {analytics.inventory.totalProducts}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Total Stock
+                      </Typography>
+                      <Typography 
+                        variant="h4" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.success.main,
+                          fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
+                        }}
+                      >
+                        {analytics.inventory.totalStock}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Low Stock Items
+                      </Typography>
+                      <Typography 
+                        variant="h4" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.warning.main,
+                          fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
+                        }}
+                      >
+                        {analytics.inventory.lowStockItems}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Out of Stock
+                      </Typography>
+                      <Typography 
+                        variant="h4" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.error.main,
+                          fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
+                        }}
+                      >
+                        {analytics.inventory.outOfStockItems}
+                      </Typography>
+                    </Grid>
+                  </Grid>
                 </CardContent>
               </Card>
             </Grid>
             
             {/* Category Distribution */}
-            <Grid item xs={12} md={12}>
+            <Grid item xs={12} md={8}>
               <Card elevation={3}>
                 <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
@@ -1215,30 +1177,28 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
-                    Inventory by Category
+                    Category Distribution
                   </Typography>
-                  <Box sx={{ height: { xs: 180, sm: 250, md: 400 } }}>
+                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
                     {categoryData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={categoryData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="name" 
-                            tick={{ fontSize: 10 }} 
-                          />
-                          <YAxis 
-                            tick={{ fontSize: 10 }} 
-                            tickFormatter={(value) => `$${value}`}
-                          />
-                          <Tooltip 
-                            formatter={(value) => [`$${value}`, 'Value']}
-                          />
-                          <Legend />
-                          <Bar dataKey="value" name="Value ($)" fill={COLORS[3]} />
-                        </BarChart>
+                        <PieChart>
+                          <Pie
+                            data={categoryData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={true}
+                            outerRadius={70}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
+                          >
+                            {categoryData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
                       </ResponsiveContainer>
                     ) : (
                       <Box sx={{ 
@@ -1260,166 +1220,9 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                 </CardContent>
               </Card>
             </Grid>
-          </Grid>
-        </Box>
-      )}
-      
-      {activeTab === 4 && (
-        <Box>
-          <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-            {/* Performance Benchmarks */}
-            <Grid item xs={12} sm={4} md={4}>
-              <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      mb: 2, 
-                      fontWeight: 600,
-                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
-                    }}
-                  >
-                    Sales Performance
-                  </Typography>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography 
-                      variant="h3" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        color: analytics.performanceBenchmarks.benchmarks.salesPerformance === 'Above Average' 
-                          ? theme.palette.success.main 
-                          : analytics.performanceBenchmarks.benchmarks.salesPerformance === 'Below Average' 
-                            ? theme.palette.error.main 
-                            : theme.palette.warning.main,
-                        mb: 1,
-                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
-                      }}
-                    >
-                      {analytics.performanceBenchmarks.rankings.sales.toFixed(0)}%
-                    </Typography>
-                    <Typography 
-                      variant="h6" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
-                    >
-                      {analytics.performanceBenchmarks.benchmarks.salesPerformance}
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ mt: 1, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}
-                    >
-                      Your sales: ${analytics.performanceBenchmarks.vendor.totalSales.toFixed(2)}
-                      <br />
-                      Industry avg: ${analytics.performanceBenchmarks.industry.avgSales.toFixed(2)}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
             
-            <Grid item xs={12} sm={4} md={4}>
-              <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      mb: 2, 
-                      fontWeight: 600,
-                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
-                    }}
-                  >
-                    Orders Performance
-                  </Typography>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography 
-                      variant="h3" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        color: analytics.performanceBenchmarks.benchmarks.ordersPerformance === 'Above Average' 
-                          ? theme.palette.success.main 
-                          : analytics.performanceBenchmarks.benchmarks.ordersPerformance === 'Below Average' 
-                            ? theme.palette.error.main 
-                            : theme.palette.warning.main,
-                        mb: 1,
-                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
-                      }}
-                    >
-                      {analytics.performanceBenchmarks.rankings.orders.toFixed(0)}%
-                    </Typography>
-                    <Typography 
-                      variant="h6" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
-                    >
-                      {analytics.performanceBenchmarks.benchmarks.ordersPerformance}
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ mt: 1, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}
-                    >
-                      Your orders: {analytics.performanceBenchmarks.vendor.totalOrders}
-                      <br />
-                      Industry avg: {analytics.performanceBenchmarks.industry.avgOrders.toFixed(0)}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} sm={4} md={4}>
-              <Card elevation={3}>
-                <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      mb: 2, 
-                      fontWeight: 600,
-                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
-                    }}
-                  >
-                    Avg Order Value
-                  </Typography>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography 
-                      variant="h3" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        color: analytics.performanceBenchmarks.benchmarks.aovPerformance === 'Above Average' 
-                          ? theme.palette.success.main 
-                          : analytics.performanceBenchmarks.benchmarks.aovPerformance === 'Below Average' 
-                            ? theme.palette.error.main 
-                            : theme.palette.warning.main,
-                        mb: 1,
-                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
-                      }}
-                    >
-                      {analytics.performanceBenchmarks.rankings.avgOrderValue.toFixed(0)}%
-                    </Typography>
-                    <Typography 
-                      variant="h6" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
-                    >
-                      {analytics.performanceBenchmarks.benchmarks.aovPerformance}
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ mt: 1, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}
-                    >
-                      Your AOV: ${analytics.performanceBenchmarks.vendor.avgOrderValue.toFixed(2)}
-                      <br />
-                      Industry avg: ${analytics.performanceBenchmarks.industry.avgOrderValue.toFixed(2)}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            {/* Performance Comparison Chart */}
-            <Grid item xs={12} md={12}>
+            {/* Inventory Value */}
+            <Grid item xs={12}>
               <Card elevation={3}>
                 <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                   <Typography 
@@ -1430,72 +1233,285 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
                       fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
                     }}
                   >
-                    Performance Comparison
+                    Inventory Value
                   </Typography>
-                  <Box sx={{ height: { xs: 180, sm: 250, md: 400 } }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={[
-                          { 
-                            name: 'Your Performance', 
-                            sales: analytics.performanceBenchmarks.vendor.totalSales,
-                            orders: analytics.performanceBenchmarks.vendor.totalOrders,
-                            aov: analytics.performanceBenchmarks.vendor.avgOrderValue
-                          },
-                          { 
-                            name: 'Industry Average', 
-                            sales: analytics.performanceBenchmarks.industry.avgSales,
-                            orders: analytics.performanceBenchmarks.industry.avgOrders,
-                            aov: analytics.performanceBenchmarks.industry.avgOrderValue
-                          }
-                        ]}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      fontWeight: 700, 
+                      color: theme.palette.success.main,
+                      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
+                    }}
+                  >
+                    ${analytics.inventory.totalValue.toFixed(2)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+      
+      {activeTab === 4 && (
+        <Box>
+          <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+            {/* Performance Benchmarks */}
+            <Grid item xs={12} md={6}>
+              <Card elevation={3}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 2, 
+                      fontWeight: 600,
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                    }}
+                  >
+                    Performance Benchmarks
+                  </Typography>
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="name" 
-                          tick={{ fontSize: 10 }} 
-                        />
-                        <YAxis 
-                          yAxisId="left"
-                          tick={{ fontSize: 10 }} 
-                          tickFormatter={(value) => `$${value}`}
-                        />
-                        <YAxis 
-                          yAxisId="right"
-                          orientation="right"
-                          tick={{ fontSize: 10 }} 
-                        />
-                        <Tooltip 
-                          formatter={(value, name) => {
-                            if (name === 'sales' || name === 'aov') {
-                              return [`$${value}`, name === 'sales' ? 'Sales' : 'AOV'];
-                            }
-                            return [value, 'Orders'];
-                          }}
-                        />
-                        <Legend />
-                        <Bar 
-                          yAxisId="left"
-                          dataKey="sales" 
-                          name="Sales ($)" 
-                          fill={COLORS[0]} 
-                        />
-                        <Bar 
-                          yAxisId="right"
-                          dataKey="orders" 
-                          name="Orders" 
-                          fill={COLORS[1]} 
-                        />
-                        <Bar 
-                          yAxisId="left"
-                          dataKey="aov" 
-                          name="Avg Order Value ($)" 
-                          fill={COLORS[2]} 
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Box>
+                        Sales
+                      </Typography>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.info.main,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        }}
+                      >
+                        {analytics.performanceBenchmarks.benchmarks.salesPerformance}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Orders
+                      </Typography>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.info.main,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        }}
+                      >
+                        {analytics.performanceBenchmarks.benchmarks.ordersPerformance}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        AOV
+                      </Typography>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.info.main,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        }}
+                      >
+                        {analytics.performanceBenchmarks.benchmarks.aovPerformance}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            {/* Industry Comparison */}
+            <Grid item xs={12} md={6}>
+              <Card elevation={3}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 2, 
+                      fontWeight: 600,
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                    }}
+                  >
+                    Industry Comparison
+                  </Typography>
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Your Sales
+                      </Typography>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.success.main,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        }}
+                      >
+                        ${analytics.performanceBenchmarks.vendor.totalSales.toFixed(2)}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Industry Avg
+                      </Typography>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.warning.main,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        }}
+                      >
+                        ${analytics.performanceBenchmarks.industry.avgSales.toFixed(2)}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Performance
+                      </Typography>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.info.main,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        }}
+                      >
+                        #{analytics.performanceBenchmarks.rankings.sales}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            {/* Performance Indicators */}
+            <Grid item xs={12}>
+              <Card elevation={3}>
+                <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: 2, 
+                      fontWeight: 600,
+                      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                    }}
+                  >
+                    Performance Indicators
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Total Orders
+                      </Typography>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.info.main,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        }}
+                      >
+                        {analytics.performanceBenchmarks.vendor.totalOrders} (#{analytics.performanceBenchmarks.rankings.orders})
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}
+                      >
+                        Industry: {analytics.performanceBenchmarks.industry.avgOrders}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Avg Order Value
+                      </Typography>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.success.main,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        }}
+                      >
+                        ${analytics.performanceBenchmarks.vendor.avgOrderValue.toFixed(2)} (#{analytics.performanceBenchmarks.rankings.avgOrderValue})
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}
+                      >
+                        Industry: ${analytics.performanceBenchmarks.industry.avgOrderValue.toFixed(2)}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography 
+                        variant="h6" 
+                        color="text.secondary" 
+                        gutterBottom
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                      >
+                        Performance
+                      </Typography>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          color: theme.palette.warning.main,
+                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                        }}
+                      >
+                        {analytics.performanceBenchmarks.benchmarks.aovPerformance}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}
+                      >
+                        Benchmark: {analytics.performanceBenchmarks.benchmarks.aovPerformance}
+                      </Typography>
+                    </Grid>
+                  </Grid>
                 </CardContent>
               </Card>
             </Grid>
@@ -1506,4 +1522,4 @@ const EnhancedVendorAnalyticsDashboard: React.FC = () => {
   );
 };
 
-export default EnhancedVendorAnalyticsDashboard;
+export default DashboardAnalytics;
