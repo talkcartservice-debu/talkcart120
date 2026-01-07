@@ -103,9 +103,6 @@ const MessagesPage: React.FC = () => {
     deleteMessage,
     forwardMessage,
     searchMessages,
-    searchAllMessages,
-    searchResults,
-    searching,
     sending,
     hasMore,
     updateConversation,
@@ -145,7 +142,6 @@ const MessagesPage: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesStartRef = useRef<HTMLDivElement>(null);
 
@@ -386,26 +382,9 @@ const MessagesPage: React.FC = () => {
   
   
 
-  // Message search handlers
-  const handleSearchMessages = async () => {
-    if (!messageSearchQuery.trim() || !activeConversation) return;
-    
-    try {
-      await searchMessages(messageSearchQuery.trim());
-    } catch (error) {
-      console.error('Error searching messages:', error);
-    }
-  };
 
-  const handleSearchAllMessages = async () => {
-    if (!messageSearchQuery.trim()) return;
-    
-    try {
-      await searchAllMessages(messageSearchQuery.trim());
-    } catch (error) {
-      console.error('Error searching all messages:', error);
-    }
-  };
+
+
 
   // Handle sending a message
   const handleSendMessage = async () => {
@@ -518,7 +497,7 @@ const MessagesPage: React.FC = () => {
 
   // Handle loading more messages
   const handleLoadMore = async () => {
-    if (hasMore && !isLoadingMore && !messageSearchQuery) { // Don't load more when searching
+    if (hasMore && !isLoadingMore) { // Load more messages
       setIsLoadingMore(true);
       try {
         await fetchMessages(true); // Load more messages
@@ -955,7 +934,11 @@ const MessagesPage: React.FC = () => {
             border: { sm: `1px solid ${theme.palette.divider}` },
             flexDirection: { xs: 'column', sm: 'row' },
             backgroundColor: theme.palette.background.paper,
-            minHeight: 0
+            minHeight: 0,
+            boxShadow: {
+              xs: 'none',
+              sm: theme.shadows[1]
+            }
           }}
         >
           {/* Conversations List */}
@@ -967,10 +950,11 @@ const MessagesPage: React.FC = () => {
               display: 'flex',
               flexDirection: 'column',
               height: { xs: 'auto', sm: '100%' },
-              maxHeight: { xs: '40vh', sm: 'none' },
+              maxHeight: { xs: '40vh', sm: '100%' },
               backgroundColor: theme.palette.background.paper,
               flexShrink: { xs: 0, sm: 0 },
-              minHeight: { xs: 0, sm: 'auto' }
+              minHeight: { xs: 0, sm: 'auto' },
+              transition: 'all 0.3s ease-in-out'
             }}
           >
             <Box sx={{ p: { xs: 1, sm: 2 }, borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.background.paper }}>
@@ -1022,9 +1006,15 @@ const MessagesPage: React.FC = () => {
                   </Typography>
                 </Box>
               ) : filteredConversations.length === 0 ? (
-                <Box sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography color="text.secondary" variant="body2">
-                    No conversations found
+                <Box sx={{ p: 4, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: 200 }}>
+                  <Box sx={{ mb: 2, width: 60, height: 60, borderRadius: '50%', bgcolor: alpha(theme.palette.primary.main, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 24 }}>💬</span>
+                  </Box>
+                  <Typography color="text.secondary" variant="h6" gutterBottom>
+                    No conversations yet
+                  </Typography>
+                  <Typography color="text.secondary" variant="body2" sx={{ mb: 2 }}>
+                    Start a new conversation to begin messaging
                   </Typography>
                   {/* Debug info */}
                   {process.env.NODE_ENV === 'development' && (
@@ -1069,7 +1059,9 @@ const MessagesPage: React.FC = () => {
                         overflow: 'hidden',
                         minWidth: 0,
                         display: 'flex',
-                        wordBreak: 'break-word'
+                        wordBreak: 'break-word',
+                        transition: 'all 0.2s ease-in-out',
+                        borderRadius: { xs: 1, sm: 2 }
                       }}
                     >
                       <ListItemAvatar sx={{ minWidth: 0, flexShrink: 0 }}>
@@ -1213,7 +1205,8 @@ const MessagesPage: React.FC = () => {
                 flexDirection: 'column',
                 height: { xs: 'auto', sm: '100%' },
                 minHeight: 0,
-                width: { xs: '100%', sm: 'auto' }
+                width: { xs: '100%', sm: 'auto' },
+                backgroundColor: theme.palette.background.default
               }}
             >
               {/* Conversation Header */}
@@ -1225,10 +1218,15 @@ const MessagesPage: React.FC = () => {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   minHeight: { xs: 56, sm: 64 },
-                  backgroundColor: theme.palette.background.paper,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.8),
                   flexShrink: 0,
                   flexWrap: { xs: 'wrap', sm: 'nowrap' },
-                  gap: { xs: 1, sm: 0 }
+                  gap: { xs: 1, sm: 0 },
+                  position: 'sticky',
+                  top: 0,
+                  zIndex: 10,
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)'
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
@@ -1501,58 +1499,7 @@ const MessagesPage: React.FC = () => {
                 </MenuItem>
               </Menu>
 
-              {/* Message Search */}
-              <Box sx={{ p: { xs: 1, sm: 2 }, pt: 0 }}>
-                <TextField
-                  fullWidth
-                  placeholder="Search messages..."
-                  size="small"
-                  value={messageSearchQuery}
-                  onChange={(e) => setMessageSearchQuery(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search size={isMobile ? 16 : 18} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setMessageSearchQuery('')} size="small">
-                          {messageSearchQuery ? <X size={isMobile ? 14 : 16} /> : null}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    }
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleSearchMessages();
-                    }
-                  }}
-                />
-                {messageSearchQuery && (
-                  <Box sx={{ p: { xs: 1, sm: 2 }, pt: 0 }}>
-                    <Button
-                      startIcon={<X size={16} />}
-                      onClick={() => {
-                        setMessageSearchQuery('');
-                        // This will cause the original messages to be displayed again
-                      }}
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                    >
-                      Clear Search
-                    </Button>
-                  </Box>
-                )}
-              </Box>
+
 
               {/* Messages */}
               <Box
@@ -1568,12 +1515,15 @@ const MessagesPage: React.FC = () => {
                   pt: { xs: 0.5, sm: 2 },
                   pb: { xs: 0.5, sm: 2 },
                   backgroundColor: theme.palette.background.paper,
-                  flexShrink: 1
+                  flexShrink: 1,
+                  scrollBehavior: 'smooth',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: `${theme.palette.divider} transparent`
                 }}
                 onScroll={async (e) => {
                   const element = e.target as HTMLElement;
                   // Check if user has scrolled to the top (loading more messages)
-                  if (element.scrollTop === 0 && hasMore && !isLoadingMore && !messageSearchQuery) {
+                  if (element.scrollTop === 0 && hasMore && !isLoadingMore) {
                     await handleLoadMore();
                   }
                 }}
@@ -1595,47 +1545,19 @@ const MessagesPage: React.FC = () => {
                       {error}
                     </Typography>
                   </Box>
-                ) : (messageSearchQuery && searchResults.length === 0 && !searching) ? (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                    <Typography color="text.secondary" variant="body1">
-                      No search results found
-                    </Typography>
-                    <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
-                      Try a different search term
-                    </Typography>
-                  </Box>
                 ) : (
                   <>
                     {/* Load more indicator */}
-                    {hasMore && !isLoadingMore && !messageSearchQuery && (
+                    {hasMore && !isLoadingMore && (
                       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 1 }}>
                         <Button onClick={handleLoadMore} variant="outlined" size="small">
                           Load More Messages
                         </Button>
                       </Box>
                     )}
-                    {/* Search results header */}
-                    {messageSearchQuery && searchResults.length > 0 && (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 1, mb: 2 }}>
-                        <Paper 
-                          sx={{ 
-                            px: 2, 
-                            py: 1, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 1,
-                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-                          }}
-                        >
-                          <Typography variant="body2" color="primary">
-                            Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for &quot;{messageSearchQuery}&quot;
-                          </Typography>
-                        </Paper>
-                      </Box>
-                    )}
+
                     <div ref={messagesStartRef} />
-                    {((messageSearchQuery && searchResults.length > 0) ? searchResults : messages).map((message) => {
+                    {messages.map((message: any) => {
                       const isCurrentUser = message.senderId === user?.id;
                       const sender = activeConversation?.participants.find((p: any) => p.id === message.senderId);
 
@@ -1759,7 +1681,11 @@ const MessagesPage: React.FC = () => {
                   minHeight: { xs: 50, sm: 64 },
                   backgroundColor: theme.palette.background.paper,
                   flexShrink: 0,
-                  flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                  flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                  gap: { xs: 0.5, sm: 1 },
+                  '&:focus-within': {
+                    boxShadow: `0 -2px 4px ${alpha(theme.palette.primary.main, 0.1)}`
+                  }
                 }}
               >
                 {/* Hidden file inputs */}
@@ -1777,10 +1703,13 @@ const MessagesPage: React.FC = () => {
                       left: isMobile ? 8 : 64, 
                       right: isMobile ? 8 : 'auto',
                       padding: isMobile ? 1 : 2, 
-                      zIndex: 2,
+                      zIndex: 20,
                       maxWidth: isMobile ? 'calc(100vw - 16px)' : 350,
-                      maxHeight: isMobile ? '250px' : 'none',
-                      overflow: 'auto'
+                      maxHeight: isMobile ? '250px' : 400,
+                      overflow: 'auto',
+                      borderRadius: 3,
+                      boxShadow: theme.shadows[8],
+                      border: `1px solid ${alpha(theme.palette.divider, 0.5)}`
                     }}
                   >
                     <Box sx={{ width: '100%', maxWidth: 350 }}>
@@ -1805,7 +1734,11 @@ const MessagesPage: React.FC = () => {
                               width: isMobile ? 28 : 'auto',
                               height: isMobile ? 28 : 36,
                               fontSize: isMobile ? '1rem' : '1.25rem',
-                              p: isMobile ? 0 : 'initial'
+                              p: isMobile ? 0 : 'initial',
+                              borderRadius: 2,
+                              '&:hover': {
+                                backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                              }
                             }}
                           >
                             {e}
@@ -1913,10 +1846,19 @@ const MessagesPage: React.FC = () => {
                     mx: { xs: 0.5, sm: 2 },
                     mt: replyToMessage ? { xs: 0, sm: 0 } : { xs: 0.5, sm: 0.5 },
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: { xs: 2, sm: 3 },
+                      borderRadius: { xs: 3, sm: 3 },
                       fontSize: { xs: '0.875rem', sm: '1rem' },
                       py: { xs: 0.5, sm: 0.75 },
-                      px: { xs: 1, sm: 1.5 }
+                      px: { xs: 1, sm: 1.5 },
+                      backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.3) : 'white',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.5) : alpha(theme.palette.grey[50], 0.8)
+                      },
+                      '&.Mui-focused': {
+                        backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.7) : 'white',
+                        boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`
+                      }
                     },
                     minHeight: { xs: 36, sm: 40 },
                     flex: { xs: '1 1 auto', sm: 1 }
