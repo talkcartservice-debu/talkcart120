@@ -1561,6 +1561,18 @@ const MessagesPage: React.FC = () => {
                       const isCurrentUser = message.senderId === user?.id;
                       const sender = activeConversation?.participants.find((p: any) => p.id === message.senderId);
 
+                      // Determine the sender information based on whether it's the current user or others
+                      const messageSender = isCurrentUser 
+                        ? user // Use current user's info for own messages
+                        : (sender || {
+                            id: message.senderId,
+                            displayName: 'u',
+                            username: 'u',
+                            avatar: null,
+                            avatarUrl: null,
+                            isVerified: false
+                          });
+
                       return (
                         <Box
                           key={message.id}
@@ -1577,13 +1589,7 @@ const MessagesPage: React.FC = () => {
                             message={{
                               ...message,
                               isOwn: isCurrentUser,
-                              sender: sender || {
-                                id: message.senderId,
-                                displayName: 'Unknown',
-                                username: 'unknown',
-                                avatar: null,
-                                isVerified: false
-                              },
+                              sender: messageSender,
                               reactions: message.reactions || []
                             }}
                             showAvatar={!activeConversation?.isGroup || !isCurrentUser}
