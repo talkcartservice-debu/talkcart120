@@ -1578,8 +1578,6 @@ const MessagesPage: React.FC = () => {
                           key={message.id}
                           id={`message-${message.id}`}
                           sx={{
-                            display: 'flex',
-                            justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
                             mb: { xs: 0.5, sm: 2 },
                             flexShrink: 0,
                             width: '100%'
