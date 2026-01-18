@@ -529,29 +529,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         flexDirection: 'column',
         gap: 0.75,
       }}>
-        {/* Vendor Information */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Typography 
-            variant="caption"
-            color="text.secondary"
-            sx={{
-              fontSize: { xs: '0.65rem', sm: '0.7rem' },
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              mb: 0.5,
-            }}
-          >
-            by {product?.vendor?.displayName || product?.vendor?.username || 'Unknown'}
-          </Typography>
-          {product?.vendor?.isVerified && (
-            <Box component="span" sx={{ color: '#1877F2' }}>
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M16 8.016a8 8 0 11-8-8 8 8 0 018 8zM6.5 12l7.5-7.5-1.414-1.414L6.5 9.172 4.414 7.086 3 8.5l3.5 3.5z" />
-              </svg>
-            </Box>
-          )}
-        </Box>
+  
         
         {/* Product Name */}
         <Typography 
@@ -573,45 +551,24 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {product?.name || 'Product'}
         </Typography>
         
-        {/* Rating and Reviews */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {[...Array(5)].map((_, i) => (
-              <svg 
-                key={i}
-                width="14" 
-                height="14" 
-                viewBox="0 0 24 24" 
-                fill={i < Math.floor(product?.rating || 0) ? '#FFC107' : '#E0E0E0'}
-                stroke={i < Math.floor(product?.rating || 0) ? '#FFC107' : '#BDBDBD'}
-                strokeWidth="1"
-              >
-                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-              </svg>
-            ))}
-          </Box>
-          <Typography 
-            variant="caption" 
-            color="text.secondary"
-            sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}
-          >
-            {product?.rating?.toFixed(1)} ({product?.reviewCount || 0})
-          </Typography>
-        </Box>
-        
-        {/* Category */}
+        {/* Category - Subtle */}
         <Typography 
           variant="caption" 
           color="text.secondary"
           sx={{ 
             textTransform: 'uppercase',
-            fontSize: { xs: '0.6rem', sm: '0.65rem' },
+            fontSize: { xs: '0.5rem', sm: '0.55rem' },
             mb: 0.5,
             fontWeight: 500,
+            opacity: 0.7
           }}
         >
           {product?.category || 'Uncategorized'}
         </Typography>
+        
+
+        
+
         
         {/* Price Information - Enhanced */}
         <Box sx={{ mb: 1 }}>
@@ -696,16 +653,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </Box>
         )}
         
-        {/* Stock Information */}
-        <Box sx={{ mb: 0.5 }}>
-          <Typography 
-            variant="caption" 
-            color={product?.stock > 10 ? 'success.main' : product?.stock > 0 ? 'warning.main' : 'error.main'}
-            sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, fontWeight: 500 }}
-          >
-            {product?.stock > 10 ? 'In Stock' : product?.stock > 0 ? `Only ${product?.stock} left` : 'Out of Stock'}
-          </Typography>
-        </Box>
+
         
         {/* Feedback Buttons */}
         {onFeedback && product?.id && (
@@ -747,6 +695,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </Box>
         )}
 
+        {/* Stock Information - Subtle */}
+        <Box sx={{ mb: 0.5 }}>
+          <Typography 
+            variant="caption" 
+            color={product?.stock > 10 ? 'success.main' : product?.stock > 0 ? 'warning.main' : 'error.main'}
+            sx={{ fontSize: { xs: '0.55rem', sm: '0.6rem' }, fontWeight: 400 }}
+          >
+            {product?.stock > 10 ? 'In Stock' : product?.stock > 0 ? `Only ${product?.stock} left` : 'Out of Stock'}
+          </Typography>
+        </Box>
+        
         {/* Action Buttons - Enhanced layout */}
         <Stack direction="row" spacing={1} sx={{ mt: 'auto' }}>
           <Button
