@@ -487,7 +487,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             borderRadius: '50px',
             minWidth: 'auto',
             p: 0.5,
-            opacity: 0,
+            opacity: 1,
             transition: 'opacity 0.3s ease-in-out',
             position: 'absolute',
             top: 8,
