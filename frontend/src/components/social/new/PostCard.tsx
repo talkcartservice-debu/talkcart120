@@ -897,42 +897,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
         flexShrink: 0
       }} />
 
-      {/* Post Stats */}
-      <CardContent 
-        sx={{ 
-          pt: 0.05,  // Further reduced padding on mobile
-          pb: isMobile ? 0.025 : 0.1,
-          px: 0.1, // Further reduced padding on mobile
-          position: 'relative', 
-          zIndex: 10,
-          bgcolor: 'background.paper',
-          flexShrink: 0
-        }}
-      >
-        <Box sx={{ display: 'flex', gap: isMobile ? 0.025 : 0.1, flexWrap: 'wrap' }}>
-          {!post.hideLikes && post.likeCount !== undefined && post.likeCount > 0 && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.35rem' : '0.4rem' }}>
-              {parseNumericValue(post.likeCount)}
-            </Typography>
-          )}
-          {!post.hideComments && post.commentCount !== undefined && post.commentCount > 0 && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.35rem' : '0.4rem' }}>
-              {parseNumericValue(post.commentCount)}
-            </Typography>
-          )}
-          {post.shareCount !== undefined && post.shareCount > 0 && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.35rem' : '0.4rem' }}>
-              {parseNumericValue(post.shareCount)}
-            </Typography>
-          )}
-          {post.bookmarkCount !== undefined && post.bookmarkCount > 0 && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.35rem' : '0.4rem' }}>
-              {parseNumericValue(post.bookmarkCount)}
-            </Typography>
-          )}
-        </Box>
-      </CardContent>
-
       {/* Horizontal Action Bar at Bottom */}
       <Box sx={{ 
         display: 'flex', 
