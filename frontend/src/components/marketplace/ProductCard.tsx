@@ -461,42 +461,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </Box>
               
-      {/* Product Info - Only Favorite functionality */}
+      {/* Product Info - Empty section to maintain structure */}
       <CardContent sx={{ 
         p: { xs: 0.5, sm: 1 }, 
         display: 'flex',
         justifyContent: 'flex-end',
         position: 'relative',
       }}>
-        <Button
-          className="favorite-button"
-          size="small"
-          variant="contained"
-          color="primary"
-          startIcon={<Heart size={16} />}
-          onClick={(e) => {
-            e.stopPropagation();
-            toast.success('Added to favorites!');
-          }}
-          sx={{
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            color: theme.palette.primary.main,
-            '&:hover': {
-              backgroundColor: 'white',
-            },
-            borderRadius: '50px',
-            minWidth: 'auto',
-            p: 0.5,
-            opacity: 0,
-            transition: 'opacity 0.3s ease-in-out',
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            zIndex: 2,
-          }}
-        >
-          <Heart size={16} />
-        </Button>
       </CardContent>
     </Card>
   );
