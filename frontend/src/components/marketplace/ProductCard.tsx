@@ -306,6 +306,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         '&:hover': {
           transform: 'translateY(-6px)',
           boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
+          '.favorite-button': {
+            opacity: 1,
+          },
         },
       }}
       onClick={handleCardClick}
@@ -357,70 +360,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </Box>
         )}
         
-        {/* Product overlay with quick actions */}
-        <Box 
-          className="product-overlay"
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: 0,
-            transition: 'opacity 0.3s ease-in-out',
-            gap: 1,
-            zIndex: 1,
-          }}
-        >
-          <Button
-            size="small"
-            variant="contained"
-            color="primary"
-            startIcon={<Heart size={16} />}
-            onClick={(e) => {
-              e.stopPropagation();
-              toast.success('Added to favorites!');
-            }}
-            sx={{
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              color: theme.palette.primary.main,
-              '&:hover': {
-                backgroundColor: 'white',
-              },
-              borderRadius: '50px',
-              minWidth: 'auto',
-              p: 0.5,
-            }}
-          >
-            <Heart size={16} />
-          </Button>
-          <Button
-            size="small"
-            variant="contained"
-            color="primary"
-            startIcon={<Share2 size={16} />}
-            onClick={(e) => {
-              e.stopPropagation();
-              toast.success('Link copied to clipboard!');
-            }}
-            sx={{
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              color: theme.palette.primary.main,
-              '&:hover': {
-                backgroundColor: 'white',
-              },
-              borderRadius: '50px',
-              minWidth: 'auto',
-              p: 0.5,
-            }}
-          >
-            <Share2 size={16} />
-          </Button>
-        </Box>
+
         
         {/* Special badges */}
         <Box sx={{
@@ -527,9 +467,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
         display: 'flex',
         justifyContent: 'flex-end',
         position: 'relative',
-        '&:hover .favorite-button': {
-          opacity: 1,
-        },
       }}>
         <Button
           className="favorite-button"
