@@ -365,44 +365,21 @@ export const TopBar: React.FC<TopBarProps> = ({
            )}
           
             
-            {/* Logo */}
+            {/* Logo removed - click area maintained */}
             <Box 
               sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 cursor: 'pointer',
+                minWidth: 45,
+                minHeight: 45,
                 '&:hover': {
                   opacity: 0.8
                 }
               }}
               onClick={() => router.push('/')}
             >
-              <Box
-                component="img"
-                src="/talkcart.logo.png"
-                alt="TalkCart Logo"
-                sx={{
-                  height: 45,
-                  width: 45,
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  mr: 1,
-                  display: { xs: 'none', sm: 'block' }
-                }}
-              />
-              <Typography 
-                variant="h6" 
-                component="div" 
-                sx={{ 
-                  fontWeight: 700,
-                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  display: { xs: 'none', sm: 'block' }
-                }}
-              >
-                TalkCart
-              </Typography>
+              {/* Logo space preserved for click functionality */}
             </Box>
             
             {/* Removed AI Demo Link */}

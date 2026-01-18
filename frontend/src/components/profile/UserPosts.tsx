@@ -154,12 +154,18 @@ const UserPosts: React.FC<UserPostsProps> = ({ username, isOwnProfile }) => {
 
   const handleDeletePost = async (postId: string) => {
     try {
-      setPosts(posts.filter(post => post.id !== postId));
-      toast.success('Post deleted successfully');
+      // Call the API to delete the post
+      const response: any = await api.posts.delete(postId);
+      
+      if (response && response.success) {
+        // Remove the post from the local state
+        setPosts(posts.filter(post => post.id !== postId));
+        toast.success('Post deleted successfully');
+      } else {
+        throw new Error(response?.message || 'Failed to delete post');
+      }
     } catch (err: any) {
       console.error('Error deleting post:', err);
-      // Add the post back to the list if deletion failed
-      // In a real implementation, you might want to refetch the posts instead
       toast.error(err.message || 'Failed to delete post. Please try again later.');
     }
   };
