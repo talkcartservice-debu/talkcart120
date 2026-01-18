@@ -717,15 +717,11 @@ const MarketplacePage: React.FC = () => {
 
         </Box>
         
-        {/* Main Content with Sidebar */}
+        {/* Main Content - Full Width */}
         <Grid container spacing={3}>
-          {/* Sidebar - Hidden on mobile by default, shown as overlay or drawer */}
-          <Grid item xs={12} md={3} lg={2.5} sx={{ display: { xs: 'none', md: 'block' } }}>
-            <MarketplaceSidebar userId={user?.id || null} />
-          </Grid>
           
-          {/* Main Content */}
-          <Grid item xs={12} md={9} lg={9.5}>
+          {/* Main Content - Expanded to full width */}
+          <Grid item xs={12}>
             {/* Search and Filters */}
             <Paper 
               elevation={0} 

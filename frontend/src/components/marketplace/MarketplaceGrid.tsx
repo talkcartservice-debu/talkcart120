@@ -60,7 +60,7 @@ const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
   const getGridColumns = () => {
     if (isMobile) return { xs: 6, sm: 6 }; // 2 items per row on mobile
     if (isTablet) return { xs: 6, sm: 6, md: 4 }; // 3 items per row on tablet
-    return { xs: 6, sm: 6, md: 4, lg: 3 }; // 4 items per row on desktop
+    return { xs: 6, sm: 6, md: 4, lg: 3, xl: 2.4 }; // Up to 5 items per row on extra large screens
   };
   
   if (loading) {

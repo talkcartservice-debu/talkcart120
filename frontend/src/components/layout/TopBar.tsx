@@ -550,7 +550,6 @@ export const TopBar: React.FC<TopBarProps> = ({
                 <IconButton
                   color="inherit"
                   size="small"
-                  sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}
                   onClick={handleToggleMobileSearch}
                 >
                   <Search size={20} />
@@ -560,7 +559,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             
 
                         
-            {/* Desktop Navigation Text - Home, Cart, Messages, Notifications */}
+            {/* Desktop Navigation Text - Home, Cart, Marketplace */}
             {isAuthenticated && (
               <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
                 {/* Home */}
@@ -639,41 +638,6 @@ export const TopBar: React.FC<TopBarProps> = ({
                   {unreadMessages > 0 && (
                     <Badge 
                       badgeContent={unreadMessages} 
-                      color="error"
-                      sx={{
-                        position: 'absolute',
-                        top: -8,
-                        right: -8,
-                        transform: 'scale(0.7)',
-                      }}
-                    >
-                      <span />
-                    </Badge>
-                  )}
-                </Box>
-                            
-                {/* Notifications */}
-                <Box position="relative">
-                  <Button
-                    onClick={handleNotificationsOpen}
-                    size="small"
-                    sx={{
-                      color: 'inherit',
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      minWidth: 'auto',
-                      '&:hover': {
-                        backgroundColor: 'transparent',
-                        color: theme.palette.primary.main,
-                      }
-                    }}
-                  >
-                    Notifications
-                  </Button>
-                  {unreadNotifications > 0 && (
-                    <Badge 
-                      badgeContent={unreadNotifications} 
                       color="error"
                       sx={{
                         position: 'absolute',
@@ -1063,188 +1027,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </AppBar>
       )}
 
-      {/* Desktop - Right aligned action icons */}
-      {!isMobile && (
-        <Box
-          sx={{
-            position: 'fixed',
-            right: 16,
-            bottom: 16,
-            zIndex: theme.zIndex.drawer + 2,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1,
-          }}
-        >
-          {/* PWA Install Button - Always show on desktop when installable */}
-          <PWAInstallButton size="small" />
-          
-          {isAuthenticated && (
-            <>
-              
-              {/* Home */}
-              <Tooltip title="Home">
-                <IconButton
-                  color="inherit"
-                  size="small"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      router.push('/social');
-                    } else {
-                      router.push('/auth/login');
-                    }
-                  }}
-                  sx={{
-                    bgcolor: theme.palette.background.paper,
-                    boxShadow: 1,
-                    '&:hover': {
-                      bgcolor: theme.palette.action.hover,
-                    },
-                    color: router.pathname === '/social' ? theme.palette.primary.main : 'inherit',
-                  }}
-                >
-                  <Home size={20} />
-                </IconButton>
-              </Tooltip>
 
-              {/* Cart */}
-              <Tooltip title="Cart">
-                <IconButton
-                  color="inherit"
-                  size="small"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      router.push('/marketplace/cart');
-                    } else {
-                      router.push('/auth/login');
-                    }
-                  }}
-                  sx={{
-                    bgcolor: theme.palette.background.paper,
-                    boxShadow: 1,
-                    '&:hover': {
-                      bgcolor: theme.palette.action.hover,
-                    },
-                    position: 'relative',
-                    color: router.pathname.includes('/marketplace') && router.pathname.includes('/cart') ? theme.palette.primary.main : 'inherit',
-                  }}
-                >
-                  <ShoppingCart size={20} />
-                  {cart && cart.totalItems > 0 && (
-                    <Badge 
-                      badgeContent={cart.totalItems} 
-                      color="error"
-                      sx={{
-                        position: 'absolute',
-                        top: -4,
-                        right: -4,
-                      }}
-                    >
-                      <span />
-                    </Badge>
-                  )}
-                </IconButton>
-              </Tooltip>
-
-              {/* Messages */}
-              <Tooltip title="Messages">
-                <IconButton
-                  color="inherit"
-                  size="small"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      router.push('/messages');
-                    } else {
-                      router.push('/auth/login');
-                    }
-                  }}
-                  sx={{
-                    bgcolor: theme.palette.background.paper,
-                    boxShadow: 1,
-                    '&:hover': {
-                      bgcolor: theme.palette.action.hover,
-                    },
-                    position: 'relative',
-                    color: router.pathname.includes('/messages') ? theme.palette.primary.main : 'inherit',
-                  }}
-                >
-                  <MessageSquare size={20} />
-                  {unreadMessages > 0 && (
-                    <Badge 
-                      badgeContent={unreadMessages} 
-                      color="error"
-                      sx={{
-                        position: 'absolute',
-                        top: -4,
-                        right: -4,
-                      }}
-                    >
-                      <span />
-                    </Badge>
-                  )}
-                </IconButton>
-              </Tooltip>
-
-              {/* Notifications */}
-              <Tooltip title="Notifications">
-                <IconButton
-                  color="inherit"
-                  size="small"
-                  onClick={handleNotificationsOpen}
-                  sx={{
-                    bgcolor: theme.palette.background.paper,
-                    boxShadow: 1,
-                    '&:hover': {
-                      bgcolor: theme.palette.action.hover,
-                    },
-                    position: 'relative',
-                    color: router.pathname.includes('/notifications') ? theme.palette.primary.main : 'inherit',
-                  }}
-                >
-                  <Bell size={20} />
-                  {unreadNotifications > 0 && (
-                    <Badge 
-                      badgeContent={unreadNotifications} 
-                      color="error"
-                      sx={{
-                        position: 'absolute',
-                        top: -4,
-                        right: -4,
-                      }}
-                    >
-                      <span />
-                    </Badge>
-                  )}
-                </IconButton>
-              </Tooltip>
-
-              {/* Create */}
-              <Tooltip title="Create Post">
-                <IconButton
-                  color="inherit"
-                  size="small"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      setCreatePostOpen(true);
-                    } else {
-                      router.push('/auth/login');
-                    }
-                  }}
-                  sx={{
-                    bgcolor: theme.palette.background.paper,
-                    boxShadow: 1,
-                    '&:hover': {
-                      bgcolor: theme.palette.action.hover,
-                    },
-                  }}
-                >
-                  <Plus size={20} />
-                </IconButton>
-              </Tooltip>
-            </>
-          )}
-        </Box>
-      )}
 
       {/* User Menu */}
       <Menu

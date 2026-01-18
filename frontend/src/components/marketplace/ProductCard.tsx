@@ -269,13 +269,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
           borderRadius: 3,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           border: 'none',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
           position: 'relative',
           overflow: 'hidden',
           backgroundColor: '#ffffff',
           '&:hover': {
             transform: 'translateY(-4px)',
-            boxShadow: '0 12px 24px rgba(0, 0, 0, 0.15)',
+            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
           },
         }}
       >
@@ -295,18 +295,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        borderRadius: 2,
+        borderRadius: 3,
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        border: '1px solid',
-        borderColor: 'divider',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: 'none',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
         position: 'relative',
         overflow: 'hidden',
         backgroundColor: '#ffffff',
         cursor: 'pointer',
         '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+          transform: 'translateY(-6px)',
+          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
         },
       }}
       onClick={handleCardClick}
@@ -446,6 +445,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 fontWeight: 600,
                 backgroundColor: theme.palette.primary.main,
                 color: 'white',
+                borderRadius: 2,
                 '& .MuiChip-label': {
                   px: 0.75,
                 },
@@ -464,6 +464,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 fontWeight: 600,
                 backgroundColor: '#e53e3e',
                 color: 'white',
+                borderRadius: 2,
                 '& .MuiChip-label': {
                   px: 0.75,
                 },
@@ -482,6 +483,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 fontWeight: 600,
                 backgroundColor: '#00a8e1',
                 color: 'white',
+                borderRadius: 2,
                 '& .MuiChip-label': {
                   px: 0.75,
                 },
@@ -509,6 +511,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 fontWeight: 600,
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 color: '#2e7d32',
+                borderRadius: 2,
                 '& .MuiChip-label': {
                   px: 0.75,
                 },
@@ -521,7 +524,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {/* Product Info - Enhanced layout */}
       <CardContent sx={{ 
         flexGrow: 1, 
-        p: { xs: 1.25, sm: 1.5 }, 
+        p: { xs: 1.5, sm: 2 }, 
         display: 'flex',
         flexDirection: 'column',
         gap: 0.75,
@@ -532,10 +535,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
             variant="caption"
             color="text.secondary"
             sx={{
-              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              fontSize: { xs: '0.65rem', sm: '0.7rem' },
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
+              mb: 0.5,
             }}
           >
             by {product?.vendor?.displayName || product?.vendor?.username || 'Unknown'}
@@ -560,10 +564,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
             display: '-webkit-box', 
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
-            lineHeight: '1.3em',
+            lineHeight: '1.4em',
             fontSize: { xs: '0.85rem', sm: '0.9rem' },
             color: theme.palette.text.primary,
-            minHeight: '2.6em',
+            minHeight: '2.8em',
           }}
         >
           {product?.name || 'Product'}
@@ -575,8 +579,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
             {[...Array(5)].map((_, i) => (
               <svg 
                 key={i}
-                width="12" 
-                height="12" 
+                width="14" 
+                height="14" 
                 viewBox="0 0 24 24" 
                 fill={i < Math.floor(product?.rating || 0) ? '#FFC107' : '#E0E0E0'}
                 stroke={i < Math.floor(product?.rating || 0) ? '#FFC107' : '#BDBDBD'}
@@ -601,8 +605,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
           color="text.secondary"
           sx={{ 
             textTransform: 'uppercase',
-            fontSize: { xs: '0.65rem', sm: '0.7rem' },
+            fontSize: { xs: '0.6rem', sm: '0.65rem' },
             mb: 0.5,
+            fontWeight: 500,
           }}
         >
           {product?.category || 'Uncategorized'}
@@ -619,7 +624,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   color="#B12704"
                   sx={{ 
                     fontWeight: 700,
-                    fontSize: { xs: '0.95rem', sm: '1.05rem' },
+                    fontSize: { xs: '1rem', sm: '1.1rem' },
                   }}
                   component="p"
                 >
@@ -634,7 +639,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   sx={{ 
                     textDecoration: 'line-through', 
                     color: 'text.secondary',
-                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                    fontSize: { xs: '0.65rem', sm: '0.7rem' },
                     ml: 0.5,
                   }}
                 >
@@ -654,7 +659,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   color="#B12704"
                   sx={{ 
                     fontWeight: 700,
-                    fontSize: { xs: '0.95rem', sm: '1.05rem' },
+                    fontSize: { xs: '1rem', sm: '1.1rem' },
                   }}
                   component="p"
                 >
@@ -682,6 +687,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 backgroundColor: 'transparent',
                 color: theme.palette.primary.main,
                 borderColor: alpha(theme.palette.primary.main, 0.3),
+                borderRadius: 2,
                 '& .MuiChip-label': {
                   px: 0.75
                 }
@@ -695,7 +701,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <Typography 
             variant="caption" 
             color={product?.stock > 10 ? 'success.main' : product?.stock > 0 ? 'warning.main' : 'error.main'}
-            sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}
+            sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem' }, fontWeight: 500 }}
           >
             {product?.stock > 10 ? 'In Stock' : product?.stock > 0 ? `Only ${product?.stock} left` : 'Out of Stock'}
           </Typography>
@@ -746,20 +752,25 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <Button
             variant="contained"
             size="small"
-            startIcon={<ShoppingCart size={isMobile ? 10 : 12} />}
+            startIcon={<ShoppingCart size={isMobile ? 12 : 14} />}
             onClick={handleAddToCart}
             disabled={product?.stock <= 0}
             sx={{
               flex: 1,
-              py: { xs: 0.5, sm: 0.75 },
-              fontSize: { xs: '0.7rem', sm: '0.75rem' },
-              fontWeight: 500,
-              borderRadius: 1.5,
+              py: { xs: 0.75, sm: 1 },
+              fontSize: { xs: '0.75rem', sm: '0.8rem' },
+              fontWeight: 600,
+              borderRadius: 2,
               textTransform: 'none',
               backgroundColor: product?.stock <= 0 ? '#ccc' : '#FF9900',
               color: 'white',
+              boxShadow: '0 2px 6px rgba(255, 153, 0, 0.3)',
               '&:hover': {
                 backgroundColor: product?.stock <= 0 ? '#ccc' : '#e68a00',
+                boxShadow: '0 4px 10px rgba(255, 153, 0, 0.4)',
+              },
+              '&:active': {
+                transform: 'translateY(1px)',
               }
             }}
           >
