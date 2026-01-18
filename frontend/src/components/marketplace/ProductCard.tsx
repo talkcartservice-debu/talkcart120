@@ -461,13 +461,42 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </Box>
               
-      {/* Product Info - Empty section to maintain structure */}
+      {/* Product Info - View button */}
       <CardContent sx={{ 
         p: { xs: 0.5, sm: 1 }, 
         display: 'flex',
         justifyContent: 'flex-end',
         position: 'relative',
       }}>
+        <Button
+          size="small"
+          variant="contained"
+          color="primary"
+          startIcon={<Eye size={16} />}
+          onClick={(e) => {
+            e.stopPropagation();
+            // Navigate to product details page
+            router.push(`/marketplace/${product.id}`);
+          }}
+          sx={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            color: theme.palette.primary.main,
+            '&:hover': {
+              backgroundColor: 'white',
+            },
+            borderRadius: '50px',
+            minWidth: 'auto',
+            p: 0.5,
+            opacity: 0,
+            transition: 'opacity 0.3s ease-in-out',
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            zIndex: 2,
+          }}
+        >
+          <Eye size={16} />
+        </Button>
       </CardContent>
     </Card>
   );
