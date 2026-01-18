@@ -521,221 +521,45 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </Box>
               
-      {/* Product Info - Enhanced layout */}
+      {/* Product Info - Only Favorite functionality */}
       <CardContent sx={{ 
-        flexGrow: 1, 
-        p: { xs: 1.5, sm: 2 }, 
+        p: { xs: 0.5, sm: 1 }, 
         display: 'flex',
-        flexDirection: 'column',
-        gap: 0.75,
+        justifyContent: 'flex-end',
+        position: 'relative',
+        '&:hover .favorite-button': {
+          opacity: 1,
+        },
       }}>
-  
-        
-        {/* Product Name */}
-        <Typography 
-          variant="subtitle2"
-          sx={{ 
-            fontWeight: 600, 
-            mb: 0.5, 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis', 
-            display: '-webkit-box', 
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            lineHeight: '1.4em',
-            fontSize: { xs: '0.85rem', sm: '0.9rem' },
-            color: theme.palette.text.primary,
-            minHeight: '2.8em',
+        <Button
+          className="favorite-button"
+          size="small"
+          variant="contained"
+          color="primary"
+          startIcon={<Heart size={16} />}
+          onClick={(e) => {
+            e.stopPropagation();
+            toast.success('Added to favorites!');
+          }}
+          sx={{
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            color: theme.palette.primary.main,
+            '&:hover': {
+              backgroundColor: 'white',
+            },
+            borderRadius: '50px',
+            minWidth: 'auto',
+            p: 0.5,
+            opacity: 0,
+            transition: 'opacity 0.3s ease-in-out',
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            zIndex: 2,
           }}
         >
-          {product?.name || 'Product'}
-        </Typography>
-        
-        {/* Category - Subtle */}
-        <Typography 
-          variant="caption" 
-          color="text.secondary"
-          sx={{ 
-            textTransform: 'uppercase',
-            fontSize: { xs: '0.5rem', sm: '0.55rem' },
-            mb: 0.5,
-            fontWeight: 500,
-            opacity: 0.7
-          }}
-        >
-          {product?.category || 'Uncategorized'}
-        </Typography>
-        
-
-        
-
-        
-        {/* Price Information - Enhanced */}
-        <Box sx={{ mb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-            {/* Discounted Price Display */}
-            {product?.discount && product.discount > 0 ? (
-              <>
-                <Typography 
-                  variant="subtitle1"
-                  color="#B12704"
-                  sx={{ 
-                    fontWeight: 700,
-                    fontSize: { xs: '1rem', sm: '1.1rem' },
-                  }}
-                  component="p"
-                >
-                  {product?.currency === 'ETH' 
-                    ? `${((product?.price || 0) * (1 - (product?.discount || 0)/100)).toFixed(4)} ETH` 
-                    : product?.currency === 'USD' 
-                      ? `$${((product?.price || 0) * (1 - (product?.discount || 0)/100)).toFixed(2)}` 
-                      : `${((product?.price || 0) * (1 - (product?.discount || 0)/100)).toFixed(2)} ${product?.currency || ''}`}
-                </Typography>
-                <Typography 
-                  variant="body2"
-                  sx={{ 
-                    textDecoration: 'line-through', 
-                    color: 'text.secondary',
-                    fontSize: { xs: '0.65rem', sm: '0.7rem' },
-                    ml: 0.5,
-                  }}
-                >
-                  {product?.currency === 'ETH' 
-                    ? `${(product?.price || 0).toFixed(4)} ETH` 
-                    : product?.currency === 'USD' 
-                      ? `$${(product?.price || 0).toFixed(2)}` 
-                      : `${product?.price || 0} ${product?.currency || ''}`}
-                </Typography>
-              </>
-            ) : (
-              /* Regular Price Display */
-              <>
-                {/* Show original product price instead of converted price to avoid mock data */}
-                <Typography 
-                  variant="subtitle1"
-                  color="#B12704"
-                  sx={{ 
-                    fontWeight: 700,
-                    fontSize: { xs: '1rem', sm: '1.1rem' },
-                  }}
-                  component="p"
-                >
-                  {product?.currency === 'ETH' 
-                    ? `${product?.price || 0} ETH` 
-                    : product?.currency === 'USD' 
-                      ? `$${(product?.price || 0).toFixed(2)}` 
-                      : `${product?.price || 0} ${product?.currency || ''}`}
-                </Typography>
-              </>
-            )}
-          </Box>
-        </Box>
-        
-        {/* Recommendation Reason */}
-        {product?.recommendationReason && (
-          <Box sx={{ mb: 0.5 }}>
-            <Chip 
-              label={product.recommendationReason}
-              size="small"
-              variant="outlined"
-              sx={{ 
-                fontSize: { xs: '0.6rem', sm: '0.65rem' },
-                height: { xs: '18px', sm: '20px' },
-                backgroundColor: 'transparent',
-                color: theme.palette.primary.main,
-                borderColor: alpha(theme.palette.primary.main, 0.3),
-                borderRadius: 2,
-                '& .MuiChip-label': {
-                  px: 0.75
-                }
-              }}
-            />
-          </Box>
-        )}
-        
-
-        
-        {/* Feedback Buttons */}
-        {onFeedback && product?.id && (
-          <Box sx={{ display: 'flex', gap: 0.5, mb: 1 }}>
-            <Button 
-              size="small" 
-              variant="outlined" 
-              onClick={(e) => {
-                e.stopPropagation();
-                onFeedback(product.id, 'like', product.recommendationReason);
-              }}
-              sx={{ 
-                flex: 1,
-                fontSize: { xs: '0.6rem', sm: '0.65rem' },
-                minHeight: { xs: '24px', sm: '28px' },
-                py: 0.25,
-                borderRadius: 1,
-              }}
-            >
-              👍 Like
-            </Button>
-            <Button 
-              size="small" 
-              variant="outlined" 
-              onClick={(e) => {
-                e.stopPropagation();
-                onFeedback(product.id, 'dislike', product.recommendationReason);
-              }}
-              sx={{ 
-                flex: 1,
-                fontSize: { xs: '0.6rem', sm: '0.65rem' },
-                minHeight: { xs: '24px', sm: '28px' },
-                py: 0.25,
-                borderRadius: 1,
-              }}
-            >
-              👎 Dislike
-            </Button>
-          </Box>
-        )}
-
-        {/* Stock Information - Subtle */}
-        <Box sx={{ mb: 0.5 }}>
-          <Typography 
-            variant="caption" 
-            color={product?.stock > 10 ? 'success.main' : product?.stock > 0 ? 'warning.main' : 'error.main'}
-            sx={{ fontSize: { xs: '0.55rem', sm: '0.6rem' }, fontWeight: 400 }}
-          >
-            {product?.stock > 10 ? 'In Stock' : product?.stock > 0 ? `Only ${product?.stock} left` : 'Out of Stock'}
-          </Typography>
-        </Box>
-        
-        {/* Action Buttons - Enhanced layout */}
-        <Stack direction="row" spacing={1} sx={{ mt: 'auto' }}>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<ShoppingCart size={isMobile ? 12 : 14} />}
-            onClick={handleAddToCart}
-            disabled={product?.stock <= 0}
-            sx={{
-              flex: 1,
-              py: { xs: 0.75, sm: 1 },
-              fontSize: { xs: '0.75rem', sm: '0.8rem' },
-              fontWeight: 600,
-              borderRadius: 2,
-              textTransform: 'none',
-              backgroundColor: product?.stock <= 0 ? '#ccc' : '#FF9900',
-              color: 'white',
-              boxShadow: '0 2px 6px rgba(255, 153, 0, 0.3)',
-              '&:hover': {
-                backgroundColor: product?.stock <= 0 ? '#ccc' : '#e68a00',
-                boxShadow: '0 4px 10px rgba(255, 153, 0, 0.4)',
-              },
-              '&:active': {
-                transform: 'translateY(1px)',
-              }
-            }}
-          >
-            {product?.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
-          </Button>
-        </Stack>
+          <Heart size={16} />
+        </Button>
       </CardContent>
     </Card>
   );
