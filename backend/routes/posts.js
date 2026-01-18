@@ -1877,6 +1877,51 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // @route   DELETE /api/posts/:postId
+// @desc    Delete all posts from database (Admin only)
+// @access  Private (Admin)
+router.delete('/all', authenticateToken, async (req, res) => {
+  try {
+    console.log('DELETE /api/posts/all - Request received');
+    
+    // Check if user is admin
+    const userId = req.user.id || req.user.userId;
+    const requestingUser = await User.findById(userId);
+    
+    if (!requestingUser || requestingUser.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden',
+        message: 'Only administrators can delete all posts',
+      });
+    }
+    
+    // Get count of posts to be deleted
+    const postsToDelete = await Post.find({ isActive: true });
+    const postCount = postsToDelete.length;
+    
+    // Perform soft delete on all posts
+    const result = await Post.updateMany(
+      { isActive: true }, 
+      { isActive: false }
+    );
+    
+    console.log(`Soft deleted ${result.modifiedCount} posts`);
+    
+    res.json({
+      success: true,
+      message: `Successfully soft deleted ${result.modifiedCount} posts`,
+      deletedCount: result.modifiedCount,
+    });
+  } catch (error) {
+    console.error('Delete all posts error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete all posts',
+      message: error.message,
+    });
+  }
+});
+
 // @desc    Delete a post
 // @access  Private
 router.delete('/:postId', authenticateToken, async (req, res) => {
