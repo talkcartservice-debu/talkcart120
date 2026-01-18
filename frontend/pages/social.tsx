@@ -368,8 +368,8 @@ const SocialPage: React.FC = () => {
         </Tooltip>
       </Box>
       
-      <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 }, px: { xs: 0.5, sm: 1, md: 2 } }}>
-        <Grid container spacing={{ xs: 0.25, sm: 0.5, md: 2 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 }, px: { xs: 0.5, sm: 1, md: 2 }, height: { xs: 'auto', md: '100%' } }}>
+        <Grid container spacing={{ xs: 0.25, sm: 0.5, md: 2 }} sx={{ minHeight: { xs: 'auto', md: 'calc(100vh - 64px)' } }}>
           {/* Left Sidebar - Hidden on mobile */}
           <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 3, md: 1 } }}>
             <Paper 
@@ -391,7 +391,7 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Main feed area */}
-          <Grid item xs={12} md={4} order={{ xs: 1, md: 2 }}>
+          <Grid item xs={12} md={4} order={{ xs: 1, md: 2 }} sx={{ minHeight: { xs: 'auto', md: '100%' } }}>
             
             {/* Feed tabs */}
             <Paper 
@@ -437,7 +437,7 @@ const SocialPage: React.FC = () => {
             </Paper>
             
             {/* Feed content */}
-            <Box>
+            <Box sx={{ minHeight: { xs: 'auto', md: 'calc(100vh - 200px)' }, overflowY: { md: 'auto' } }}>
               {loading && feedItems.length === 0 ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress size={isMobile ? 24 : 32} />
@@ -505,7 +505,7 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Right Sidebar - Hidden on mobile */}
-          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 } }}>
+          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 }, height: { md: '100%' } }}>
             <Paper 
               sx={{ 
                 p: { xs: 1, sm: 2 }, 
@@ -522,7 +522,7 @@ const SocialPage: React.FC = () => {
                 zIndex: 110
               }}
             >
-              <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+              <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={2}>
                 <Box 
                   sx={{
                     width: 48,
