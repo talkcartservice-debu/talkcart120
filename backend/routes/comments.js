@@ -112,7 +112,18 @@ router.get('/:postId', async (req, res) => {
     }
 
     // Verify post exists
-    const post = await Post.findById(postId);
+    let post;
+    try {
+      post = await Post.findById(postId);
+    } catch (error) {
+      console.error(`Error finding post ${postId}:`, error);
+      return res.status(500).json({
+        success: false,
+        error: 'Internal server error while retrieving post',
+        message: 'An error occurred while processing your request'
+      });
+    }
+    
     if (!post) {
       return res.status(404).json({
         success: false,
@@ -218,7 +229,18 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     // Verify post exists
-    const post = await Post.findById(postId);
+    let post;
+    try {
+      post = await Post.findById(postId);
+    } catch (error) {
+      console.error(`Error finding post ${postId}:`, error);
+      return res.status(500).json({
+        success: false,
+        error: 'Internal server error while retrieving post',
+        message: 'An error occurred while processing your request'
+      });
+    }
+    
     if (!post) {
       return res.status(404).json({
         success: false,
