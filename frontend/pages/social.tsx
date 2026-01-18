@@ -371,7 +371,7 @@ const SocialPage: React.FC = () => {
       <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 }, px: { xs: 0.5, sm: 1, md: 2 } }}>
         <Grid container spacing={{ xs: 0.25, sm: 0.5, md: 2 }}>
           {/* Left Sidebar - Hidden on mobile */}
-          <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 3, md: 1 } }}>
+          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 3, md: 1 } }}>
             <Paper 
               sx={{ 
                 p: { xs: 1, sm: 2 }, 
@@ -383,89 +383,15 @@ const SocialPage: React.FC = () => {
                 border: '1px solid rgba(0, 0, 0, 0.05)'
               }}
             >
-              <Box display="flex" alignItems="center" gap={1.5} mb={2}>
-                <Box 
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    bgcolor: theme.palette.primary.main,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: '1.2rem',
-                    cursor: 'pointer'
-                  }}
-                  onClick={handleProfileNavigation}
-                >
-                  {user?.displayName?.charAt(0) || user?.username?.charAt(0) || 'U'}
-                </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography 
-                    variant="subtitle1" 
-                    sx={{ fontWeight: 600, cursor: 'pointer' }}
-                    onClick={handleProfileNavigation}
-                  >
-                    {user?.displayName || user?.username || 'User'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    @{user?.username || 'username'}
-                  </Typography>
-                </Box>
-                <Tooltip title="Create Post">
-                  <IconButton 
-                    sx={
-                      {
-                        width: 40,
-                        height: 40,
-                        bgcolor: theme.palette.primary.main,
-                        color: 'white',
-                        '&:hover': {
-                          bgcolor: theme.palette.primary.dark,
-                        }
-                      }
-                    }
-                    onClick={() => setCreatePostOpen(true)}
-                  >
-                    <Plus size={20} />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              
-              <Box display="flex" justifyContent="space-around" textAlign="center" mt={2} flexWrap="wrap" gap={{ xs: 0.5, sm: 1 }}>
-                <Box textAlign="center">
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '1.0rem', md: '1.25rem' } }}>{userStats.postCount}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' } }}>Posts</Typography>
-                </Box>
-                <Box textAlign="center">
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '1.0rem', md: '1.25rem' } }}>{userStats.followerCount}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' } }}>Followers</Typography>
-                </Box>
-                <Box textAlign="center">
-                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '1.0rem', md: '1.25rem' } }}>{userStats.followingCount}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' } }}>Following</Typography>
-                </Box>
-              </Box>
-            </Paper>
-            
-            <Paper 
-              sx={{ 
-                p: { xs: 1, sm: 2 }, 
-                borderRadius: 3, 
-                position: 'sticky',
-                top: 150,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                border: '1px solid rgba(0, 0, 0, 0.05)'
-              }}
-            >
-              <WhoToFollow />
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                Trending Products
+              </Typography>
+              <TrendingProducts />
             </Paper>
           </Grid>
 
           {/* Main feed area */}
-          <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
+          <Grid item xs={12} md={4} order={{ xs: 1, md: 2 }}>
             
             {/* Feed tabs */}
             <Paper 
@@ -579,7 +505,7 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Right Sidebar - Hidden on mobile */}
-          <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 } }}>
+          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 } }}>
             <Paper 
               sx={{ 
                 p: { xs: 1, sm: 2 }, 
@@ -591,10 +517,85 @@ const SocialPage: React.FC = () => {
                 border: '1px solid rgba(0, 0, 0, 0.05)'
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                Trending Products
-              </Typography>
-              <TrendingProducts />
+              <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+                <Box 
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    bgcolor: theme.palette.primary.main,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: '1.2rem',
+                    cursor: 'pointer'
+                  }}
+                  onClick={handleProfileNavigation}
+                >
+                  {user?.displayName?.charAt(0) || user?.username?.charAt(0) || 'U'}
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="subtitle1" 
+                    sx={{ fontWeight: 600, cursor: 'pointer' }}
+                    onClick={handleProfileNavigation}
+                  >
+                    {user?.displayName || user?.username || 'User'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    @{user?.username || 'username'}
+                  </Typography>
+                </Box>
+                <Tooltip title="Create Post">
+                  <IconButton 
+                    sx={
+                      {
+                        width: 40,
+                        height: 40,
+                        bgcolor: theme.palette.primary.main,
+                        color: 'white',
+                        '&:hover': {
+                          bgcolor: theme.palette.primary.dark,
+                        }
+                      }
+                    }
+                    onClick={() => setCreatePostOpen(true)}
+                  >
+                    <Plus size={20} />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              
+              <Box display="flex" justifyContent="space-around" textAlign="center" mt={2} flexWrap="wrap" gap={{ xs: 0.5, sm: 1 }}>
+                <Box textAlign="center">
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '1.0rem', md: '1.25rem' } }}>{userStats.postCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' } }}>Posts</Typography>
+                </Box>
+                <Box textAlign="center">
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '1.0rem', md: '1.25rem' } }}>{userStats.followerCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' } }}>Followers</Typography>
+                </Box>
+                <Box textAlign="center">
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.8rem', sm: '1.0rem', md: '1.25rem' } }}>{userStats.followingCount}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.875rem' } }}>Following</Typography>
+                </Box>
+              </Box>
+            </Paper>
+            
+            <Paper 
+              sx={{ 
+                p: { xs: 1, sm: 2 }, 
+                borderRadius: 3, 
+                mb: 2,
+                position: 'sticky',
+                top: 150,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                border: '1px solid rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              <WhoToFollow />
             </Paper>
             
             <Paper 
