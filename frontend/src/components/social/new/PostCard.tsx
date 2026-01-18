@@ -887,16 +887,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
         )}
       </Box>
       
-      {/* Visual separator between media and actions */}
-      <Box sx={{ 
-        height: '1px', 
-        bgcolor: 'divider', 
-        my: 0.25,  // Reduced margin on mobile
-        position: 'relative', 
-        zIndex: 5,
-        flexShrink: 0
-      }} />
-
       {/* Horizontal Action Bar at Bottom */}
       <Box sx={{ 
         display: 'flex', 
@@ -905,7 +895,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
         p: isMobile ? 0.1 : 0.25,
         gap: isMobile ? 0.1 : 0.25,
         bgcolor: 'background.paper',
-        borderTop: '1px solid rgba(0,0,0,0.05)',
         minHeight: isMobile ? 30 : 40
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.05 : 0.1 }}>
