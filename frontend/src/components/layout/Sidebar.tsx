@@ -334,7 +334,7 @@ export const SidebarComponent: React.FC<SidebarProps> = ({
                 TalkCart
               </Typography>
               <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                Web3 Social Platform
+                E_social Platform
               </Typography>
             </Box>
           </Stack>
