@@ -540,8 +540,6 @@ const SocialPage: React.FC = () => {
                 mb: 2,
                 position: 'sticky',
                 top: 20,
-                maxHeight: '30vh',
-                overflowY: 'auto',
                 boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
                 border: '1px solid rgba(0, 0, 0, 0.15)',
                 zIndex: 10
@@ -620,9 +618,7 @@ const SocialPage: React.FC = () => {
                 borderRadius: 3, 
                 mb: 2,
                 position: 'sticky',
-                top: 'calc(20px + 30vh + 16px)',
-                maxHeight: '35vh',
-                overflowY: 'auto',
+                top: 'calc(20px + 200px + 16px)',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 border: '1px solid rgba(0, 0, 0, 0.1)',
                 zIndex: 10
