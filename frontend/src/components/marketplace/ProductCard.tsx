@@ -472,7 +472,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           size="small"
           variant="contained"
           color="primary"
-          startIcon={<Eye size={16} />}
+          startIcon={<Eye size={14} />}
           onClick={(e) => {
             e.stopPropagation();
             // Navigate to product details page
@@ -487,6 +487,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
             borderRadius: '50px',
             minWidth: 'auto',
             p: 0.5,
+            pl: 1,
+            pr: 1,
             opacity: 1,
             transition: 'opacity 0.3s ease-in-out',
             position: 'absolute',
@@ -495,7 +497,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             zIndex: 2,
           }}
         >
-          <Eye size={16} />
+          View
         </Button>
       </CardContent>
     </Card>
