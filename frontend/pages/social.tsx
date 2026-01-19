@@ -369,7 +369,7 @@ const SocialPage: React.FC = () => {
       </Box>
       
       <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 }, px: { xs: 0.5, sm: 1, md: 2 }, height: { xs: 'auto', md: '100%' } }}>
-        <Grid container spacing={{ xs: 0.25, sm: 0.5, md: 2 }} sx={{ minHeight: { xs: 'auto', md: 'calc(100vh - 64px)' } }}>
+        <Grid container spacing={0} sx={{ minHeight: { xs: 'auto', md: 'calc(100vh - 64px)' }, gap: 0 }}>
           {/* Left Sidebar - Hidden on mobile */}
           <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 3, md: 1 } }}>
             <Paper 
@@ -391,7 +391,7 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Main feed area */}
-          <Grid item xs={12} md={4} order={{ xs: 1, md: 2 }} sx={{ minHeight: { xs: 'auto', md: '100%' }, pr: { md: 2 } }}>
+          <Grid item xs={12} md={4} order={{ xs: 1, md: 2 }} sx={{ minHeight: { xs: 'auto', md: '100%' }, p: { xs: 0, md: 0 }, mt: 0 }}>
             
             {/* Feed tabs */}
             <Paper 
@@ -505,7 +505,8 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Right Sidebar - Hidden on mobile */}
-          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 }, height: { md: '100%' }, pl: { md: 2 } }}>
+          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 }, height: { md: '100%' }, p: { xs: 0, md: 0 }, mt: 0 }}>
+
             <Paper 
               sx={{ 
                 p: { xs: 1, sm: 2 }, 
