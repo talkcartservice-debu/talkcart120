@@ -404,7 +404,18 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Main feed area */}
-          <Grid item xs={12} md={4} order={{ xs: 1, md: 2 }} sx={{ minHeight: { xs: 'auto', md: '100%' }, p: { xs: 0, md: 0 }, mt: 0 }}>
+          <Grid 
+            item 
+            xs={12} 
+            md={sidebarOpen ? 8 : 4} 
+            order={{ xs: 1, md: 2 }} 
+            sx={{ 
+              minHeight: { xs: 'auto', md: '100%' }, 
+              p: { xs: 0, md: 0 }, 
+              mt: 0,
+              transition: 'all 0.3s ease-in-out'
+            }}
+          >
             
             {/* Feed tabs */}
             <Paper 
@@ -519,6 +530,7 @@ const SocialPage: React.FC = () => {
 
           {/* Right Sidebar - Hidden on mobile */}
           <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 }, height: { md: '100%' }, p: { xs: 0, md: 0 }, mt: 0 }}>
+
 
             <Paper 
               sx={{ 
