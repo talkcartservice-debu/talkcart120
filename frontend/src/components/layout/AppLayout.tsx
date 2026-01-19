@@ -15,6 +15,8 @@ interface AppLayoutProps {
   requireAuth?: boolean;
   showNavigation?: boolean;
   showSidebar?: boolean;
+  sidebarOpen?: boolean;
+  onSidebarToggle?: () => void;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
@@ -24,6 +26,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   requireAuth = false,
   showNavigation = true,
   showSidebar = true,
+  sidebarOpen: externalSidebarOpen,
+  onSidebarToggle: externalOnSidebarToggle,
 }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
@@ -32,7 +36,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   
-  const [sidebarOpen, setSidebarOpen] = useState(false);  // Start with sidebar closed on all devices
+  const [internalSidebarOpen, setInternalSidebarOpen] = useState(false);  // Start with sidebar closed on all devices
+  
+  // Use external state if provided, otherwise use internal state
+  const sidebarOpen = externalSidebarOpen !== undefined ? externalSidebarOpen : internalSidebarOpen;
+  const handleSidebarToggle = externalOnSidebarToggle || (() => setInternalSidebarOpen(!internalSidebarOpen));
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -45,12 +53,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     return <LoadingSpinner fullScreen message="Redirecting to login..." />;
   }
 
-  const handleSidebarToggle = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+
 
   const handleSidebarClose = () => {
-    setSidebarOpen(false);
+    if (externalOnSidebarToggle) {
+      externalOnSidebarToggle();
+    } else {
+      setInternalSidebarOpen(false);
+    }
   };
 
   // Don't show sidebar on auth pages

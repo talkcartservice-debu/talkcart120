@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/layout/Layout';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import TrendingProducts from '@/components/social/new/TrendingProducts';
@@ -66,6 +67,7 @@ const SocialPage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [linkPostId, setLinkPostId] = useState<string | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -310,8 +312,12 @@ const SocialPage: React.FC = () => {
     }
   };
 
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
-    <Layout>
+    <Layout sidebarOpen={sidebarOpen} onSidebarToggle={handleSidebarToggle}>
       <Head>
         <title>Social Feed - TalkCart</title>
         <meta name="description" content="Connect with friends and discover trending content" />
@@ -370,8 +376,16 @@ const SocialPage: React.FC = () => {
       
       <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 }, px: { xs: 0.5, sm: 1, md: 2 }, height: { xs: 'auto', md: '100%' } }}>
         <Grid container spacing={0} sx={{ minHeight: { xs: 'auto', md: 'calc(100vh - 64px)' }, gap: 0 }}>
-          {/* Left Sidebar - Hidden on mobile */}
-          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 3, md: 1 } }}>
+          {/* Left Sidebar - Hidden on mobile and when main sidebar is open */}
+          <Grid 
+            item 
+            xs={12} 
+            md={4} 
+            sx={{ 
+              display: { xs: 'none', md: sidebarOpen ? 'none' : 'block' }, 
+              order: { xs: 3, md: 1 } 
+            }}
+          >
             <Paper 
               sx={{ 
                 p: { xs: 1, sm: 2 }, 

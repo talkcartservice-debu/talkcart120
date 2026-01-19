@@ -8,6 +8,8 @@ interface LayoutProps {
   requireAuth?: boolean;
   showNavigation?: boolean;
   showSidebar?: boolean;
+  sidebarOpen?: boolean;
+  onSidebarToggle?: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -17,6 +19,8 @@ const Layout: React.FC<LayoutProps> = ({
   requireAuth = false,
   showNavigation = true,
   showSidebar = true,
+  sidebarOpen = false,
+  onSidebarToggle,
 }) => {
   return (
     <AppLayout
@@ -25,6 +29,8 @@ const Layout: React.FC<LayoutProps> = ({
       requireAuth={requireAuth}
       showNavigation={showNavigation}
       showSidebar={showSidebar}
+      sidebarOpen={sidebarOpen}
+      onSidebarToggle={onSidebarToggle}
     >
       {children}
     </AppLayout>
