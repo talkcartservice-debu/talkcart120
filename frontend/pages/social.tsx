@@ -532,6 +532,7 @@ const SocialPage: React.FC = () => {
           <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 }, height: { md: '100%' }, p: { xs: 0, md: 0 }, mt: 0 }}>
 
 
+
             <Paper 
               sx={{ 
                 p: { xs: 1, sm: 2 }, 
