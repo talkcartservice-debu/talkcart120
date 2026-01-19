@@ -39,7 +39,6 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/layout/Layout';
-import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import TrendingProducts from '@/components/social/new/TrendingProducts';
