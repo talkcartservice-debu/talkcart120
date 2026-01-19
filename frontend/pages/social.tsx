@@ -376,7 +376,7 @@ const SocialPage: React.FC = () => {
               sx={{ 
                 p: { xs: 1, sm: 2 }, 
                 borderRadius: 3, 
-                mb: 2,
+                mb: 0,
                 position: 'sticky',
                 top: 20,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
