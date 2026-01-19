@@ -56,7 +56,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   // Don't show sidebar on auth pages
   // Also don't show sidebar on desktop views since navigation is in top bar
   const isAuthPage = router.pathname?.startsWith('/auth') || false;
-  const shouldShowSidebar = showSidebar && showNavigation && !isAuthPage && isAuthenticated && (isMobile || isTablet);
+  const shouldShowSidebar = showSidebar && showNavigation && !isAuthPage && isAuthenticated && (isMobile || isTablet || isDesktop);
   const shouldShowTopBar = showNavigation && !isAuthPage;
 
   const sidebarWidth = 280;
@@ -76,7 +76,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         <Sidebar
           open={sidebarOpen}
           onClose={handleSidebarClose}
-          variant={isMobile ? 'temporary' : 'persistent'}  // Use persistent for desktop but allow collapsible behavior
+          variant={isMobile ? 'temporary' : 'persistent'}  // Use temporary for mobile, persistent for desktop
           width={sidebarWidth}
         />
       )}
@@ -88,7 +88,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           flexGrow: 1,
           bgcolor: 'background.default',
           minHeight: '120vh',
-          marginLeft: sidebarOpen && !isMobile ? `${sidebarWidth}px` : 0,
+          marginLeft: sidebarOpen && (isTablet || isDesktop) ? `${sidebarWidth}px` : 0,
           marginTop: shouldShowTopBar ? '64px' : 0,
           transition: theme.transitions.create(['margin'], {
             easing: theme.transitions.easing.sharp,
