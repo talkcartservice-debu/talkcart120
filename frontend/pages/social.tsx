@@ -391,7 +391,7 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Main feed area */}
-          <Grid item xs={12} md={4} order={{ xs: 1, md: 2 }} sx={{ minHeight: { xs: 'auto', md: '100%' } }}>
+          <Grid item xs={12} md={4} order={{ xs: 1, md: 2 }} sx={{ minHeight: { xs: 'auto', md: '100%' }, pr: { md: 2 } }}>
             
             {/* Feed tabs */}
             <Paper 
@@ -505,21 +505,19 @@ const SocialPage: React.FC = () => {
           </Grid>
 
           {/* Right Sidebar - Hidden on mobile */}
-          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 }, height: { md: '100%' } }}>
+          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 }, height: { md: '100%' }, pl: { md: 2 } }}>
             <Paper 
               sx={{ 
                 p: { xs: 1, sm: 2 }, 
                 borderRadius: 3, 
                 mb: 2,
-                position: 'fixed',
-                top: 80,
-                right: 20,
-                width: 'calc(33.333% - 40px)',
+                position: 'sticky',
+                top: 20,
                 maxHeight: '30vh',
                 overflowY: 'auto',
                 boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
                 border: '1px solid rgba(0, 0, 0, 0.15)',
-                zIndex: 110
+                zIndex: 10
               }}
             >
               <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={2}>
@@ -594,15 +592,13 @@ const SocialPage: React.FC = () => {
                 p: { xs: 1, sm: 2 }, 
                 borderRadius: 3, 
                 mb: 2,
-                position: 'fixed',
-                top: 'calc(80px + 30vh + 16px)',
-                right: 20,
-                width: 'calc(33.333% - 40px)',
+                position: 'sticky',
+                top: 'calc(20px + 30vh + 16px)',
                 maxHeight: '35vh',
                 overflowY: 'auto',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 border: '1px solid rgba(0, 0, 0, 0.1)',
-                zIndex: 105
+                zIndex: 10
               }}
             >
               <WhoToFollow />
@@ -612,13 +608,11 @@ const SocialPage: React.FC = () => {
               sx={{ 
                 p: { xs: 1, sm: 2 }, 
                 borderRadius: 3, 
-                position: 'fixed',
+                position: 'sticky',
                 bottom: 5,
-                right: 20,
-                width: 'calc(33.333% - 40px)',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 border: '1px solid rgba(0, 0, 0, 0.08)',
-                zIndex: 90,
+                zIndex: 10,
                 textAlign: 'center'
               }}
             >
