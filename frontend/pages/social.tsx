@@ -375,14 +375,15 @@ const SocialPage: React.FC = () => {
       
       <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 }, px: { xs: 0.5, sm: 1, md: 2 }, height: { xs: 'auto', md: '100%' } }}>
         <Grid container spacing={0} sx={{ minHeight: { xs: 'auto', md: 'calc(100vh - 64px)' }, gap: 0 }}>
-          {/* Left Sidebar - Hidden on mobile and when main sidebar is open */}
+          {/* Left Sidebar - Trending Products - Hidden on mobile and when main sidebar is open */}
           <Grid 
             item 
             xs={12} 
-            md={4} 
+            md={3} 
             sx={{ 
               display: { xs: 'none', md: sidebarOpen ? 'none' : 'block' }, 
-              order: { xs: 3, md: 1 } 
+              order: { xs: 3, md: 1 },
+              transition: 'all 0.3s ease-in-out'
             }}
           >
             <Paper 
@@ -403,17 +404,19 @@ const SocialPage: React.FC = () => {
             </Paper>
           </Grid>
 
-          {/* Main feed area */}
+          {/* Main feed area - Maintains consistent sizing */}
           <Grid 
             item 
             xs={12} 
-            md={sidebarOpen ? 8 : 4} 
+            md={sidebarOpen ? 9 : 6} 
             order={{ xs: 1, md: 2 }} 
             sx={{ 
               minHeight: { xs: 'auto', md: '100%' }, 
               p: { xs: 0, md: 0 }, 
               mt: 0,
-              transition: 'all 0.3s ease-in-out'
+              transition: 'all 0.3s ease-in-out',
+              flexShrink: 0,
+              flexGrow: 0
             }}
           >
             
@@ -528,8 +531,23 @@ const SocialPage: React.FC = () => {
             </Box>
           </Grid>
 
-          {/* Right Sidebar - Hidden on mobile */}
-          <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' }, order: { xs: 2, md: 3 }, height: { md: '100%' }, p: { xs: 0, md: 0 }, mt: 0 }}>
+          {/* Right Sidebar - User Profile and Who to Follow - Hidden on mobile */}
+          <Grid 
+            item 
+            xs={12} 
+            md={3} 
+            sx={{ 
+              display: { xs: 'none', md: 'block' }, 
+              order: { xs: 2, md: 3 }, 
+              p: { xs: 0, md: 0 }, 
+              mt: 0, 
+              flexShrink: 0, 
+              flexGrow: 0,
+              transition: 'all 0.3s ease-in-out',
+              width: '100%',
+              maxWidth: '100%'
+            }}
+          >
 
 
 
@@ -542,7 +560,13 @@ const SocialPage: React.FC = () => {
                 top: 20,
                 boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
                 border: '1px solid rgba(0, 0, 0, 0.15)',
-                zIndex: 10
+                zIndex: 10,
+                width: '100%',
+                minWidth: 0,
+                flexShrink: 0,
+                flexGrow: 0,
+                height: 'fit-content',
+                boxSizing: 'border-box'
               }}
             >
               <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} mb={2}>
@@ -621,7 +645,13 @@ const SocialPage: React.FC = () => {
                 top: 'calc(20px + 200px + 16px)',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 border: '1px solid rgba(0, 0, 0, 0.1)',
-                zIndex: 10
+                zIndex: 10,
+                width: '100%',
+                minWidth: 0,
+                flexShrink: 0,
+                flexGrow: 0,
+                height: 'fit-content',
+                boxSizing: 'border-box'
               }}
             >
               <WhoToFollow />

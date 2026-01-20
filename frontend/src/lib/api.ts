@@ -239,8 +239,8 @@ class ApiService {
         throw new HttpError(validStatus, errorMessage, safeErrorData);
       }
       // Final defensive check to ensure we never return undefined
-      if (retryData === undefined) {
-        return null as unknown as T;
+      if (retryData === undefined || retryData === null) {
+        return { success: false, error: 'Empty response from server', message: 'Received empty response from server' } as unknown as T;
       }
       return retryData as T;
     }
@@ -331,8 +331,8 @@ class ApiService {
     }
     
     // Final defensive check to ensure we never return undefined
-    if (data === undefined) {
-      return null as unknown as T;
+    if (data === undefined || data === null) {
+      return { success: false, error: 'Empty response from server', message: 'Received empty response from server' } as unknown as T;
     }
     
     return data as T;

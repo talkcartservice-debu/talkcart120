@@ -26,8 +26,8 @@ const UserPosts: React.FC<UserPostsProps> = ({ username, isOwnProfile }) => {
         // Fetch user posts from the API
         const response: any = await api.posts.getUserPosts(username, { limit: 20 });
         
-        // Check if response indicates success
-        if (response?.success && response?.data?.posts) {
+        // Check if response is valid and indicates success
+        if (response && response.success && response.data?.posts) {
           // Transform the posts to match the Post interface
           const transformedPosts: Post[] = response.data.posts.map((post: any) => ({
             id: post.id || post._id,
@@ -70,7 +70,7 @@ const UserPosts: React.FC<UserPostsProps> = ({ username, isOwnProfile }) => {
           setPosts(transformedPosts);
         } else {
           // Handle error response properly
-          const errorMessage = response?.message || response?.error || 'Failed to fetch user posts';
+          const errorMessage = (response && (response.message || response.error)) || 'Failed to fetch user posts';
           throw new Error(errorMessage);
         }
       } catch (err: any) {

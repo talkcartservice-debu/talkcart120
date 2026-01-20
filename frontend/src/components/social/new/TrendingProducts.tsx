@@ -126,7 +126,10 @@ const TrendingProducts: React.FC = () => {
       boxShadow: '0 2px 8px rgba(0,0,0,0.05)', 
       border: '1px solid rgba(0, 0, 0, 0.05)',
       background: 'transparent',
-      p: 0
+      p: 0,
+      width: '100%',
+      height: 'fit-content',
+      minHeight: 0
     }}>
       <CardContent sx={{ pb: 1, pt: 1 }}>
         {loading ? (
@@ -142,10 +145,10 @@ const TrendingProducts: React.FC = () => {
             ))}
           </Box>
         ) : (
-          // Enhanced grid view with 2x2 layout
-          <Grid container spacing={1.5}>
+          // Enhanced grid view with 2x2 layout - Maintain consistent sizing
+          <Grid container spacing={1} sx={{ minHeight: 0 }}>
             {products.slice(0, 4).map((product, index) => (
-              <Grid item xs={6} key={product.id || product._id}> {/* 2x2 grid layout */}
+              <Grid item xs={6} key={product.id || product._id} sx={{ minHeight: 0 }}> {/* 2x2 grid layout */}
                 <Box 
                   onClick={() => window.location.href = `/marketplace/${product.id || product._id}`}
                   sx={{ 

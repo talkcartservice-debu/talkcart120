@@ -122,7 +122,10 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({
     <Card variant="outlined" sx={{ 
       borderRadius: 2, 
       boxShadow: '0 2px 8px rgba(0,0,0,0.05)', // Reduced shadow
-      border: '1px solid rgba(0, 0, 0, 0.05)'
+      border: '1px solid rgba(0, 0, 0, 0.05)',
+      width: '100%',
+      height: 'fit-content',
+      minHeight: 0
     }}>
       <CardContent sx={{ pb: 0.5, pt: 1 }}> {/* Reduced padding */}
         {showHeader && (
@@ -157,7 +160,7 @@ const WhoToFollow: React.FC<WhoToFollowProps> = ({
         )}
 
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 1, minHeight: 40 }}>
             <CircularProgress size={20} /> {/* Reduced spinner size */}
           </Box>
         ) : visibleSuggestions.length === 0 ? (
