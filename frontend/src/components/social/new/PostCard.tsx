@@ -12,6 +12,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
   Button,
   TextField,
@@ -612,30 +613,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
     }
   };
 
-  // Add handleDelete function
-  const handleDelete = useCallback(async () => {
-    // Close the menu
-    setAnchorEl(null);
-    
-    // Confirm deletion
-    if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-      try {
-        const response: any = await api.posts.delete(post.id);
-        if (response && response.success) {
-          toast.success('Post deleted successfully');
-          // Call the onDelete callback to remove the post from the parent component
-          onDelete?.(post.id);
-        } else {
-          throw new Error(response?.message || 'Failed to delete post');
-        }
-      } catch (err: any) {
-        console.error('Error deleting post:', err);
-        toast.error(err.message || 'Failed to delete post. Please try again later.');
-      }
-    }
-  }, [post.id, onDelete]);
-
-  // Add handleMenuClick function
+// Add handleMenuClick function
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -644,6 +622,39 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+  
+  // Delete confirmation dialog
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  
+  const handleDeleteClick = useCallback(() => {
+    // Close the menu
+    setAnchorEl(null);
+    // Open confirmation dialog
+    setDeleteConfirmOpen(true);
+  }, []);
+  
+  const handleDeleteConfirm = useCallback(async () => {
+    try {
+      const response: any = await api.posts.delete(post.id);
+      if (response && response.success) {
+        toast.success('Post deleted successfully');
+        // Call the onDelete callback to remove the post from the parent component
+        onDelete?.(post.id);
+      } else {
+        throw new Error(response?.message || 'Failed to delete post');
+      }
+    } catch (err: any) {
+      console.error('Error deleting post:', err);
+      toast.error(err.message || 'Failed to delete post. Please try again later.');
+    } finally {
+      // Close the confirmation dialog
+      setDeleteConfirmOpen(false);
+    }
+  }, [post.id, onDelete]);
+  
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteConfirmOpen(false);
+  }, []);
 
   // Add these new handler functions after the existing handleDelete function
   const handleHideLikes = useCallback(async () => {
@@ -834,7 +845,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
                     </MenuItem>
                   </>
                 )}
-                <MenuItem onClick={handleDelete}>
+                <MenuItem onClick={handleDeleteClick}>
                   <Typography variant="body2" color="error">
                     Delete Post
                   </Typography>
@@ -1084,6 +1095,29 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
           />
         </Box>
       )}
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-confirm-title"
+        aria-describedby="delete-confirm-description"
+      >
+        <DialogTitle id="delete-confirm-title">
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-confirm-description">
+            Are you sure you want to delete this post? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };
