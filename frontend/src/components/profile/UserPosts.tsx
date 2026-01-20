@@ -23,8 +23,19 @@ const UserPosts: React.FC<UserPostsProps> = ({ username, isOwnProfile }) => {
         setLoading(true);
         setError(null);
         
+        // Validate username before making API call
+        if (!username || typeof username !== 'string' || username.trim().length === 0) {
+          setError('Invalid username provided');
+          setPosts([]);
+          return;
+        }
+        
+        console.log('Fetching posts for username:', username);
+        
         // Fetch user posts from the API
-        const response: any = await api.posts.getUserPosts(username, { limit: 20 });
+        const response: any = await api.posts.getUserPosts(username.trim(), { limit: 20 });
+        
+        console.log('API response:', response);
         
         // Check if response is valid and indicates success
         if (response && response.success && response.data?.posts) {
@@ -75,12 +86,19 @@ const UserPosts: React.FC<UserPostsProps> = ({ username, isOwnProfile }) => {
         }
       } catch (err: any) {
         console.error('Error fetching user posts:', err);
+        console.error('Error details:', {
+          name: err.name,
+          message: err.message,
+          status: err.status,
+          stack: err.stack
+        });
+        
         // Handle HttpError specifically
         if (err.name === 'HttpError') {
           // Use a more user-friendly error message based on status
           let userFriendlyMessage = 'Failed to load posts. Please try again later.';
           if (err.status === 404) {
-            userFriendlyMessage = 'User profile not found';
+            userFriendlyMessage = 'User profile not found. The username may not exist or may have been changed.';
           } else if (err.status === 401) {
             userFriendlyMessage = 'You need to login to view this profile';
           } else if (err.status === 403) {
@@ -92,7 +110,7 @@ const UserPosts: React.FC<UserPostsProps> = ({ username, isOwnProfile }) => {
         } else {
           // Handle other types of errors
           const userFriendlyMessage = err.message === 'User not found' 
-            ? 'User profile not found' 
+            ? 'User profile not found. The username may not exist or may have been changed.'
             : err.message || 'Failed to load posts. Please try again later.';
           setError(userFriendlyMessage);
         }

@@ -791,155 +791,7 @@ router.get('/user/:username/achievements', async (req, res) => {
   }
 });
 
-// @route   GET /api/posts/user/:username
-// @desc    Get posts for a specific user
-// @access  Public
-router.get('/user/:username', async (req, res) => {
-  try {
-    console.log('GET /api/posts/user/:username - Request received');
-    const { username } = req.params;
-    const {
-      limit = 20,
-      page = 1,
-      contentType = 'all',
-      hashtag,
-      search,
-      sortBy = 'recent' // recent, trending, popular
-    } = req.query;
 
-    // Find user by username
-    const user = await User.findOne({ username: username.toLowerCase() });
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found',
-      });
-    }
-
-    // Base query for user's posts
-    let query = { 
-      author: user._id,
-      isActive: true, 
-    };
-
-    // Filter by content type
-    if (contentType !== 'all') {
-      query.type = contentType;
-    }
-
-    // Filter by hashtag
-    if (hashtag) {
-      query.hashtags = { $in: [hashtag.toLowerCase()] };
-    }
-
-    // Search functionality using MongoDB $text for content/hashtags
-    if (search) {
-      const searchString = String(search).trim();
-      if (searchString.length) {
-        const textClause = { $text: { $search: searchString } };
-        if (query.$and) {
-          query.$and.push(textClause);
-        } else {
-          query = { $and: [query, textClause] };
-        }
-      }
-    }
-
-    // Calculate pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    
-    // Determine sort criteria
-    let sortCriteria;
-    switch (sortBy) {
-      case 'trending':
-        sortCriteria = { 
-          views: -1,
-          createdAt: -1
-        };
-        break;
-      case 'popular':
-        sortCriteria = { 
-          views: -1,
-          createdAt: -1
-        };
-        break;
-      default: // recent
-        sortCriteria = { createdAt: -1 };
-    }
-    
-    // Prefer $text score sort when using text search
-    const isTextSearch = !!(
-      (query.$and && query.$and.some(clause => clause.$text)) ||
-      (query.$or && query.$or.some(clause => clause.$text))
-    );
-
-    const posts = await Post.find(query, isTextSearch ? { score: { $meta: 'textScore' } } : undefined)
-      .populate('author', 'username displayName avatar isVerified bio role followerCount location')
-      .sort(isTextSearch ? { score: { $meta: 'textScore' }, createdAt: -1 } : sortCriteria)
-      .limit(parseInt(limit))
-      .skip(skip)
-      .lean();
-
-    const total = await Post.countDocuments(query);
-
-    res.json({
-      success: true,
-      data: {
-        posts: await Promise.all(posts.map(async post => {
-          // Count comments for this post
-          const commentCount = await Comment.countDocuments({ 
-            post: post._id, 
-            isActive: true 
-          });
-          
-          return {
-            ...post,
-            id: post._id,
-            authorId: post.author._id,
-            author: {
-              ...post.author,
-              id: post.author._id,
-              name: post.author.displayName || post.author.username,
-            },
-            // Ensure hashtags is always an array
-            hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
-            likeCount: Array.isArray(post.likes) ? post.likes.length : 0,
-            commentCount: commentCount,
-            shareCount: Array.isArray(post.shares) ? post.shares.length : 0,
-            bookmarkCount: Array.isArray(post.bookmarks) ? post.bookmarks.length : 0,
-            likes: Array.isArray(post.likes) ? post.likes.length : 0,
-            shares: Array.isArray(post.shares) ? post.shares.length : 0,
-            bookmarks: Array.isArray(post.bookmarks) ? post.bookmarks.length : 0,
-            comments: commentCount,
-            hideLikes: post.hideLikes || false,
-            hideComments: post.hideComments || false,
-            media: Array.isArray(post.media) ? post.media.map(media => ({
-              ...media,
-              id: media._id || media.public_id,
-              url: media.url || media.secure_url,
-              secure_url: media.secure_url || media.url,
-              resource_type: media.resource_type || 'image',
-              thumbnail_url: media.thumbnail_url || (media.resource_type === 'video' && media.public_id ? getVideoThumbnail(media.public_id) : undefined),
-            })) : []
-          };
-        })),
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          pages: Math.ceil(total / parseInt(limit)),
-        },
-      },
-    });
-  } catch (error) {
-    console.error('Get user posts error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get user posts',
-      message: error.message,
-    });
-  }
-});
 
 // @route   GET /api/posts/public
 // @desc    Get all public posts (no authentication required)
@@ -2756,17 +2608,35 @@ router.get('/user/:username', async (req, res) => {
       : null;
     
     // First, find the user by username
+    // Log the incoming username for debugging
+    console.log('Looking for username:', username);
+    
+    // Clean and validate the username
+    const cleanUsername = username ? username.trim() : '';
+    if (!cleanUsername) {
+      console.log('Empty username provided');
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid username',
+        message: 'Username cannot be empty'
+      });
+    }
+    
     const user = await User.findOne({ 
-      username: new RegExp(`^${username}$`, 'i'),
+      username: new RegExp(`^${cleanUsername}$`, 'i'),
       isActive: true 
     });
     
     if (!user) {
+      console.log('User not found for username:', cleanUsername);
       return res.status(404).json({
         success: false,
-        error: 'User not found'
+        error: 'User not found',
+        message: 'The requested user profile does not exist or may have been deleted.'
       });
     }
+    
+    console.log('Found user:', user.username, 'with ID:', user._id);
     
     const authorId = user._id.toString();
     
