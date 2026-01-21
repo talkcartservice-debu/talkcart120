@@ -32,7 +32,7 @@ export const normalizeMediaUrl = (urlString: string, resourceType?: string): str
     }
     
     // Fix for malformed Cloudinary URLs that are missing the protocol and domain
-    // Handle cases like: cloudinary/dftpdqd4k/image/upload/vetora/filename.jpg
+    // Handle cases like: cloudinary/{cloudName}/image/upload/vetora/filename.jpg
     if (urlString.startsWith('cloudinary/') && urlString.includes('vetora/')) {
       // console.log('🔧 Fixing malformed Cloudinary URL:', urlString);
       const fixedUrl = `https://res.cloudinary.com/${urlString}`;

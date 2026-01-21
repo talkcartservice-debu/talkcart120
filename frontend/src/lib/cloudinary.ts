@@ -3,7 +3,7 @@ import { Cloudinary } from '@cloudinary/url-gen';
 // Cloudinary configuration
 const cloudinary = new Cloudinary({
   cloud: {
-    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dgi1c5jia',
+    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dftpdqd4k'
   },
 });
 
@@ -138,7 +138,7 @@ export const getOptimizedImageUrl = (
     transformations.push(...dimensions, `c_${crop}`);
   }
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dgi1c5jia';
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dftpdqd4k';
   return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations.join(',')}/${publicId}`;
 };
 
@@ -159,7 +159,7 @@ export const getVideoThumbnailUrl = (
     quality = 'auto',
   } = options;
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dgi1c5jia';
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dftpdqd4k';
   return `https://res.cloudinary.com/${cloudName}/video/upload/w_${width},h_${height},c_fill,q_${quality},f_jpg/${publicId}.jpg`;
 };
 
