@@ -169,7 +169,7 @@ export default function SignIn() {
                   mb: 1,
                 }}
               >
-                TalkCart Super Admin
+                Vetora Super Admin
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                 Sign in to manage your marketplace
@@ -321,7 +321,7 @@ export default function SignIn() {
             {/* Footer */}
             <Box sx={{ textAlign: 'center', mt: 3 }}>
               <Typography variant="caption" color="text.secondary">
-                TalkCart Super Admin v1.0.0 • Secure Admin Portal
+                Vetora Super Admin v1.0.0 • Secure Admin Portal
               </Typography>
             </Box>
           </Paper>

@@ -318,9 +318,9 @@ export const useDAO = (): UseDAOReturn => {
 const mockDAOs: DAO[] = [
   {
     id: '1',
-    name: 'TalkCart Governance',
+    name: 'Vetora Governance',
     symbol: 'TCG',
-    description: 'The official governance DAO for TalkCart platform',
+    description: 'The official governance DAO for Vetora platform',
     logo: '/images/placeholder-image.png',
     contractAddress: '0x1234567890abcdef1234567890abcdef12345678',
     tokenAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
@@ -328,7 +328,7 @@ const mockDAOs: DAO[] = [
     creator: {
       id: 'user1',
       username: 'founder',
-      displayName: 'TalkCart Founder',
+      displayName: 'Vetora Founder',
       avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
       isVerified: true,
     },
@@ -380,14 +380,14 @@ const mockProposals: Proposal[] = [
     status: 'active',
     dao: {
       id: '1',
-      name: 'TalkCart Governance',
+      name: 'Vetora Governance',
       symbol: 'TCG',
       logo: '/images/placeholder-image.png',
     },
     proposer: {
       id: 'user1',
       username: 'founder',
-      displayName: 'TalkCart Founder',
+      displayName: 'Vetora Founder',
       avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
       isVerified: true,
       walletAddress: '0x1234...5678',

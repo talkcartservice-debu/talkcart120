@@ -9,8 +9,8 @@ export default function NFTsPage() {
   return (
     <>
       <Head>
-        <title>NFTs - TalkCart</title>
-        <meta name="description" content="Discover, create, and trade NFTs on TalkCart's NFT platform." />
+        <title>NFTs - Vetora</title>
+        <meta name="description" content="Discover, create, and trade NFTs on Vetora's NFT platform." />
       </Head>
 
       <AppLayout requireAuth showNavigation>

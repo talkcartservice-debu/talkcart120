@@ -22,10 +22,10 @@ export const SettingsExportImport: React.FC = () => {
     try {
       // Get settings from localStorage or context
       const settings = {
-        theme: localStorage.getItem('talkcart-theme') || 'light',
-        language: localStorage.getItem('talkcart-language') || 'en',
-        privacy: JSON.parse(localStorage.getItem('talkcart-privacy-settings') || '{}'),
-        interaction: JSON.parse(localStorage.getItem('talkcart-interaction-settings') || '{}'),
+        theme: localStorage.getItem('vetora-theme') || 'light',
+        language: localStorage.getItem('vetora-language') || 'en',
+        privacy: JSON.parse(localStorage.getItem('vetora-privacy-settings') || '{}'),
+        interaction: JSON.parse(localStorage.getItem('vetora-interaction-settings') || '{}'),
         exportDate: new Date().toISOString(),
       };
 
@@ -35,7 +35,7 @@ export const SettingsExportImport: React.FC = () => {
       
       const link = document.createElement('a');
       link.href = url;
-      link.download = `talkcart-settings-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `vetora-settings-${new Date().toISOString().split('T')[0]}.json`;
       link.click();
       
       URL.revokeObjectURL(url);
@@ -56,16 +56,16 @@ export const SettingsExportImport: React.FC = () => {
 
       // Import settings to localStorage
       if (settings.theme) {
-        localStorage.setItem('talkcart-theme', settings.theme);
+        localStorage.setItem('vetora-theme', settings.theme);
       }
       if (settings.language) {
-        localStorage.setItem('talkcart-language', settings.language);
+        localStorage.setItem('vetora-language', settings.language);
       }
       if (settings.privacy) {
-        localStorage.setItem('talkcart-privacy-settings', JSON.stringify(settings.privacy));
+        localStorage.setItem('vetora-privacy-settings', JSON.stringify(settings.privacy));
       }
       if (settings.interaction) {
-        localStorage.setItem('talkcart-interaction-settings', JSON.stringify(settings.interaction));
+        localStorage.setItem('vetora-interaction-settings', JSON.stringify(settings.interaction));
       }
 
       toast.success('Settings imported successfully. Please refresh the page.');

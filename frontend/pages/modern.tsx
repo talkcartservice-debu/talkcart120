@@ -662,7 +662,7 @@ export default function ModernHomePage() {
   return (
     <HomePageGuard>
       <Head>
-        <title>TalkCart — The Future of Web3 Social</title>
+        <title>Vetora — The Future of Web3 Social</title>
         <meta name="description" content="Experience the most advanced Web3 platform combining social networking, live streaming, NFT marketplace, DAO governance, and DeFi - all in one revolutionary app." />
         <meta name="keywords" content="Web3, social network, NFT, DeFi, DAO, live streaming, blockchain, crypto, digital assets" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

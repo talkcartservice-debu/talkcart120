@@ -29,9 +29,9 @@ function normalizeMediaUrl(urlString) {
     // Handle local URLs correctly - check if it's already a valid absolute URL
     if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
       // Check for malformed URLs with duplicate path segments
-      if (urlString.includes('uploads/talkcart/talkcart/')) {
-        // Fix duplicate talkcart path
-        return urlString.replace('uploads/talkcart/talkcart/', 'uploads/talkcart/');
+      if (urlString.includes('uploads/vetora/vetora/')) {
+        // Fix duplicate vetora path
+        return urlString.replace('uploads/vetora/vetora/', 'uploads/vetora/');
       }
       return urlString;
     }
@@ -41,9 +41,9 @@ function normalizeMediaUrl(urlString) {
       // For local development, use localhost:8000 as the base
       // For production, this should be handled by the backend
       // Check for malformed URLs with duplicate path segments
-      if (urlString.includes('/uploads/talkcart/talkcart/')) {
-        // Fix duplicate talkcart path
-        urlString = urlString.replace('/uploads/talkcart/talkcart/', '/uploads/talkcart/');
+      if (urlString.includes('/uploads/vetora/vetora/')) {
+        // Fix duplicate vetora path
+        urlString = urlString.replace('/uploads/vetora/vetora/', '/uploads/vetora/');
       }
       return `http://localhost:8000${urlString}`;
     }
@@ -65,11 +65,11 @@ const testCases = [
   'https://res.cloudinary.com/demo/image/upload/v1234567890/sample.jpg',
   
   // Valid local URLs that were causing issues
-  'http://localhost:8000/uploads/talkcart/file_1760459532573_hmjwxi463j',
+  'http://localhost:8000/uploads/vetora/file_1760459532573_hmjwxi463j',
   
   // Malformed URLs with duplicate path segments (the main issue)
-  'http://localhost:8000/uploads/talkcart/talkcart/file_1760446946793_ix9n9oc37qk',
-  '/uploads/talkcart/talkcart/file_1760446946793_ix9n9oc37qk',
+  'http://localhost:8000/uploads/vetora/vetora/file_1760446946793_ix9n9oc37qk',
+  '/uploads/vetora/vetora/file_1760446946793_ix9n9oc37qk',
   
   // Valid regular URLs
   'https://example.com/video.mp4',
@@ -101,21 +101,21 @@ testCases.forEach((testCase, index) => {
 console.log('=== Specific Tests for Fixed Issues ===\n');
 
 // Test the duplicate path issue
-const duplicatePathUrl = 'http://localhost:8000/uploads/talkcart/talkcart/file_1760446946793_ix9n9oc37qk';
+const duplicatePathUrl = 'http://localhost:8000/uploads/vetora/vetora/file_1760446946793_ix9n9oc37qk';
 const normalizedDuplicate = normalizeMediaUrl(duplicatePathUrl);
 console.log('Duplicate path URL fix test:');
 console.log(`  Original: ${duplicatePathUrl}`);
 console.log(`  Normalized: ${normalizedDuplicate}`);
-console.log(`  Fixed correctly: ${normalizedDuplicate === 'http://localhost:8000/uploads/talkcart/file_1760446946793_ix9n9oc37qk'}`);
+console.log(`  Fixed correctly: ${normalizedDuplicate === 'http://localhost:8000/uploads/vetora/file_1760446946793_ix9n9oc37qk'}`);
 console.log('');
 
 // Test the relative duplicate path issue
-const relativeDuplicatePathUrl = '/uploads/talkcart/talkcart/file_1760446946793_ix9n9oc37qk';
+const relativeDuplicatePathUrl = '/uploads/vetora/vetora/file_1760446946793_ix9n9oc37qk';
 const normalizedRelativeDuplicate = normalizeMediaUrl(relativeDuplicatePathUrl);
 console.log('Relative duplicate path URL fix test:');
 console.log(`  Original: ${relativeDuplicatePathUrl}`);
 console.log(`  Normalized: ${normalizedRelativeDuplicate}`);
-console.log(`  Fixed correctly: ${normalizedRelativeDuplicate === 'http://localhost:8000/uploads/talkcart/file_1760446946793_ix9n9oc37qk'}`);
+console.log(`  Fixed correctly: ${normalizedRelativeDuplicate === 'http://localhost:8000/uploads/vetora/file_1760446946793_ix9n9oc37qk'}`);
 console.log('');
 
 module.exports = { isValidUrl, normalizeMediaUrl };

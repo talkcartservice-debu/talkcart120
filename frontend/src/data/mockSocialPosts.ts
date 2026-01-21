@@ -31,7 +31,7 @@ export interface SocialPost {
 export const mockSocialPosts: SocialPost[] = [
   {
     id: '1',
-    content: 'Just minted my first NFT collection on TalkCart! Check it out in the marketplace. #NFT #DigitalArt #Web3',
+    content: 'Just minted my first NFT collection on Vetora! Check it out in the marketplace. #NFT #DigitalArt #Web3',
     author: {
       id: 'user1',
       name: 'Alex Johnson',
@@ -68,7 +68,7 @@ export const mockSocialPosts: SocialPost[] = [
   },
   {
     id: '2',
-    content: 'Excited to announce our DAO is now live on TalkCart! Join us in building the future of decentralized social media. 🚀 #DAO #Web3 #DecentralizedGovernance',
+    content: 'Excited to announce our DAO is now live on Vetora! Join us in building the future of decentralized social media. 🚀 #DAO #Web3 #DecentralizedGovernance',
     author: {
       id: 'user2',
       name: 'Sophia Chen',
@@ -87,7 +87,7 @@ export const mockSocialPosts: SocialPost[] = [
   },
   {
     id: '3',
-    content: 'The latest DeFi integration on TalkCart is a game-changer! Earning passive income while socializing is the future. What are your thoughts? #DeFi #PassiveIncome',
+    content: 'The latest DeFi integration on Vetora is a game-changer! Earning passive income while socializing is the future. What are your thoughts? #DeFi #PassiveIncome',
     author: {
       id: 'user3',
       name: 'Marcus Williams',
@@ -106,7 +106,7 @@ export const mockSocialPosts: SocialPost[] = [
   },
   {
     id: '4',
-    content: 'Just completed my first crypto transaction using TalkCart wallet. The UX is incredibly smooth! 💯 #Crypto #UserExperience',
+    content: 'Just completed my first crypto transaction using Vetora wallet. The UX is incredibly smooth! 💯 #Crypto #UserExperience',
     author: {
       id: 'user4',
       name: 'Emma Rodriguez',
@@ -134,7 +134,7 @@ export const mockSocialPosts: SocialPost[] = [
   },
   {
     id: '5',
-    content: 'Attended the TalkCart virtual meetup yesterday. Amazing to see how the community is growing! Looking forward to the next one. #Community #VirtualEvents',
+    content: 'Attended the Vetora virtual meetup yesterday. Amazing to see how the community is growing! Looking forward to the next one. #Community #VirtualEvents',
     author: {
       id: 'user5',
       name: 'David Kim',
@@ -163,7 +163,7 @@ export const mockSocialPosts: SocialPost[] = [
   },
   {
     id: '6',
-    content: 'Just published my article on the future of Web3 social platforms on TalkCart\'s blog section. Would love your feedback! #Web3 #ContentCreation #Feedback',
+    content: 'Just published my article on the future of Web3 social platforms on Vetora's blog section. Would love your feedback! #Web3 #ContentCreation #Feedback'
     author: {
       id: 'user6',
       name: 'Olivia Taylor',

@@ -86,7 +86,7 @@ export const PublicShowcase: React.FC<PublicShowcaseProps> = ({
             <Box display="flex" alignItems="center" justifyContent="center" gap={2} mb={2}>
               <Sparkles size={32} color={theme.palette.primary.main} />
               <Typography variant="h3" fontWeight={700} color="primary">
-                TalkCart
+                Vetora
               </Typography>
             </Box>
             
@@ -107,7 +107,7 @@ export const PublicShowcase: React.FC<PublicShowcaseProps> = ({
                 endIcon={<ArrowRight size={20} />}
                 sx={{ px: 4, py: 1.5 }}
               >
-                Join TalkCart
+                Join Vetora
               </Button>
               <Button
                 variant="outlined"

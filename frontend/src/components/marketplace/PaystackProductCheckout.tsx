@@ -46,7 +46,7 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
 
   // Generate unique transaction reference
   const generateReference = () => {
-    return `talkcart-product-${product._id}-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    return `vetora-product-${product._id}-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
   };
 
   const handlePay = async () => {

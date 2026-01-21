@@ -1,7 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
   BASE_URL: process.env.NODE_ENV === 'production' 
-    ? 'https://api.talkcart.app' 
+    ? 'https://api.vetora.app' 
     : 'http://localhost:8000/api',
   TIMEOUT: 0, // No timeout
   RETRY_ATTEMPTS: 3,
@@ -36,10 +36,10 @@ export const SOCIAL_CONFIG = {
 // Theme Configuration
 export const THEME_CONFIG = {
   STORAGE_KEYS: {
-    THEME_MODE: 'talkcart-theme-mode',
-    FONT_SIZE: 'talkcart-font-size',
-    REDUCED_MOTION: 'talkcart-reduced-motion',
-    HIGH_CONTRAST: 'talkcart-high-contrast',
+    THEME_MODE: 'vetora-theme-mode',
+    FONT_SIZE: 'vetora-font-size',
+    REDUCED_MOTION: 'vetora-reduced-motion',
+    HIGH_CONTRAST: 'vetora-high-contrast',
   },
   FONT_SIZE_SCALES: {
     'small': 0.875,
@@ -107,7 +107,7 @@ export const ERROR_MESSAGES = {
 // Success Messages
 export const SUCCESS_MESSAGES = {
   LOGIN: 'Login successful!',
-  REGISTER: 'Registration successful! Welcome to TalkCart!',
+  REGISTER: 'Registration successful! Welcome to Vetora!',
   LOGOUT: 'Logged out successfully',
   PROFILE_UPDATED: 'Profile updated successfully',
   POST_CREATED: 'Post created successfully',
@@ -170,11 +170,11 @@ export const ROUTES = {
 
 // Local Storage Keys
 export const STORAGE_KEYS = {
-  AUTH_TOKEN: 'talkcart-auth-token',
-  REFRESH_TOKEN: 'talkcart-refresh-token',
-  USER_PREFERENCES: 'talkcart-user-preferences',
-  DRAFT_POST: 'talkcart-draft-post',
-  THEME_SETTINGS: 'talkcart-theme-settings',
+  AUTH_TOKEN: 'vetora-auth-token',
+  REFRESH_TOKEN: 'vetora-refresh-token',
+  USER_PREFERENCES: 'vetora-user-preferences',
+  DRAFT_POST: 'vetora-draft-post',
+  THEME_SETTINGS: 'vetora-theme-settings',
 } as const;
 
 // Feature Flags

@@ -20,8 +20,8 @@ export const AUTH_TOKEN_KEY = 'token';
 export const AUTH_REFRESH_TOKEN_KEY = 'refreshToken';
 
 // App configuration
-export const APP_NAME = 'TalkCart';
-export const APP_DESCRIPTION = 'Web3 talkcart app combining social networking, marketplace, streaming, DAO governance, and messaging';
+export const APP_NAME = 'Vetora';
+export const APP_DESCRIPTION = 'Web3 vetora app combining social networking, marketplace, streaming, DAO governance, and messaging';
 
 // UI assets and fallbacks
 export const DEFAULT_AVATAR_URL = process.env.NEXT_PUBLIC_DEFAULT_AVATAR_URL || '/images/default-avatar.png';
@@ -71,7 +71,7 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4'];
 
 // Social media sharing
-export const SHARE_URL = process.env.NEXT_PUBLIC_SHARE_URL || 'https://talkcart.io';
+export const SHARE_URL = process.env.NEXT_PUBLIC_SHARE_URL || 'https://vetora.io';
 
 const config = {
   API_URL,

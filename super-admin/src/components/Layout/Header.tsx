@@ -123,7 +123,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
       '/settings': 'Settings',
     };
     
-    return titleMap[path] || 'TalkCart Admin';
+    return titleMap[path] || 'Vetora Admin';
   };
 
   const notifications = [
@@ -311,7 +311,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, title }) => {
               Admin User
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              admin@talkcart.com
+              admin@vetora.com
             </Typography>
           </Box>
           <Divider />

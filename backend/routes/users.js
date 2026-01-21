@@ -866,7 +866,7 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
       const isOnline = lastSeenDate && (Date.now() - lastSeenDate.getTime()) < 300000; // 5 minutes
 
       // Determine suggestion reason based on what scored highest
-      let suggestionReason = 'New to TalkCart';
+      let suggestionReason = 'New to Vetora'
       if (user.isVerified) {
         suggestionReason = 'Verified user';
       } else if (user.mutualFollowers > 3) {

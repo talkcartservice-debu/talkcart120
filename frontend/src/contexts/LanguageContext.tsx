@@ -226,7 +226,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     const loadSettings = async () => {
       try {
         // First, try to load from localStorage for immediate UI update
-        const savedLanguage = localStorage.getItem('talkcart-language');
+        const savedLanguage = localStorage.getItem('vetora-language');
         if (savedLanguage && ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'zh', 'ar'].includes(savedLanguage)) {
           setLanguageState(savedLanguage);
         }
@@ -240,7 +240,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
               if (['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'zh', 'ar'].includes(backendLanguage)) {
                 setLanguageState(backendLanguage);
                 // Update localStorage with backend data
-                localStorage.setItem('talkcart-language', backendLanguage);
+                localStorage.setItem('vetora-language', backendLanguage);
               }
             }
           } catch (backendError: any) {
@@ -266,7 +266,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   const setLanguage = (lang: string) => {
     setLanguageState(lang);
     try {
-      localStorage.setItem('talkcart-language', lang);
+      localStorage.setItem('vetora-language', lang);
       
       // Sync with backend if authenticated
       if (isAuthenticated && user && isLoaded) {

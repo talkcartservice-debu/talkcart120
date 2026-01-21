@@ -237,7 +237,7 @@ const TicketDetailsPage: NextPage = () => {
   return (
     <Layout>
       <Head>
-        <title>Ticket #{ticket.ticketId} | TalkCart Support</title>
+        <title>Ticket #{ticket.ticketId} | Vetora Support</title>
       </Head>
       
       <Container maxWidth="lg" sx={{ py: 4 }}>

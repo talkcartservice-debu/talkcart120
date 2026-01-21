@@ -186,7 +186,7 @@ export default function ResetPasswordPage() {
     return (
       <>
         <Head>
-          <title>Invalid Reset Link - TalkCart</title>
+          <title>Invalid Reset Link - Vetora</title>
         </Head>
 
         <Box
@@ -240,7 +240,7 @@ export default function ResetPasswordPage() {
     return (
       <>
         <Head>
-          <title>Password Reset Successful - TalkCart</title>
+          <title>Password Reset Successful - Vetora</title>
         </Head>
 
         <Box
@@ -332,8 +332,8 @@ export default function ResetPasswordPage() {
   return (
     <>
       <Head>
-        <title>Reset Your Password - TalkCart</title>
-        <meta name="description" content="Create a new password for your TalkCart account" />
+        <title>Reset Your Password - Vetora</title>
+        <meta name="description" content="Create a new password for your Vetora account" />
       </Head>
 
       <Box

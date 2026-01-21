@@ -1,12 +1,12 @@
-# PWA Installation Guide for TalkCart
+# PWA Installation Guide for Vetora
 
-This guide explains how to install TalkCart as a Progressive Web App (PWA) on different devices and platforms.
+This guide explains how to install Vetora as a Progressive Web App (PWA) on different devices and platforms.
 
 ## What is a PWA?
 
-A Progressive Web App (PWA) is a web application that uses modern web capabilities to deliver an app-like experience to users. TalkCart is built as a PWA, which means you can install it on your device for quick access and enhanced functionality.
+A Progressive Web App (PWA) is a web application that uses modern web capabilities to deliver an app-like experience to users. Vetora is built as a PWA, which means you can install it on your device for quick access and enhanced functionality.
 
-## Features of TalkCart PWA
+## Features of Vetora PWA
 
 - **App-like experience**: Enjoy a native app experience directly from your browser
 - **Offline functionality**: Access some features even when offline
@@ -19,7 +19,7 @@ A Progressive Web App (PWA) is a web application that uses modern web capabiliti
 
 ### Android (Chrome)
 
-1. Open TalkCart in Chrome browser
+1. Open Vetora in Chrome browser
 2. Tap the three-dot menu icon in the top-right corner
 3. Select "Add to Home screen"
 4. Confirm by tapping "Add"
@@ -27,7 +27,7 @@ A Progressive Web App (PWA) is a web application that uses modern web capabiliti
 
 ### iOS (Safari)
 
-1. Open TalkCart in Safari browser
+1. Open Vetora in Safari browser
 2. Tap the Share button (square with arrow pointing up)
 3. Select "Add to Home Screen"
 4. Confirm by tapping "Add"
@@ -37,14 +37,14 @@ A Progressive Web App (PWA) is a web application that uses modern web capabiliti
 
 ### Windows (Chrome/Edge)
 
-1. Open TalkCart in Chrome or Edge browser
+1. Open Vetora in Chrome or Edge browser
 2. Click the install icon (usually appears in the address bar)
-3. Alternatively, click the three-dot menu and select "Install TalkCart"
+3. Alternatively, click the three-dot menu and select "Install Vetora"
 4. Follow the installation prompts
 
 ### macOS (Chrome/Safari)
 
-1. **Chrome**: Click the install icon in the address bar or go to menu > "Install TalkCart"
+1. **Chrome**: Click the install icon in the address bar or go to menu > "Install Vetora"
 2. **Safari**: Go to File > "Add to Dock" or click the Share button > "Add to Dock"
 
 ## PWA Features and Capabilities
@@ -113,7 +113,7 @@ The service worker is registered automatically in the app. To verify:
 
 ## Security Considerations
 
-- Always install from the official TalkCart domain
+- Always install from the official Vetora domain
 - Verify the site's SSL certificate
 - Be cautious of phishing attempts
 

@@ -286,7 +286,7 @@ export default function LoginPage() {
       console.log('Login result:', success);
 
       if (success) {
-        toast.success('Welcome back to TalkCart!');
+        toast.success('Welcome back to Vetora!');
         console.log('Login successful, redirecting...');
         // Clear expired banner and remove query param upon successful login
         setShowExpiredNotice(false);
@@ -396,8 +396,8 @@ export default function LoginPage() {
   return (
     <>
       <Head>
-        <title>Sign In - TalkCart</title>
-        <meta name="description" content="Sign in to your TalkCart account" />
+        <title>Sign In - Vetora</title>
+        <meta name="description" content="Sign in to your Vetora account" />
       </Head>
 
       <Box
@@ -605,7 +605,7 @@ export default function LoginPage() {
                       <LoginIcon sx={{ fontSize: 30 }} />
                     </Avatar>
                     <Typography variant="h4" component="h1" gutterBottom fontWeight={900} sx={{ letterSpacing: -0.3 }}>
-                      Sign in to TalkCart
+                      Sign in to Vetora
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>
                       Welcome back — let’s get you to your feed
@@ -935,7 +935,7 @@ export default function LoginPage() {
                       {/* Divider */}
                       <Divider sx={{ my: 2 }}>
                         <Chip
-                          label="New to TalkCart?"
+                          label="New to Vetora?"
                           size="small"
                           sx={{
                             px: 0.8,

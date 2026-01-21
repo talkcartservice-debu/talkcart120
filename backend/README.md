@@ -1,6 +1,6 @@
-# TalkCart Backend
+# Vetora Backend
 
-A scalable backend API built with Node.js, Express, and MongoDB for the TalkCart Web3 talkcart app.
+A scalable backend API built with Node.js, Express, and MongoDB for the Vetora Web3 vetora app.
 
 ## 🏗️ Architecture Overview
 
@@ -135,7 +135,7 @@ Key environment variables in `.env`:
 
 ```bash
 # Database
-MONGODB_URI=mongodb://localhost:27017/talkcart
+MONGODB_URI=mongodb://localhost:27017/vetora
 
 # JWT
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -290,8 +290,8 @@ const authenticateToken = (req, res, next) => {
 ### Docker Support
 Dockerfile included for containerization:
 ```bash
-docker build -t talkcart-backend .
-docker run -p 8000:8000 talkcart-backend
+docker build -t vetora-backend .
+docker run -p 8000:8000 vetora-backend
 ```
 
 ### Environment Configuration
@@ -326,7 +326,7 @@ If you prefer to configure manually, you need to set the following environment v
 These environment variables MUST be set in your Render dashboard:
 
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/talkcart?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/vetora?retryWrites=true&w=majority
 JWT_SECRET=your_secure_jwt_secret_here_please_use_a_strong_one
 REFRESH_TOKEN_SECRET=your_secure_refresh_token_secret_here_please_use_a_strong_one
 ```
@@ -347,6 +347,6 @@ DO NOT use localhost or 127.0.0.1 as these will not work on Render.
 
 ### Example MongoDB Atlas URI:
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/talkcart?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/vetora?retryWrites=true&w=majority
 ```
 

@@ -404,7 +404,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               >
                 <TextField
                   id="mobile-search-input"
-                  placeholder="Search TalkCart..."
+                  placeholder="Search Vetora..."
                   size="small"
                   fullWidth
                   autoFocus
@@ -663,7 +663,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 ref={searchRef}
               >
                 <TextField
-                  placeholder="Search TalkCart..."
+                  placeholder="Search Vetora..."
                   size="small"
                   fullWidth
                   value={searchQuery}

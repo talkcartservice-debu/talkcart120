@@ -18,7 +18,7 @@ const Custom404: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Page Not Found | TalkCart</title>
+        <title>Page Not Found | Vetora</title>
       </Head>
       
       <Box

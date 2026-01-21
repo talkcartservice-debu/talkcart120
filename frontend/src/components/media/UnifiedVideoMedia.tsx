@@ -41,9 +41,9 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
     // For Cloudinary URLs, use directly but fix any path duplication issues
     if (src.includes('cloudinary.com')) {
       let fixedSrc = src;
-      // Fix duplicate talkcart path issue in Cloudinary URLs
-      if (fixedSrc.includes('/talkcart/talkcart/')) {
-        fixedSrc = fixedSrc.replace(/\/talkcart\/talkcart\//g, '/talkcart/');
+      // Fix duplicate vetora path issue in Cloudinary URLs
+      if (fixedSrc.includes('/vetora/vetora/')) {
+        fixedSrc = fixedSrc.replace(/\/vetora\/vetora\//g, '/vetora/');
       }
       return fixedSrc;
     }
@@ -51,9 +51,9 @@ const UnifiedVideoMedia: React.FC<VideoMediaProps> = ({
     // For localhost URLs in development, ensure proper formatting
     if (src.includes('localhost:') || src.includes('127.0.0.1')) {
       let fixedSrc = src;
-      // Fix duplicate talkcart path issue
-      if (fixedSrc.includes('/uploads/talkcart/talkcart/')) {
-        fixedSrc = fixedSrc.replace(/\/uploads\/talkcart\/talkcart\//g, '/uploads/talkcart/');
+      // Fix duplicate vetora path issue
+      if (fixedSrc.includes('/uploads/vetora/vetora/')) {
+        fixedSrc = fixedSrc.replace(/\/uploads\/vetora\/vetora\//g, '/uploads/vetora/');
       }
       return fixedSrc;
     }

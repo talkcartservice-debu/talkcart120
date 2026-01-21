@@ -22,10 +22,10 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Create talkcart subdirectory for local storage (only one level deep)
-const talkcartDir = path.join(uploadDir, 'talkcart');
-if (!fs.existsSync(talkcartDir)) {
-  fs.mkdirSync(talkcartDir, { recursive: true });
+// Create vetora subdirectory for local storage (only one level deep)
+const vetoraDir = path.join(uploadDir, 'vetora');
+if (!fs.existsSync(vetoraDir)) {
+  fs.mkdirSync(vetoraDir, { recursive: true });
 }
 
 // Storage configuration - use Cloudinary if credentials are provided, otherwise use local disk storage
@@ -44,7 +44,7 @@ if (config.cloudinary.enabled) {
   storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-      folder: 'talkcart',
+      folder: 'vetora',
       resource_type: 'auto', // Automatically detect resource type
       public_id: (req, file) => {
         const timestamp = Date.now();
@@ -116,7 +116,7 @@ if (config.cloudinary.enabled) {
   // Local disk storage configuration for multer
   storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, talkcartDir);
+      cb(null, vetoraDir);
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -243,18 +243,18 @@ const uploadSingle = (fieldName) => {
         // Use HTTPS in production, HTTP in development
         const baseUrl = config.server.isProduction ? `https://${host}` : `${protocol}://${host}`;
         
-        // Ensure we don't have duplicate talkcart paths
+        // Ensure we don't have duplicate vetora paths
         const filename = req.file.filename;
-        let filePath = `/uploads/talkcart/${filename}`;
+        let filePath = `/uploads/vetora/${filename}`;
         
-        // Fix duplicate talkcart path issue
-        if (filePath.includes('/uploads/talkcart/talkcart/')) {
-          filePath = filePath.replace('/uploads/talkcart/talkcart/', '/uploads/talkcart/');
+        // Fix duplicate vetora path issue
+        if (filePath.includes('/uploads/vetora/vetora/')) {
+          filePath = filePath.replace('/uploads/vetora/vetora/', '/uploads/vetora/');
         }
         
         req.file.secure_url = `${baseUrl}${filePath}`;
         req.file.url = `${baseUrl}${filePath}`;
-        req.file.public_id = `talkcart/${filename}`;
+        req.file.public_id = `vetora/${filename}`;
       }
       
       next();
@@ -282,18 +282,18 @@ const uploadMultiple = (fieldName, maxCount = 10) => {
         const baseUrl = `${protocol}://${host}`;
         
         req.files.forEach(file => {
-          // Ensure we don't have duplicate talkcart paths
+          // Ensure we don't have duplicate vetora paths
           const filename = file.filename;
-          let filePath = `/uploads/talkcart/${filename}`;
+          let filePath = `/uploads/vetora/${filename}`;
           
-          // Fix duplicate talkcart path issue
-          if (filePath.includes('/uploads/talkcart/talkcart/')) {
-            filePath = filePath.replace('/uploads/talkcart/talkcart/', '/uploads/talkcart/');
+          // Fix duplicate vetora path issue
+          if (filePath.includes('/uploads/vetora/vetora/')) {
+            filePath = filePath.replace('/uploads/vetora/vetora/', '/uploads/vetora/');
           }
           
           file.secure_url = `${baseUrl}${filePath}`;
           file.url = `${baseUrl}${filePath}`;
-          file.public_id = `talkcart/${filename}`;
+          file.public_id = `vetora/${filename}`;
         });
       }
       
@@ -323,18 +323,18 @@ const uploadFields = (fields) => {
         
         // Handle single files
         if (req.file) {
-          // Ensure we don't have duplicate talkcart paths
+          // Ensure we don't have duplicate vetora paths
           const filename = req.file.filename;
-          let filePath = `/uploads/talkcart/${filename}`;
+          let filePath = `/uploads/vetora/${filename}`;
           
-          // Fix duplicate talkcart path issue
-          if (filePath.includes('/uploads/talkcart/talkcart/')) {
-            filePath = filePath.replace('/uploads/talkcart/talkcart/', '/uploads/talkcart/');
+          // Fix duplicate vetora path issue
+          if (filePath.includes('/uploads/vetora/vetora/')) {
+            filePath = filePath.replace('/uploads/vetora/vetora/', '/uploads/vetora/');
           }
           
           req.file.secure_url = `${baseUrl}${filePath}`;
           req.file.url = `${baseUrl}${filePath}`;
-          req.file.public_id = `talkcart/${filename}`;
+          req.file.public_id = `vetora/${filename}`;
         }
         
         // Handle multiple files
@@ -343,18 +343,18 @@ const uploadFields = (fields) => {
             const files = req.files[fieldname];
             if (Array.isArray(files)) {
               files.forEach(file => {
-                // Ensure we don't have duplicate talkcart paths
+                // Ensure we don't have duplicate vetora paths
                 const filename = file.filename;
-                let filePath = `/uploads/talkcart/${filename}`;
+                let filePath = `/uploads/vetora/${filename}`;
                 
-                // Fix duplicate talkcart path issue
-                if (filePath.includes('/uploads/talkcart/talkcart/')) {
-                  filePath = filePath.replace('/uploads/talkcart/talkcart/', '/uploads/talkcart/');
+                // Fix duplicate vetora path issue
+                if (filePath.includes('/uploads/vetora/vetora/')) {
+                  filePath = filePath.replace('/uploads/vetora/vetora/', '/uploads/vetora/');
                 }
                 
                 file.secure_url = `${baseUrl}${filePath}`;
                 file.url = `${baseUrl}${filePath}`;
-                file.public_id = `talkcart/${filename}`;
+                file.public_id = `vetora/${filename}`;
               });
             }
           });
@@ -397,18 +397,18 @@ const uploadProfilePicture = (fieldName) => {
         const host = req.get('host') || 'localhost:8000';
         const baseUrl = `${protocol}://${host}`;
         
-        // Ensure we don't have duplicate talkcart paths
+        // Ensure we don't have duplicate vetora paths
         const filename = req.file.filename;
-        let filePath = `/uploads/talkcart/${filename}`;
+        let filePath = `/uploads/vetora/${filename}`;
         
-        // Fix duplicate talkcart path issue
-        if (filePath.includes('/uploads/talkcart/talkcart/')) {
-          filePath = filePath.replace('/uploads/talkcart/talkcart/', '/uploads/talkcart/');
+        // Fix duplicate vetora path issue
+        if (filePath.includes('/uploads/vetora/vetora/')) {
+          filePath = filePath.replace('/uploads/vetora/vetora/', '/uploads/vetora/');
         }
         
         req.file.secure_url = `${baseUrl}${filePath}`;
         req.file.url = `${baseUrl}${filePath}`;
-        req.file.public_id = `talkcart/${filename}`;
+        req.file.public_id = `vetora/${filename}`;
       }
 
       next();
@@ -516,7 +516,7 @@ const getOptimizedVideoUrl = (publicId, options = {}) => {
 const uploadFromUrl = async (url, options = {}) => {
   try {
     const result = await cloudinary.uploader.upload(url, {
-      folder: 'talkcart',
+      folder: 'vetora',
       resource_type: 'auto',
       ...options,
     });
@@ -558,7 +558,7 @@ const createUploadPreset = async (name, options = {}) => {
   try {
     return await cloudinary.api.create_upload_preset({
       name,
-      folder: 'talkcart',
+      folder: 'vetora',
       ...options,
     });
   } catch (error) {
@@ -598,7 +598,7 @@ const getVideoPreview = (publicId, options = {}) => {
 const uploadFromBase64 = async (base64String, options = {}) => {
   try {
     const result = await cloudinary.uploader.upload(base64String, {
-      folder: 'talkcart',
+      folder: 'vetora',
       resource_type: 'auto',
       ...options,
     });
@@ -617,7 +617,7 @@ const uploadToCloudinary = async (fileBuffer, options = {}) => {
     return new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
-          folder: 'talkcart',
+          folder: 'vetora',
           resource_type: 'auto',
           ...options,
         },

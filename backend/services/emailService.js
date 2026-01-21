@@ -133,7 +133,7 @@ class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">TalkCart</div>
+            <div class="logo">Vetora</div>
             <h1>${subject}</h1>
           </div>
           <div class="content">
@@ -142,11 +142,11 @@ class EmailService {
               ${message.replace(/\n/g, '<br>')}
             </div>
             <p>If you have any questions, please don't hesitate to contact our support team.</p>
-            <p>Best regards,<br>The TalkCart Team</p>
+            <p>Best regards,<br>The Vetora Team</p>
           </div>
           <div class="footer">
-            <p>&copy; ${currentYear} TalkCart. All rights reserved.</p>
-            <p>This email was sent from TalkCart Admin Panel.</p>
+            <p>&copy; ${currentYear} Vetora. All rights reserved.</p>
+            <p>This email was sent from Vetora Admin Panel.</p>
           </div>
         </div>
       </body>
@@ -159,7 +159,7 @@ class EmailService {
   async sendEmail({ to, subject, message, template = 'admin-notification', user }) {
     try {
       const emailData = {
-        from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@talkcart.com',
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@vetora.com'
         to: to,
         subject: subject,
         html: this.generateEmailTemplate(template, { user, message, subject })

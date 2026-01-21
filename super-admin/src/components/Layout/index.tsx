@@ -97,7 +97,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
             TC
           </Box>
           <Box sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 1 }}>
-            TalkCart Super Admin
+            Vetora Super Admin
           </Box>
           <Box sx={{ fontSize: '1rem', opacity: 0.9 }}>
             Loading your dashboard...

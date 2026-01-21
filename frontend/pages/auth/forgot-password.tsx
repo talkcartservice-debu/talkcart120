@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
     return (
       <>
         <Head>
-          <title>Check Your Email - TalkCart</title>
+          <title>Check Your Email - Vetora</title>
         </Head>
 
         <Box
@@ -230,8 +230,8 @@ export default function ForgotPasswordPage() {
   return (
     <>
       <Head>
-        <title>Reset Password - TalkCart</title>
-        <meta name="description" content="Reset your TalkCart password" />
+        <title>Reset Password - Vetora</title>
+        <meta name="description" content="Reset your Vetora password" />
       </Head>
 
       <Box

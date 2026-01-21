@@ -198,7 +198,7 @@ const corsOptions = {
     // For Render deployment, allow common Render URLs
     if (!config.server.isDevelopment && origin && (
       origin.includes('onrender.com') ||
-      origin.includes('talkcart.app') ||
+      origin.includes('vetora.app') ||
       origin.includes('render.') // Covers various Render domains
     )) {
       return callback(null, true);
@@ -207,9 +207,9 @@ const corsOptions = {
     // Also specifically allow common frontend deployment patterns
     if (!config.server.isDevelopment && origin && (
       origin.startsWith('https://') && (
-        origin.includes('talkcart') ||
+        origin.includes('vetora') ||
         origin.match(/^https:\/\/[a-z0-9-]+\.onrender\.com$/) ||
-        origin.match(/^https:\/\/[a-z0-9-]+\.talkcart\.app$/)
+        origin.match(/^https:\/\/[a-z0-9-]+\.vetora\.app$/)
       )
     )) {
       return callback(null, true);

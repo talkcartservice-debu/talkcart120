@@ -201,7 +201,7 @@ class EnvValidator {
     return {
       environment: process.env.NODE_ENV || 'development',
       port: process.env.PORT || 8000,
-      database: process.env.MONGODB_URI || 'using default (mongodb://localhost:27017/talkcart)',
+      database: process.env.MONGODB_URI || 'using default (mongodb://localhost:27017/vetora)',
       jwt: process.env.JWT_SECRET ? 'configured' : 'missing',
       cloudinary: process.env.CLOUDINARY_CLOUD_NAME ? 'configured' : 'not configured',
       payments: {

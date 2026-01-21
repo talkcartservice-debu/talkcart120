@@ -300,7 +300,7 @@ export class BiometricAccessibilityService {
         ],
         setupInstructions: [
           'Open your authenticator app',
-          'Find the TalkCart entry',
+          'Find the Vetora entry',
           'Enter the 6-digit code',
           'Use voice input if needed'
         ]

@@ -3113,7 +3113,7 @@ router.post('/users/:id/send-email', authenticateTokenStrict, requireAdmin, asyn
       message,
       template,
       sentBy: req.user.userId,
-      sentByEmail: req.user.email || 'admin@talkcart.com',
+      sentByEmail: req.user.email || 'admin@vetora.com'
       status: 'pending'
     };
 
@@ -3226,7 +3226,7 @@ router.post('/users/bulk-email', authenticateTokenStrict, requireAdmin, async (r
           message,
           template,
           sentBy: req.user.userId,
-          sentByEmail: req.user.email || 'admin@talkcart.com',
+          sentByEmail: req.user.email || 'admin@vetora.com',
           status: 'pending'
         };
 

@@ -22,7 +22,7 @@ const FlutterwaveProductCheckout: React.FC<FlutterwaveProductCheckoutProps> = ({
   const [mobileNetwork, setMobileNetwork] = useState('MTN'); // Default to MTN for mobile money
 
   // Generate unique transaction reference
-  const tx_ref = `talkcart-product-${product._id}-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  const tx_ref = `vetora-product-${product._id}-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
 
   // Determine payment options based on currency and payment method
   const getPaymentOptions = () => {
@@ -69,7 +69,7 @@ const FlutterwaveProductCheckout: React.FC<FlutterwaveProductCheckoutProps> = ({
       phone_number: phoneNumber,
     },
     customizations: {
-      title: 'TalkCart Product Payment',
+      title: 'Vetora Product Payment',
       description: `Payment for ${product.name}`,
       logo: '/favicon.svg',
     },

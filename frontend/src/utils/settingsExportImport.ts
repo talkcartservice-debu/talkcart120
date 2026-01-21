@@ -34,13 +34,13 @@ export const SETTINGS_VERSION = '1.0.0';
 
 // Storage keys used by the application
 export const STORAGE_KEYS = {
-  THEME_MODE: 'talkcart-theme-mode',
-  FONT_SIZE: 'talkcart-font-size',
-  LANGUAGE: 'talkcart-language',
-  REDUCED_MOTION: 'talkcart-reduced-motion',
-  HIGH_CONTRAST: 'talkcart-high-contrast',
-  PRIVACY_SETTINGS: 'talkcart-privacy-settings',
-  INTERACTION_SETTINGS: 'talkcart-interaction-settings',
+  THEME_MODE: 'vetora-theme-mode',
+  FONT_SIZE: 'vetora-font-size',
+  LANGUAGE: 'vetora-language',
+  REDUCED_MOTION: 'vetora-reduced-motion',
+  HIGH_CONTRAST: 'vetora-high-contrast',
+  PRIVACY_SETTINGS: 'vetora-privacy-settings',
+  INTERACTION_SETTINGS: 'vetora-interaction-settings',
 } as const;
 
 // Validation schemas
@@ -89,9 +89,9 @@ export function exportSettings(): SettingsData {
       interaction: interactionSettings,
     },
     metadata: {
-      platform: 'TalkCart Web',
+      platform: 'Vetora Web',
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
-      exportedBy: 'TalkCart Settings Export v' + SETTINGS_VERSION,
+      exportedBy: 'Vetora Settings Export v' + SETTINGS_VERSION,
     },
   };
 
@@ -102,7 +102,7 @@ export function exportSettings(): SettingsData {
  * Download settings as a JSON file
  */
 export function downloadSettingsFile(settings: SettingsData, filename?: string): void {
-  const defaultFilename = `talkcart-settings-${new Date().toISOString().split('T')[0]}.json`;
+  const defaultFilename = `vetora-settings-${new Date().toISOString().split('T')[0]}.json`;
   const finalFilename = filename || defaultFilename;
   
   const dataStr = JSON.stringify(settings, null, 2);
@@ -294,7 +294,7 @@ export function migrateSettings(data: SettingsData): SettingsData {
     };
 
     migrated.metadata = {
-      platform: data.metadata?.platform || 'TalkCart Web',
+      platform: data.metadata?.platform || 'Vetora Web',
       userAgent: data.metadata?.userAgent || 'Unknown',
       exportedBy: `Migrated to v${SETTINGS_VERSION}`,
     };

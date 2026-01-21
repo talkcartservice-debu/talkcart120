@@ -522,7 +522,7 @@ const VendorStoreRegistration: React.FC = () => {
           <Typography variant="body1" color="text.secondary">
             {storeExists 
               ? 'Update your store information' 
-              : 'Register your store to start selling on TalkCart Marketplace'}
+              : 'Register your store to start selling on Vetora Marketplace'}
           </Typography>
         </Box>
 

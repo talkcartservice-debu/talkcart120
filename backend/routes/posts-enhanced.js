@@ -18,9 +18,9 @@ const resolveLocalUploadUrl = (url) => {
     const uploadsToken = '/uploads/';
     if (!url.includes(uploadsToken)) return url;
 
-    // Fix duplicate talkcart path issue first
-    if (url.includes('/uploads/talkcart/talkcart/')) {
-      url = url.replace(/\/uploads\/talkcart\/talkcart\//g, '/uploads/talkcart/');
+    // Fix duplicate vetora path issue first
+    if (url.includes('/uploads/vetora/vetora/')) {
+      url = url.replace(/\/uploads\/vetora\/vetora\//g, '/uploads/vetora/');
     }
 
     // Extract the relative path after /uploads/
@@ -67,16 +67,16 @@ const resolveLocalUploadUrl = (url) => {
       
       // Use proper placeholder files from the backend uploads directory
       const placeholderFile = isVideo ? 'placeholder-video.mp4' : 'placeholder-image.jpg';
-      const placeholderPath = path.join(uploadsDir, 'talkcart', placeholderFile);
+      const placeholderPath = path.join(uploadsDir, 'vetora', placeholderFile);
       
       if (fs.existsSync(placeholderPath)) {
         // Preserve host prefix if present in URL
         if (url.startsWith('http')) {
           const idx = url.indexOf(uploadsToken);
           const prefix = url.substring(0, idx);
-          return `${prefix}${uploadsToken}talkcart/${placeholderFile}`;
+          return `${prefix}${uploadsToken}vetora/${placeholderFile}`;
         }
-        return `${uploadsToken}talkcart/${placeholderFile}`;
+        return `${uploadsToken}vetora/${placeholderFile}`;
       }
     } catch (e) {
       // ignore placeholder resolution errors
@@ -109,10 +109,10 @@ const normalizeMediaUrls = (mediaArray) => {
       const originalUrl = secure_url;
       const resolved = resolveLocalUploadUrl(originalUrl);
       
-      // Fix duplicate talkcart path issue
+      // Fix duplicate vetora path issue
       let fixedUrl = resolved || item.url || '';
-      if (fixedUrl.includes('/uploads/talkcart/talkcart/')) {
-        fixedUrl = fixedUrl.replace(/\/uploads\/talkcart\/talkcart\//g, '/uploads/talkcart/');
+      if (fixedUrl.includes('/uploads/vetora/vetora/')) {
+        fixedUrl = fixedUrl.replace(/\/uploads\/vetora\/vetora\//g, '/uploads/vetora/');
       }
       
       // Convert HTTP to HTTPS for secure connections (except localhost)

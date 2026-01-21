@@ -61,7 +61,7 @@ class Config {
   // Database Configuration
   get database() {
     return {
-      uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/talkcart',
+      uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/vetora',
       options: {
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 30000, // 30 seconds timeout for server selection
@@ -221,7 +221,7 @@ class Config {
 
     // Default origins based on environment
     if (this.server.isProduction) {
-      return ['https://talkcart.app', 'https://www.talkcart.app'];
+      return ['https://vetora.app', 'https://www.vetora.app'];
     }
 
     return [
@@ -239,7 +239,7 @@ class Config {
     return {
       environment: this.server.env,
       port: this.server.port,
-      database: this.database.uri ? (this.server.isProduction && this.database.uri.includes('localhost') ? 'WARNING: using localhost in production' : 'configured') : 'using default (mongodb://localhost:27017/talkcart)',
+      database: this.database.uri ? (this.server.isProduction && this.database.uri.includes('localhost') ? 'WARNING: using localhost in production' : 'configured') : 'using default (mongodb://localhost:27017/vetora)',
       jwt: this.jwt.secret ? 'configured' : 'missing',
       cloudinary: this.cloudinary.enabled ? 'enabled' : 'disabled',
       payments: {

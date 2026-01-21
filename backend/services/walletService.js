@@ -18,10 +18,10 @@ const TOKEN_CONTRACTS = {
       name: 'Tether USD'
     },
     TALK: {
-      address: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4', // Mock TalkCart token
+      address: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4', // Mock Vetora token
       decimals: 18,
       symbol: 'TALK',
-      name: 'TalkCart Token'
+      name: 'Vetora Token'
     }
   }
 };
@@ -438,7 +438,7 @@ const getMockTokens = () => [
   },
   {
     symbol: 'TALK',
-    name: 'TalkCart Token',
+    name: 'Vetora Token',
     address: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
     balance: 15600,
     decimals: 18,
@@ -491,7 +491,7 @@ const getMockPrice = (tokenId) => {
     ethereum: 1996.12,
     'usd-coin': 1.00,
     tether: 1.00,
-    talkcart: 0.05
+    vetora: 0.05
   };
   return prices[tokenId] || 1.00;
 };

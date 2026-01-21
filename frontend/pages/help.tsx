@@ -245,7 +245,7 @@ const HelpPage: NextPage = () => {
   return (
     <Layout>
       <Head>
-        <title>Help & Support | TalkCart</title>
+        <title>Help & Support | Vetora</title>
       </Head>
       
       <Container maxWidth="lg" sx={{ py: 4 }}>

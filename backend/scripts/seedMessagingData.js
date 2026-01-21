@@ -164,7 +164,7 @@ const seedMessagingData = async () => {
 
 const runSeed = async () => {
   try {
-    console.log('🚀 Starting TalkCart Messaging Data Seeding...');
+    console.log('🚀 Starting Vetora Messaging Data Seeding...');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     await connectDB();

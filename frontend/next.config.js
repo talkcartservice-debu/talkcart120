@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'talkcart.app',
+        hostname: 'vetora.app'
       },
       {
         protocol: 'https',

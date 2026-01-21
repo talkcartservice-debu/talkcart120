@@ -1,6 +1,6 @@
 # Google OAuth Setup Guide
 
-This guide explains how to set up Google OAuth for the TalkCart application.
+This guide explains how to set up Google OAuth for the Vetora application.
 
 ## Step 1: Create Google OAuth Credentials
 

@@ -31,7 +31,7 @@ export const mockPosts: Post[] = [
       avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
       verified: true,
     },
-    content: 'Just minted my first NFT collection on TalkCart! Check it out in the marketplace. #NFT #DigitalArt #Web3',
+    content: 'Just minted my first NFT collection on Vetora! Check it out in the marketplace. #NFT #DigitalArt #Web3',
     images: [
       'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
       'https://images.unsplash.com/photo-1626544827763-d516dce335e2'
@@ -54,7 +54,7 @@ export const mockPosts: Post[] = [
       avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
       verified: true,
     },
-    content: 'Excited to announce our DAO is now live on TalkCart! Join us in building the future of decentralized social media. 🚀 #DAO #Web3 #DecentralizedGovernance',
+    content: 'Excited to announce our DAO is now live on Vetora! Join us in building the future of decentralized social media. 🚀 #DAO #Web3 #DecentralizedGovernance',
     createdAt: '2023-06-14T09:15:00Z',
     likes: 189,
     comments: 37,
@@ -72,7 +72,7 @@ export const mockPosts: Post[] = [
       avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
       verified: false,
     },
-    content: 'The latest DeFi integration on TalkCart is a game-changer! Earning passive income while socializing is the future. What are your thoughts? #DeFi #PassiveIncome',
+    content: 'The latest DeFi integration on Vetora is a game-changer! Earning passive income while socializing is the future. What are your thoughts? #DeFi #PassiveIncome',
     createdAt: '2023-06-13T18:45:00Z',
     likes: 132,
     comments: 28,
@@ -90,7 +90,7 @@ export const mockPosts: Post[] = [
       avatar: 'https://randomuser.me/api/portraits/women/29.jpg',
       verified: true,
     },
-    content: 'Just completed my first crypto transaction using TalkCart wallet. The UX is incredibly smooth! 💯 #Crypto #UserExperience',
+    content: 'Just completed my first crypto transaction using Vetora wallet. The UX is incredibly smooth! 💯 #Crypto #UserExperience',
     video: 'https://example.com/video1.mp4',
     createdAt: '2023-06-12T11:30:00Z',
     likes: 315,
@@ -109,7 +109,7 @@ export const mockPosts: Post[] = [
       avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
       verified: false,
     },
-    content: 'Attended the TalkCart virtual meetup yesterday. Amazing to see how the community is growing! Looking forward to the next one. #Community #VirtualEvents',
+    content: 'Attended the Vetora virtual meetup yesterday. Amazing to see how the community is growing! Looking forward to the next one. #Community #VirtualEvents',
     images: [
       'https://images.unsplash.com/photo-1591115765373-5207764f72e7'
     ],
@@ -129,7 +129,7 @@ export const mockPosts: Post[] = [
       avatar: 'https://randomuser.me/api/portraits/women/17.jpg',
       verified: true,
     },
-    content: 'Just published my article on the future of Web3 social platforms on TalkCart\'s blog section. Would love your feedback! #Web3 #ContentCreation #Feedback',
+    content: 'Just published my article on the future of Web3 social platforms on Vetora's blog section. Would love your feedback! #Web3 #ContentCreation #Feedback'
     createdAt: '2023-06-10T15:55:00Z',
     likes: 276,
     comments: 63,

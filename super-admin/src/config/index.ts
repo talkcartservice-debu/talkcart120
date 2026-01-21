@@ -1,4 +1,4 @@
-// TalkCart Super Admin Configuration
+// Vetora Super Admin Configuration
 // Centralized configuration using environment variables
 
 export const config = {
@@ -12,7 +12,7 @@ export const config = {
 
   // Application Configuration
   app: {
-    name: process.env.NEXT_PUBLIC_APP_NAME || 'TalkCart Super Admin',
+    name: process.env.NEXT_PUBLIC_APP_NAME || 'Vetora Super Admin',
     version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
     environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development',
     port: parseInt(process.env.NEXT_PUBLIC_ADMIN_PORT || '4100'),

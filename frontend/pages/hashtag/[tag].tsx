@@ -107,7 +107,7 @@ const HashtagPage = () => {
   return (
     <AppLayout>
       <Head>
-        <title>#{tag} | TalkCart</title>
+        <title>#{tag} | Vetora</title>
         <meta name="description" content={`Posts tagged with #${tag}`} />
       </Head>
 

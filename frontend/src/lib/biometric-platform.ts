@@ -307,7 +307,7 @@ export class BiometricPlatformService {
         'Open Settings app',
         'Go to Face ID & Passcode (or Touch ID & Passcode)',
         'Enable Face ID/Touch ID for apps and websites',
-        'Make sure TalkCart is allowed to use biometric authentication'
+        'Make sure Vetora is allowed to use biometric authentication'
       ];
     } else if (deviceInfo.isAndroid) {
       return [

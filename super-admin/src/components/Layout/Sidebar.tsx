@@ -239,7 +239,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'permanent' 
           TC
         </Avatar>
         <Typography variant="h6" fontWeight={700}>
-          TalkCart
+          Vetora
         </Typography>
         <Typography variant="body2" sx={{ opacity: 0.9 }}>
           Super Admin
@@ -392,7 +392,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, variant = 'permanent' 
           color="text.secondary"
           sx={{ textAlign: 'center', display: 'block' }}
         >
-          TalkCart Admin v1.0.0
+          Vetora Admin v1.0.0
         </Typography>
       </Box>
     </Box>

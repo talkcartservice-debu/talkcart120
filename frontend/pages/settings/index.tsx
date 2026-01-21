@@ -651,7 +651,7 @@ export default function SettingsPage() {
         const url = URL.createObjectURL(dataBlob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `talkcart-data-export-${new Date().toISOString().split('T')[0]}.json`;
+        link.download = `vetora-data-export-${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -722,8 +722,8 @@ export default function SettingsPage() {
   return (
     <>
       <Head>
-        <title>Account Settings | TalkCart</title>
-        <meta name="description" content="Manage your TalkCart account settings and preferences." />
+        <title>Account Settings | Vetora</title>
+        <meta name="description" content="Manage your Vetora account settings and preferences." />
       </Head>
 
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
@@ -1313,7 +1313,7 @@ export default function SettingsPage() {
                     Appearance Settings
                   </Typography>
                   <Typography variant="body2" color="text.secondary" paragraph>
-                    Customize how TalkCart looks and feels.
+                    Customize how Vetora looks and feels.
                   </Typography>
 
 

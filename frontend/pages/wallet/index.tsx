@@ -108,8 +108,8 @@ export default function EnhancedWalletPage() {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Head>
-          <title>Wallet - TalkCart</title>
-          <meta name="description" content="Manage your crypto assets and NFTs on TalkCart." />
+          <title>Wallet - Vetora</title>
+          <meta name="description" content="Manage your crypto assets and NFTs on Vetora." />
         </Head>
 
         <Box textAlign="center" py={8}>
@@ -141,8 +141,8 @@ export default function EnhancedWalletPage() {
   return (
     <>
       <Head>
-        <title>Wallet - TalkCart</title>
-        <meta name="description" content="Manage your crypto assets and NFTs on TalkCart." />
+        <title>Wallet - Vetora</title>
+        <meta name="description" content="Manage your crypto assets and NFTs on Vetora." />
       </Head>
 
       <Container maxWidth="xl" sx={{ py: 4 }}>

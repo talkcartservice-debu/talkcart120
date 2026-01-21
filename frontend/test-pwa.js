@@ -1,7 +1,7 @@
 // PWA Functionality Test Script
-// This script tests the PWA functionality of the TalkCart application
+// This script tests the PWA functionality of the Vetora application
 
-console.log('Testing PWA functionality for TalkCart...');
+console.log('Testing PWA functionality for Vetora...');
 
 // Test if running in a browser environment
 if (typeof window !== 'undefined') {
@@ -26,7 +26,7 @@ if (typeof window !== 'undefined') {
           
           if (allPassed) {
             console.log('\n🎉 PWA setup is working correctly!');
-            console.log('Users should be able to install TalkCart as a PWA on their devices.');
+            console.log('Users should be able to install Vetora as a PWA on their devices.');
           } else {
             console.log('\n⚠️  There are issues with the PWA setup that need to be addressed.');
           }

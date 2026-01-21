@@ -9,7 +9,7 @@ const removeAllMessages = async () => {
   try {
     console.log('🔄 Connecting to MongoDB...');
     // Use the same connection logic as other scripts
-    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/talkcart';
+    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vetora';
     await mongoose.connect(MONGODB_URI, {
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 30000,

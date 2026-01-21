@@ -318,7 +318,7 @@ const SocialPage: React.FC = () => {
   return (
     <Layout sidebarOpen={sidebarOpen} onSidebarToggle={handleSidebarToggle}>
       <Head>
-        <title>Social Feed - TalkCart</title>
+        <title>Social Feed - Vetora</title>
         <meta name="description" content="Connect with friends and discover trending content" />
       </Head>
       
@@ -354,7 +354,7 @@ const SocialPage: React.FC = () => {
             T
           </Box>
           <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
-            TalkCart
+            Vetora
           </Typography>
         </Box>
         <Tooltip title="Create Post">
@@ -670,7 +670,7 @@ const SocialPage: React.FC = () => {
               }}
             >
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                © 2023 TalkCart. All rights reserved.
+                © 2023 Vetora. All rights reserved.
               </Typography>
             </Paper>
           </Grid>

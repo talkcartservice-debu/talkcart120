@@ -31,9 +31,9 @@ const normalizeMediaUrl = (urlString) => {
     // Handle local URLs correctly - check if it's already a valid absolute URL
     if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
       // Check for malformed URLs with duplicate path segments
-      if (urlString.includes('uploads/talkcart/talkcart/')) {
-        // Fix duplicate talkcart path
-        return urlString.replace('uploads/talkcart/talkcart/', 'uploads/talkcart/');
+      if (urlString.includes('uploads/vetora/vetora/')) {
+        // Fix duplicate vetora path
+        return urlString.replace('uploads/vetora/vetora/', 'uploads/vetora/');
       }
       return urlString;
     }
@@ -43,9 +43,9 @@ const normalizeMediaUrl = (urlString) => {
       // For local development, use localhost:8000 as the base
       // For production, this should be handled by the backend
       // Check for malformed URLs with duplicate path segments
-      if (urlString.includes('/uploads/talkcart/talkcart/')) {
-        // Fix duplicate talkcart path
-        urlString = urlString.replace('/uploads/talkcart/talkcart/', '/uploads/talkcart/');
+      if (urlString.includes('/uploads/vetora/vetora/')) {
+        // Fix duplicate vetora path
+        urlString = urlString.replace('/uploads/vetora/vetora/', '/uploads/vetora/');
       }
       return `http://localhost:8000${urlString}`;
     }
@@ -101,24 +101,24 @@ const testCases = [
   // Case 1: The exact duplicate path issue from the error message
   {
     id: 'exact-duplicate-case',
-    secure_url: 'http://localhost:8000/uploads/talkcart/talkcart/file_1760459532573_hmjwxi463j',
+    secure_url: 'http://localhost:8000/uploads/vetora/vetora/file_1760459532573_hmjwxi463j',
     resource_type: 'video',
-    public_id: 'talkcart/file_1760459532573_hmjwxi463j'
+    public_id: 'vetora/file_1760459532573_hmjwxi463j'
   },
   
   // Case 2: Valid local URL
   {
     id: 'valid-local-url',
-    secure_url: 'http://localhost:8000/uploads/talkcart/file_1760459532573_hmjwxi463j',
+    secure_url: 'http://localhost:8000/uploads/vetora/file_1760459532573_hmjwxi463j',
     resource_type: 'video',
-    public_id: 'talkcart/file_1760459532573_hmjwxi463j'
+    public_id: 'vetora/file_1760459532573_hmjwxi463j'
   },
   
   // Case 3: Missing URL
   {
     id: 'missing-url',
     resource_type: 'video',
-    public_id: 'talkcart/missing-file'
+    public_id: 'vetora/missing-file'
   },
   
   // Case 4: Invalid URL format
@@ -126,7 +126,7 @@ const testCases = [
     id: 'invalid-url-format',
     secure_url: 'invalid-url',
     resource_type: 'video',
-    public_id: 'talkcart/invalid-file'
+    public_id: 'vetora/invalid-file'
   }
 ];
 
@@ -149,8 +149,8 @@ console.log('=== File Accessibility Test ===');
 
 // Test URL accessibility (this would normally be done in the browser)
 const testUrls = [
-  'http://localhost:8000/uploads/talkcart/talkcart/file_1760459532573_hmjwxi463j',
-  'http://localhost:8000/uploads/talkcart/file_1760459532573_hmjwxi463j'
+  'http://localhost:8000/uploads/vetora/vetora/file_1760459532573_hmjwxi463j',
+  'http://localhost:8000/uploads/vetora/file_1760459532573_hmjwxi463j'
 ];
 
 testUrls.forEach((url, index) => {
@@ -159,7 +159,7 @@ testUrls.forEach((url, index) => {
   console.log(`  Normalized: ${normalized}`);
   
   // Check if it's the duplicate path case
-  if (url.includes('uploads/talkcart/talkcart/')) {
+  if (url.includes('uploads/vetora/vetora/')) {
     console.log('  ❌ This URL has duplicate path segments');
   } else {
     console.log('  ✅ This URL has correct path segments');

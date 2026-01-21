@@ -1,7 +1,7 @@
 {
-  "name": "talkcart-backend",
+  "name": "vetora-backend",
   "version": "1.0.0",
-  "description": "TalkCart Backend - Web3 Super Application API",
+  "description": "Vetora Backend - Web3 Super Application API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -25,7 +25,7 @@
     "messaging",
     "api"
   ],
-  "author": "TalkCart Team",
+  "author": "Vetora Team",
   "license": "MIT",
   "dependencies": {
     "@simplewebauthn/server": "^13.1.2",

@@ -324,7 +324,7 @@ export default function RegisterPage() {
       });
       
       if (success) {
-        toast.success('Welcome to TalkCart! Your account has been created.');
+        toast.success('Welcome to Vetora! Your account has been created.');
         // Redirect to social feed
         // Prevent multiple rapid clicks
         const now = Date.now();
@@ -405,8 +405,8 @@ export default function RegisterPage() {
   return (
     <>
       <Head>
-        <title>Create Account - TalkCart</title>
-        <meta name="description" content="Create your TalkCart account" />
+        <title>Create Account - Vetora</title>
+        <meta name="description" content="Create your Vetora account" />
       </Head>
 
       <Box
@@ -612,7 +612,7 @@ export default function RegisterPage() {
                     <PersonAddAlt1 sx={{ fontSize: 30 }} />
                   </Avatar>
                   <Typography variant="h4" component="h1" gutterBottom fontWeight={900} sx={{ letterSpacing: -0.3 }}>
-                    Create your TalkCart account
+                    Create your Vetora account
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>
                     Welcome — let’s get you started

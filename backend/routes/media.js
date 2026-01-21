@@ -120,8 +120,8 @@ router.post('/upload', authenticateToken, (req, res) => {
           // If using local storage, ensure proper URL format
           if (!config.cloudinary.enabled) {
             const baseUrl = `${req.protocol}://${req.get('host')}`;
-            fileData.secure_url = `${baseUrl}/uploads/talkcart/${req.file.filename}`;
-            fileData.url = `${baseUrl}/uploads/talkcart/${req.file.filename}`;
+            fileData.secure_url = `${baseUrl}/uploads/vetora/${req.file.filename}`;
+            fileData.url = `${baseUrl}/uploads/vetora/${req.file.filename}`;
           }
         }
         
@@ -141,8 +141,8 @@ router.post('/upload', authenticateToken, (req, res) => {
           // If using local storage, ensure proper URL format
           if (!config.cloudinary.enabled) {
             const baseUrl = `${req.protocol}://${req.get('host')}`;
-            fileData.secure_url = `${baseUrl}/uploads/talkcart/${req.file.filename}`;
-            fileData.url = `${baseUrl}/uploads/talkcart/${req.file.filename}`;
+            fileData.secure_url = `${baseUrl}/uploads/vetora/${req.file.filename}`;
+            fileData.url = `${baseUrl}/uploads/vetora/${req.file.filename}`;
           }
         }
         
@@ -319,7 +319,7 @@ router.post('/upload/single', authenticateToken, (req, res) => {
           const filename = req.file.filename || req.file.originalname;
           // Use the backend origin for CORS compliance
           const backendOrigin = process.env.NODE_ENV === 'production' 
-            ? 'https://talkcart.app' 
+            ? 'https://vetora.app' 
             : 'http://localhost:8000';
           const filePath = `/uploads/${filename}`;
           fileData = {
@@ -512,9 +512,9 @@ router.post('/upload/profile-picture', authenticateToken, (req, res) => {
           const filename = req.file.filename || req.file.originalname;
           // Use the backend origin for CORS compliance
           const backendOrigin = process.env.NODE_ENV === 'production' 
-            ? 'https://talkcart.app' 
+            ? 'https://vetora.app' 
             : 'http://localhost:8000';
-          const filePath = `/uploads/talkcart/${filename}`;
+          const filePath = `/uploads/vetora/${filename}`;
           fileData = {
             public_id: filename,
             secure_url: `${backendOrigin}${filePath}`,
@@ -556,7 +556,7 @@ router.post('/upload/profile-picture', authenticateToken, (req, res) => {
 // @access  Private
 router.post('/upload/url', async (req, res) => {
   try {
-    const { url, folder = 'talkcart', tags = [] } = req.body;
+    const { url, folder = 'vetora', tags = [] } = req.body;
 
     if (!url) {
       return res.status(400).json({
@@ -738,7 +738,7 @@ router.post('/test-upload', (req, res) => {
           const filename = req.file.filename || req.file.originalname;
           // Use the backend origin for CORS compliance
           const backendOrigin = process.env.NODE_ENV === 'production' 
-            ? 'https://talkcart.app' 
+            ? 'https://vetora.app' 
             : 'http://localhost:8000';
           const filePath = `/uploads/${filename}`;
           fileData = {
@@ -870,7 +870,7 @@ router.get('/:publicId/info', async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     const {
-      query = 'folder:talkcart',
+      query = 'folder:vetora',
       maxResults = 30,
       sortBy = 'created_at',
       sortOrder = 'desc'

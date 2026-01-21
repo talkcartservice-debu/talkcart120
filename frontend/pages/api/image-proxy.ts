@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const imageResponse = await fetch(finalUrl, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'TalkCart-Frontend-Proxy/1.0'
+        'User-Agent': 'Vetora-Frontend-Proxy/1.0'
       }
     });
     

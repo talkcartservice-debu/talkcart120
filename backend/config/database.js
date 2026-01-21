@@ -8,7 +8,7 @@ const connectDB = async () => {
     console.log('🔧 Process env MONGODB_URI length:', process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0);
     console.log('🔧 Process env NODE_ENV:', process.env.NODE_ENV);
     console.log('🔧 Process env keys (first 10):', Object.keys(process.env).slice(0, 10).join(', '));
-    const MONGODB_URI = process.env.MONGODB_URI || config.database.uri || 'mongodb://localhost:27017/talkcart';
+    const MONGODB_URI = process.env.MONGODB_URI || config.database.uri || 'mongodb://localhost:27017/vetora';
     
     // Log the actual URI being used (without credentials)
     console.log('🔧 Database: Using MONGODB_URI:', MONGODB_URI.replace(/\/\/.*@/, '//****:****@'));
@@ -20,7 +20,7 @@ const connectDB = async () => {
       console.log('🔧 Database: URI contains mongodb://', MONGODB_URI.includes('mongodb://'));
       console.log('🔧 Database: URI contains mongodb+srv://', MONGODB_URI.includes('mongodb+srv://'));
       console.log('🔧 Database: URI contains cluster0.oguqwli.mongodb.net', MONGODB_URI.includes('cluster0.oguqwli.mongodb.net'));
-      console.log('🔧 Database: URI contains talkcartservice', MONGODB_URI.includes('talkcartservice'));
+      console.log('🔧 Database: URI contains vetoraservice', MONGODB_URI.includes('vetoraservice'));
       
       // Check for special characters
       console.log('🔧 Database: URI contains quotes:', MONGODB_URI.includes('"') || MONGODB_URI.includes("'"));
@@ -38,7 +38,7 @@ const connectDB = async () => {
     }
     
     // Validate that we have a proper MongoDB URI
-    if (!MONGODB_URI || MONGODB_URI === 'mongodb://localhost:27017/talkcart') {
+    if (!MONGODB_URI || MONGODB_URI === 'mongodb://localhost:27017/vetora') {
       if (process.env.NODE_ENV === 'production') {
         console.warn('⚠️ WARNING: Using default localhost MongoDB URI in production! This will not work on Render.');
         console.warn('⚠️ Please set MONGODB_URI environment variable to a cloud MongoDB connection string.');
@@ -62,7 +62,7 @@ const connectDB = async () => {
     console.log('🔧 Database connection details:', {
       hasEnvURI: !!process.env.MONGODB_URI,
       configURI: config.database.uri ? 'SET' : 'NOT SET',
-      usingDefault: MONGODB_URI === 'mongodb://localhost:27017/talkcart',
+      usingDefault: MONGODB_URI === 'mongodb://localhost:27017/vetora',
       environment: process.env.NODE_ENV,
       uriLength: MONGODB_URI.length
     });

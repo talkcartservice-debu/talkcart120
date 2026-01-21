@@ -1015,7 +1015,7 @@ router.post('/products/:id/buy', authenticateTokenStrict, async (req, res) => {
       if (!paymentDetails || (!paymentDetails.tx_ref && !paymentDetails.flw_tx_id)) {
         // If we don't have the details, we need to initialize the payment
         // For now, we'll create a placeholder and expect the client to provide details later
-        orderData.tx_ref = `talkcart-product-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+        orderData.tx_ref = `vetora-product-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
         orderData.status = 'initialized';
       } else {
         // We have the payment details, mark as completed

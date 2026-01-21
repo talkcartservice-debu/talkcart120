@@ -44,7 +44,7 @@ export interface VoiceMessageThemeConfig {
 }
 
 /**
- * Default TalkCart theme configuration
+ * Default Vetora theme configuration
  */
 export const defaultVoiceMessageTheme: VoiceMessageThemeConfig = {
     primaryColor: '#667eea',

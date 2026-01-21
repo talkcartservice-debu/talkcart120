@@ -242,7 +242,7 @@ export default function SignUp() {
                 Create Admin Account
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                Register as a TalkCart Super Administrator
+                Register as a Vetora Super Administrator
               </Typography>
               
               <Stack direction="row" spacing={1} justifyContent="center">
@@ -342,7 +342,7 @@ export default function SignUp() {
                   required
                   fullWidth
                   autoComplete="email"
-                  placeholder="admin@talkcart.com"
+                  placeholder="admin@vetora.com"
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -516,7 +516,7 @@ export default function SignUp() {
             {/* Footer */}
             <Box sx={{ textAlign: 'center', mt: 3 }}>
               <Typography variant="caption" color="text.secondary">
-                TalkCart Super Admin v1.0.0 • Secure Admin Portal
+                Vetora Super Admin v1.0.0 • Secure Admin Portal
               </Typography>
             </Box>
           </Paper>

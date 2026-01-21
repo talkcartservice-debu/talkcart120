@@ -53,7 +53,7 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
 
   // Generate unique transaction reference
   const generateReference = () => {
-    return `talkcart-cart-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    return `vetora-cart-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
   };
 
   const handlePay = async () => {

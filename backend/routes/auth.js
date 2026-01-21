@@ -495,7 +495,7 @@ router.post('/oauth/google', async (req, res) => {
         user = new User({
           username,
           displayName: displayName || username,
-          email: email || `${username}@users.noreply.talkcart.local`,
+          email: email || `${username}@users.noreply.vetora.local`,
           password: Math.random().toString(36).slice(2), // will be hashed, not used for social
           isVerified: true,
           googleId,
@@ -576,7 +576,7 @@ router.post('/oauth/apple', async (req, res) => {
       user = new User({
         username,
         displayName: username,
-        email: emailLower || `${username}@users.noreply.talkcart.local`,
+        email: emailLower || `${username}@users.noreply.vetora.local`,
         password: Math.random().toString(36).slice(2),
         isVerified: true,
         appleId,
@@ -638,7 +638,7 @@ router.post('/biometric/generate-registration-options', ...biometricSecurityStac
     // Generate registration options with enhanced security and platform optimization
     const timeout = parseInt(process.env.WEBAUTHN_TIMEOUT) || 300000; // 5 minutes default
     const options = await generateRegistrationOptions({
-      rpName: process.env.RP_NAME || 'TalkCart',
+      rpName: process.env.RP_NAME || 'Vetora',
       rpID: process.env.RP_ID || 'localhost',
       userID: new Uint8Array(Buffer.from(user._id.toString(), 'utf8')),
       userName: user.email || user.username,

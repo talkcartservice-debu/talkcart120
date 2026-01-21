@@ -1,6 +1,6 @@
-# TalkCart Frontend
+# Vetora Frontend
 
-TalkCart is a Web3 social commerce platform that combines social networking with marketplace functionality.
+Vetora is a Web3 social commerce platform that combines social networking with marketplace functionality.
 
 ## Features
 
@@ -13,7 +13,7 @@ TalkCart is a Web3 social commerce platform that combines social networking with
 
 ## Progressive Web App (PWA)
 
-TalkCart supports installation as a Progressive Web App on mobile devices:
+Vetora supports installation as a Progressive Web App on mobile devices:
 
 - Install the app on your home screen for quick access
 - Native app-like experience with offline functionality

@@ -8,7 +8,7 @@ const cloudinary = new Cloudinary({
 });
 
 // Upload preset for unsigned uploads
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'talkcart_uploads';
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'vetora_uploads';
 
 // Upload URL (using our backend API)
 const UPLOAD_URL = '/api/media/upload/single';

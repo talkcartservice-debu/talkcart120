@@ -9,7 +9,7 @@ export default function Document() {
         {/* Meta tags for SEO and social sharing */}
         <meta name="description" content="The future of Web3 social commerce platform" />
         <meta name="keywords" content="social, commerce, marketplace, chat, video" />
-        <meta name="author" content="TalkCart" />
+        <meta name="author" content="Vetora" />
 
         {/* Favicon */}
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

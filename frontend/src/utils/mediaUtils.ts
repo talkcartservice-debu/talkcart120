@@ -32,8 +32,8 @@ export const normalizeMediaUrl = (urlString: string, resourceType?: string): str
     }
     
     // Fix for malformed Cloudinary URLs that are missing the protocol and domain
-    // Handle cases like: cloudinary/dftpdqd4k/image/upload/talkcart/filename.jpg
-    if (urlString.startsWith('cloudinary/') && urlString.includes('talkcart/')) {
+    // Handle cases like: cloudinary/dftpdqd4k/image/upload/vetora/filename.jpg
+    if (urlString.startsWith('cloudinary/') && urlString.includes('vetora/')) {
       // console.log('🔧 Fixing malformed Cloudinary URL:', urlString);
       const fixedUrl = `https://res.cloudinary.com/${urlString}`;
       // console.log('✅ Fixed Cloudinary URL:', fixedUrl);
@@ -45,10 +45,10 @@ export const normalizeMediaUrl = (urlString: string, resourceType?: string): str
       // console.log('🔧 Localhost URL detected:', urlString);
       let normalizedUrl = urlString;
       
-      // Fix duplicate talkcart path issue even for localhost URLs
-      if (normalizedUrl.includes('/uploads/talkcart/talkcart/')) {
-        // console.log('🔧 Fixing duplicate talkcart path in localhost URL:', normalizedUrl);
-        normalizedUrl = normalizedUrl.replace(/\/uploads\/talkcart\/talkcart\//g, '/uploads/talkcart/');
+      // Fix duplicate vetora path issue even for localhost URLs
+      if (normalizedUrl.includes('/uploads/vetora/vetora/')) {
+        // console.log('🔧 Fixing duplicate vetora path in localhost URL:', normalizedUrl);
+        normalizedUrl = normalizedUrl.replace(/\/uploads\/vetora\/vetora\//g, '/uploads/vetora/');
         // console.log('✅ Fixed localhost URL:', normalizedUrl);
       }
       
@@ -77,10 +77,10 @@ export const normalizeMediaUrl = (urlString: string, resourceType?: string): str
       // console.log('🔧 Processing Cloudinary URL - preserving original');
       let normalizedUrl = urlString;
       
-      // Fix duplicate talkcart path issue in Cloudinary URLs
-      if (normalizedUrl.includes('/talkcart/talkcart/')) {
-        // console.log('🔧 Fixing duplicate talkcart path in Cloudinary URL:', normalizedUrl);
-        normalizedUrl = normalizedUrl.replace(/\/talkcart\/talkcart\//g, '/talkcart/');
+      // Fix duplicate vetora path issue in Cloudinary URLs
+      if (normalizedUrl.includes('/vetora/vetora/')) {
+        // console.log('🔧 Fixing duplicate vetora path in Cloudinary URL:', normalizedUrl);
+        normalizedUrl = normalizedUrl.replace(/\/vetora\/vetora\//g, '/vetora/');
         // console.log('✅ Fixed Cloudinary URL:', normalizedUrl);
       }
       
@@ -112,10 +112,10 @@ export const normalizeMediaUrl = (urlString: string, resourceType?: string): str
     if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
       let normalizedUrl = urlString;
       
-      // Fix duplicate talkcart path issue
-      if (normalizedUrl.includes('/uploads/talkcart/talkcart/')) {
-        // console.log('🔧 Fixing duplicate talkcart path in URL:', normalizedUrl);
-        normalizedUrl = normalizedUrl.replace(/\/uploads\/talkcart\/talkcart\//g, '/uploads/talkcart/');
+      // Fix duplicate vetora path issue
+      if (normalizedUrl.includes('/uploads/vetora/vetora/')) {
+        // console.log('🔧 Fixing duplicate vetora path in URL:', normalizedUrl);
+        normalizedUrl = normalizedUrl.replace(/\/uploads\/vetora\/vetora\//g, '/uploads/vetora/');
         // console.log('✅ Fixed URL:', normalizedUrl);
       }
       
@@ -133,9 +133,9 @@ export const normalizeMediaUrl = (urlString: string, resourceType?: string): str
       let normalizedUrl = urlString;
       
       // Check for malformed URLs with duplicate path segments
-      if (normalizedUrl.includes('/uploads/talkcart/talkcart/')) {
-        // console.log('🔧 Fixing duplicate talkcart path in relative URL:', normalizedUrl);
-        normalizedUrl = normalizedUrl.replace(/\/uploads\/talkcart\/talkcart\//g, '/uploads/talkcart/');
+      if (normalizedUrl.includes('/uploads/vetora/vetora/')) {
+        // console.log('🔧 Fixing duplicate vetora path in relative URL:', normalizedUrl);
+        normalizedUrl = normalizedUrl.replace(/\/uploads\/vetora\/vetora\//g, '/uploads/vetora/');
         // console.log('✅ Fixed relative URL:', normalizedUrl);
       }
       

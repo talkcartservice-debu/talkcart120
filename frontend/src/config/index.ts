@@ -59,7 +59,7 @@ export const FEATURES = {
 
 // App Configuration
 export const APP_CONFIG = {
-  NAME: 'TalkCart',
+  NAME: 'Vetora',
   DESCRIPTION: 'Web3 Social Platform',
   VERSION: '1.0.0',
   THEME_KEY: 'theme',

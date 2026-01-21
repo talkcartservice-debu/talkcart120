@@ -1,9 +1,9 @@
 # Render deployment configuration
-# This file tells Render how to deploy the TalkCart backend service
+# This file tells Render how to deploy the Vetora backend service
 
 services:
   - type: web
-    name: talkcart-backend
+    name: vetora-backend
     runtime: node
     plan: free
     buildCommand: npm install

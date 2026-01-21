@@ -68,7 +68,7 @@ interface PrivacyProviderProps {
   children: ReactNode;
 }
 
-const PRIVACY_STORAGE_KEY = 'talkcart-privacy-settings';
+const PRIVACY_STORAGE_KEY = 'vetora-privacy-settings';
 
 // Default privacy settings (privacy-first approach)
 const defaultPrivacySettings: PrivacySettings = {

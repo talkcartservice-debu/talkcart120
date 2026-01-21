@@ -32,9 +32,9 @@ function normalizeMediaUrl(urlString) {
     // Handle local URLs correctly - check if it's already a valid absolute URL
     if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
       // Check for malformed URLs with duplicate path segments
-      if (urlString.includes('uploads/talkcart/talkcart/')) {
-        // Fix duplicate talkcart path
-        return urlString.replace('uploads/talkcart/talkcart/', 'uploads/talkcart/');
+      if (urlString.includes('uploads/vetora/vetora/')) {
+        // Fix duplicate vetora path
+        return urlString.replace('uploads/vetora/vetora/', 'uploads/vetora/');
       }
       return urlString;
     }
@@ -44,9 +44,9 @@ function normalizeMediaUrl(urlString) {
       // For local development, use localhost:8000 as the base
       // For production, this should be handled by the backend
       // Check for malformed URLs with duplicate path segments
-      if (urlString.includes('/uploads/talkcart/talkcart/')) {
-        // Fix duplicate talkcart path
-        urlString = urlString.replace('/uploads/talkcart/talkcart/', '/uploads/talkcart/');
+      if (urlString.includes('/uploads/vetora/vetora/')) {
+        // Fix duplicate vetora path
+        urlString = urlString.replace('/uploads/vetora/vetora/', '/uploads/vetora/');
       }
       return `http://localhost:8000${urlString}`;
     }
@@ -80,23 +80,23 @@ const testCases = [
   // Valid local URLs (should pass through unchanged)
   {
     name: 'Valid local video URL',
-    url: 'http://localhost:8000/uploads/talkcart/file_1760459532573_hmjwxi463j',
+    url: 'http://localhost:8000/uploads/vetora/file_1760459532573_hmjwxi463j',
     expectedValid: true,
-    expectedNormalized: 'http://localhost:8000/uploads/talkcart/file_1760459532573_hmjwxi463j'
+    expectedNormalized: 'http://localhost:8000/uploads/vetora/file_1760459532573_hmjwxi463j'
   },
   
   // Duplicate path URLs (should be fixed)
   {
     name: 'Duplicate path video URL',
-    url: 'http://localhost:8000/uploads/talkcart/talkcart/file_1760446946793_ix9n9oc37qk',
+    url: 'http://localhost:8000/uploads/vetora/vetora/file_1760446946793_ix9n9oc37qk',
     expectedValid: true,
-    expectedNormalized: 'http://localhost:8000/uploads/talkcart/file_1760446946793_ix9n9oc37qk'
+    expectedNormalized: 'http://localhost:8000/uploads/vetora/file_1760446946793_ix9n9oc37qk'
   },
   {
     name: 'Relative duplicate path URL',
-    url: '/uploads/talkcart/talkcart/file_1760446946793_ix9n9oc37qk',
+    url: '/uploads/vetora/vetora/file_1760446946793_ix9n9oc37qk',
     expectedValid: false, // Relative URLs are not valid by themselves
-    expectedNormalized: 'http://localhost:8000/uploads/talkcart/file_1760446946793_ix9n9oc37qk'
+    expectedNormalized: 'http://localhost:8000/uploads/vetora/file_1760446946793_ix9n9oc37qk'
   },
   
   // Regular valid URLs
@@ -185,7 +185,7 @@ const knownMissingPatterns = [
 
 console.log('Testing known missing file pattern detection:');
 knownMissingPatterns.forEach((pattern, index) => {
-  const testUrl = `http://localhost:8000/uploads/talkcart/${pattern}`;
+  const testUrl = `http://localhost:8000/uploads/vetora/${pattern}`
   const containsPattern = testUrl.includes(pattern);
   console.log(`  Pattern ${index + 1}: ${pattern} - Detected: ${containsPattern ? 'YES ✓' : 'NO ✗'}`);
 });

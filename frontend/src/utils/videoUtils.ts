@@ -99,10 +99,10 @@ export const normalizeMediaUrl = (urlString: string, resourceType?: string): str
     if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
       let normalizedUrl = urlString;
       
-      // Fix duplicate talkcart path issue
-      if (normalizedUrl.includes('/uploads/talkcart/talkcart/')) {
-        console.log('🔧 Fixing duplicate talkcart path in URL:', normalizedUrl);
-        normalizedUrl = normalizedUrl.replace(/\/uploads\/talkcart\/talkcart\//g, '/uploads/talkcart/');
+      // Fix duplicate vetora path issue
+      if (normalizedUrl.includes('/uploads/vetora/vetora/')) {
+        console.log('🔧 Fixing duplicate vetora path in URL:', normalizedUrl);
+        normalizedUrl = normalizedUrl.replace(/\/uploads\/vetora\/vetora\//g, '/uploads/vetora/');
         console.log('✅ Fixed URL:', normalizedUrl);
       }
       
@@ -136,9 +136,9 @@ export const normalizeMediaUrl = (urlString: string, resourceType?: string): str
       let normalizedUrl = urlString;
       
       // Check for malformed URLs with duplicate path segments
-      if (normalizedUrl.includes('/uploads/talkcart/talkcart/')) {
-        console.log('🔧 Fixing duplicate talkcart path in relative URL:', normalizedUrl);
-        normalizedUrl = normalizedUrl.replace(/\/uploads\/talkcart\/talkcart\//g, '/uploads/talkcart/');
+      if (normalizedUrl.includes('/uploads/vetora/vetora/')) {
+        console.log('🔧 Fixing duplicate vetora path in relative URL:', normalizedUrl);
+        normalizedUrl = normalizedUrl.replace(/\/uploads\/vetora\/vetora\//g, '/uploads/vetora/');
         console.log('✅ Fixed relative URL:', normalizedUrl);
       }
       

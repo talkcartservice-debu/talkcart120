@@ -90,7 +90,7 @@ router.post('/signup', async (req, res) => {
     
     // If admin exists, require admin key
     if (existingAdmin) {
-      const ADMIN_SIGNUP_KEY = process.env.ADMIN_SIGNUP_KEY || 'talkcart-admin-2024';
+      const ADMIN_SIGNUP_KEY = process.env.ADMIN_SIGNUP_KEY || 'vetora-admin-2024';
       
       if (!adminKey || adminKey !== ADMIN_SIGNUP_KEY) {
         return res.status(403).json({

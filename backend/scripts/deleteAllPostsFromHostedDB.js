@@ -22,7 +22,7 @@ async function deleteAllPostsFromHostedDB() {
     console.log('🚀 Starting database connection...');
     
     // Connect to MongoDB using the environment variable (this will work in hosted environment)
-    const dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/talkcart';
+    const dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/vetora';
     console.log(`🔗 Connecting to database: ${dbUri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')}`);
     
     await mongoose.connect(dbUri, {

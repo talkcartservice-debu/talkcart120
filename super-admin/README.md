@@ -1,6 +1,6 @@
-# TalkCart Super Admin Panel
+# Vetora Super Admin Panel
 
-A comprehensive administration dashboard built with Next.js for managing the TalkCart platform.
+A comprehensive administration dashboard built with Next.js for managing the Vetora platform.
 
 ## 🏗️ Architecture Overview
 

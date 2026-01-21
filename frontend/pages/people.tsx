@@ -79,8 +79,8 @@ const PeoplePage: NextPage = () => {
   return (
     <Layout>
       <Head>
-        <title>Discover People - TalkCart</title>
-        <meta name="description" content="Discover and connect with amazing people on TalkCart. Find new friends, follow interesting users, and expand your network." />
+        <title>Discover People - Vetora</title>
+        <meta name="description" content="Discover and connect with amazing people on Vetora. Find new friends, follow interesting users, and expand your network." />
       </Head>
 
       <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -202,7 +202,7 @@ const PeoplePage: NextPage = () => {
                 <TabPanel value={tabValue} index={2}>
                   <Box sx={{ px: 3 }}>
                     <Typography variant="h6" gutterBottom>
-                      New to TalkCart
+                      New to Vetora
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                       Welcome new community members

@@ -31,9 +31,9 @@ const normalizeMediaUrl = (urlString) => {
     // Handle local URLs correctly - check if it's already a valid absolute URL
     if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
       // Check for malformed URLs with duplicate path segments
-      if (urlString.includes('uploads/talkcart/talkcart/')) {
-        // Fix duplicate talkcart path
-        return urlString.replace('uploads/talkcart/talkcart/', 'uploads/talkcart/');
+      if (urlString.includes('uploads/vetora/vetora/')) {
+        // Fix duplicate vetora path
+        return urlString.replace('uploads/vetora/vetora/', 'uploads/vetora/');
       }
       return urlString;
     }
@@ -43,9 +43,9 @@ const normalizeMediaUrl = (urlString) => {
       // For local development, use localhost:8000 as the base
       // For production, this should be handled by the backend
       // Check for malformed URLs with duplicate path segments
-      if (urlString.includes('/uploads/talkcart/talkcart/')) {
-        // Fix duplicate talkcart path
-        urlString = urlString.replace('/uploads/talkcart/talkcart/', '/uploads/talkcart/');
+      if (urlString.includes('/uploads/vetora/vetora/')) {
+        // Fix duplicate vetora path
+        urlString = urlString.replace('/uploads/vetora/vetora/', '/uploads/vetora/');
       }
       return `http://localhost:8000${urlString}`;
     }
@@ -84,7 +84,7 @@ const debugMediaItem = (mediaItem) => {
   // Additional checks
   if (normalized) {
     console.log('Starts with http:', normalized.startsWith('http://') || normalized.startsWith('https://'));
-    console.log('Contains uploads/talkcart/talkcart:', normalized.includes('uploads/talkcart/talkcart/'));
+    console.log('Contains uploads/vetora/vetora:', normalized.includes('uploads/vetora/vetora/'));
   }
   
   console.log('===========================\n');
@@ -95,17 +95,17 @@ const testCases = [
   // Case 1: Duplicate path issue
   {
     id: 'test1',
-    secure_url: 'http://localhost:8000/uploads/talkcart/talkcart/file_1760446946793_ix9n9oc37qk',
+    secure_url: 'http://localhost:8000/uploads/vetora/vetora/file_1760446946793_ix9n9oc37qk',
     resource_type: 'video',
-    public_id: 'talkcart/file_1760446946793_ix9n9oc37qk'
+    public_id: 'vetora/file_1760446946793_ix9n9oc37qk'
   },
   
   // Case 2: Valid local URL
   {
     id: 'test2',
-    secure_url: 'http://localhost:8000/uploads/talkcart/file_1760459532573_hmjwxi463j',
+    secure_url: 'http://localhost:8000/uploads/vetora/file_1760459532573_hmjwxi463j',
     resource_type: 'video',
-    public_id: 'talkcart/file_1760459532573_hmjwxi463j'
+    public_id: 'vetora/file_1760459532573_hmjwxi463j'
   },
   
   // Case 3: Cloudinary URL
@@ -120,7 +120,7 @@ const testCases = [
   {
     id: 'test4',
     resource_type: 'video',
-    public_id: 'talkcart/missing-file'
+    public_id: 'vetora/missing-file'
   },
   
   // Case 5: Invalid URL format
@@ -128,7 +128,7 @@ const testCases = [
     id: 'test5',
     secure_url: 'invalid-url-format',
     resource_type: 'video',
-    public_id: 'talkcart/invalid-url'
+    public_id: 'vetora/invalid-url'
   }
 ];
 

@@ -8,21 +8,21 @@ console.warn = jest.fn();
 
 describe('UnifiedImageMedia', () => {
   it('renders without crashing', () => {
-    render(<UnifiedImageMedia src="http://localhost:8000/uploads/talkcart/test.jpg" alt="Test image" />);
+    render(<UnifiedImageMedia src="http://localhost:8000/uploads/vetora/test.jpg" alt="Test image" />);
     expect(screen.getByRole('img')).toBeInTheDocument();
   });
 
   it('handles localhost URLs correctly', () => {
     const { container } = render(
       <UnifiedImageMedia 
-        src="http://localhost:8000/uploads/talkcart/file_1762529225547_3uzoa3u7b7o.jpg" 
+        src="http://localhost:8000/uploads/vetora/file_1762529225547_3uzoa3u7b7o.jpg" 
         alt="Localhost image" 
       />
     );
     
     const img = container.querySelector('img');
     expect(img).toBeInTheDocument();
-    expect(img?.src).toBe('http://localhost:8000/uploads/talkcart/file_1762529225547_3uzoa3u7b7o.jpg');
+    expect(img?.src).toBe('http://localhost:8000/uploads/vetora/file_1762529225547_3uzoa3u7b7o.jpg');
   });
 
   it('handles error states gracefully', () => {
@@ -43,7 +43,7 @@ describe('UnifiedImageMedia', () => {
     
     const { container } = render(
       <UnifiedImageMedia 
-        src="http://localhost:8000/uploads/talkcart/nonexistent.jpg" 
+        src="http://localhost:8000/uploads/vetora/nonexistent.jpg" 
         alt="Non-existent image" 
       />
     );

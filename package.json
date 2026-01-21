@@ -1,7 +1,7 @@
 {
-  "name": "talkcart",
+  "name": "vetora",
   "version": "1.0.0",
-  "description": "TalkCart - Web3 Super Application",
+  "description": "Vetora - Web3 Super Application",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

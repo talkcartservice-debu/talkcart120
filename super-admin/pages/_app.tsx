@@ -16,7 +16,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={theme}>
       <Head>
-        <title>TalkCart Super Admin</title>
+        <title>Vetora Super Admin</title>
       </Head>
       <CssBaseline />
       <ToastProvider />

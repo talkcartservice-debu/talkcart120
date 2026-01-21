@@ -473,7 +473,7 @@ export default function FeatureShowcaseBackground() {
                 mb: 2,
               }}
             >
-              TalkCart
+              Vetora
             </Typography>
             <Typography
               variant="h4"

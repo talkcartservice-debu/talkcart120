@@ -444,10 +444,10 @@ app.use('/uploads', (req, res, next) => {
     const fallbackFilename = 'file_1760472876401_eul3ctkpyr8.mp4';
     const candidates = [
       path.join(uploadsDir, fallbackFilename),
-      path.join(uploadsDir, 'talkcart', fallbackFilename),
+      path.join(uploadsDir, 'vetora', fallbackFilename),
       path.join(uploadsDir, 'placeholder.png'), // New: generic placeholder
-      path.join(uploadsDir, 'talkcart', 'placeholder-image.png'), // New: specific image placeholder
-      path.join(uploadsDir, 'talkcart', 'placeholder-video.png'), // New: specific video placeholder
+      path.join(uploadsDir, 'vetora', 'placeholder-image.png'), // New: specific image placeholder
+      path.join(uploadsDir, 'vetora', 'placeholder-video.png'), // New: specific video placeholder
       path.join(uploadsDir, 'placeholder-image.png'), // Fallback to image placeholder
       path.join(uploadsDir, 'placeholder-video.png'), // Fallback to video placeholder
       path.join(__dirname, '..', 'frontend', 'public', 'images', 'placeholder-image-new.png'), // Frontend placeholder
@@ -861,7 +861,7 @@ setTimeout(updateAndEmitTrendingHashtags, 5000);
 // Root route - API documentation
 app.get('/', (req, res) => {
   res.json({
-    name: 'TalkCart API',
+    name: 'Vetora API',
     version: '1.0.0',
     description: 'Web3 Super Application Backend API',
     status: 'running',
@@ -1026,7 +1026,7 @@ const initializeApp = async () => {
     // Start server
     console.log(`🔧 Attempting to start server on ${HOST}:${PORT}...`);
     const serverInstance = server.listen(PORT, HOST, () => {
-      console.log(`🚀 TalkCart Backend Started on http://${HOST}:${PORT}`);
+      console.log(`🚀 Vetora Backend Started on http://${HOST}:${PORT}`);
       console.log(`📊 Environment: ${config.server.env}`);
       if (!dbConnection) {
         console.warn('⚠️ Warning: Application running without database connection');
@@ -1054,7 +1054,7 @@ const initializeApp = async () => {
       // Start server even without DB connection in production
       console.log('🔧 Attempting to start server without database connection...');
       const serverInstance = server.listen(PORT, HOST, () => {
-        console.log(`🚀 TalkCart Backend Started on http://${HOST}:${PORT}`);
+        console.log(`🚀 Vetora Backend Started on http://${HOST}:${PORT}`);
         console.log(`📊 Environment: ${config.server.env}`);
         console.warn('⚠️ Warning: Application running without database connection');
       });

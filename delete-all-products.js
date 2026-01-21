@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const Product = require('./models/Product');
 
 // MongoDB connection string - adjust as needed for your environment
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/talkcart';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vetora';
 
 async function deleteAllProducts() {
   try {

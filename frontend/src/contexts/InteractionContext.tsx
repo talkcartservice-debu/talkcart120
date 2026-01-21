@@ -126,7 +126,7 @@ interface InteractionProviderProps {
   children: React.ReactNode;
 }
 
-const INTERACTION_STORAGE_KEY = 'talkcart-interaction-settings';
+const INTERACTION_STORAGE_KEY = 'vetora-interaction-settings';
 
 // Default interaction settings
 const defaultInteractionSettings: InteractionSettings = {

@@ -39,7 +39,7 @@ const initializeDatabase = async () => {
 
 const initDatabase = async () => {
   try {
-    console.log('🚀 Initializing TalkCart Database...');
+    console.log('🚀 Initializing Vetora Database...');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     await connectDB();

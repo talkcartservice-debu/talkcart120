@@ -53,18 +53,18 @@ const EMAIL_TEMPLATES = [
 ];
 
 const TEMPLATE_SUBJECTS = {
-  'admin-notification': 'Important Notice from TalkCart Admin',
-  'welcome': 'Welcome to TalkCart!',
+  'admin-notification': 'Important Notice from Vetora Admin',
+  'welcome': 'Welcome to Vetora!',
   'verification': 'Account Verification Required',
   'suspension': 'Account Status Update',
-  'promotion': 'Special Offer from TalkCart',
+  'promotion': 'Special Offer from Vetora',
   'custom': ''
 };
 
 const TEMPLATE_MESSAGES = {
-  'admin-notification': 'We are reaching out to inform you about an important update regarding your TalkCart account.',
-  'welcome': 'Welcome to TalkCart! We\'re excited to have you as part of our community.',
-  'verification': 'Please verify your account to continue using TalkCart services.',
+  'admin-notification': 'We are reaching out to inform you about an important update regarding your Vetora account.',
+  'welcome': 'Welcome to Vetora! We\'re excited to have you as part of our community.',
+  'verification': 'Please verify your account to continue using Vetora services.',
   'suspension': 'We are writing to inform you about a change in your account status.',
   'promotion': 'Don\'t miss out on our latest offers and promotions!',
   'custom': ''

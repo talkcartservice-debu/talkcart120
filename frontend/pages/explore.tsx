@@ -70,14 +70,14 @@ const ExplorePage: NextPage = () => {
   return (
     <Layout>
       <Head>
-        <title>Explore Public Posts - TalkCart</title>
+        <title>Explore Public Posts - Vetora</title>
         <meta 
           name="description" 
-          content="Discover amazing public content from the TalkCart community. See what people are sharing and talking about." 
+          content="Discover amazing public content from the Vetora community. See what people are sharing and talking about."
         />
         <meta name="keywords" content="social media, public posts, community, discover, trending" />
-        <meta property="og:title" content="Explore Public Posts - TalkCart" />
-        <meta property="og:description" content="Discover amazing public content from the TalkCart community." />
+        <meta property="og:title" content="Explore Public Posts - Vetora" />
+        <meta property="og:description" content="Discover amazing public content from the Vetora community." />
         <meta property="og:type" content="website" />
       </Head>
 

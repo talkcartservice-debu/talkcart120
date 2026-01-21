@@ -75,7 +75,7 @@ const testEndpoint = async (name, method, endpoint, data = null, expectedStatus 
 };
 
 const runTests = async () => {
-  console.log('🚀 Starting Talkcart Advertising System Endpoint Tests\n');
+  console.log('🚀 Starting Vetora Advertising System Endpoint Tests\n');
   
   // Health check
   await testEndpoint('Ads Service Health Check', 'get', '/ads/health', null, 200);

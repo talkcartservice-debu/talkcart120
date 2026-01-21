@@ -9,8 +9,8 @@ export default function DAOPage() {
   return (
     <>
       <Head>
-        <title>DAO Governance - TalkCart</title>
-        <meta name="description" content="Participate in TalkCart's decentralized governance and shape the future of the platform." />
+        <title>DAO Governance - Vetora</title>
+        <meta name="description" content="Participate in Vetora's decentralized governance and shape the future of the platform." />
       </Head>
 
       <AppLayout requireAuth showNavigation>
@@ -22,7 +22,7 @@ export default function DAOPage() {
                 DAO Governance
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Shape the future of TalkCart through decentralized governance
+                Shape the future of Vetora through decentralized governance
               </Typography>
             </Box>
 

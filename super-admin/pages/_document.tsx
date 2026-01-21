@@ -18,7 +18,7 @@ export default function Document() {
         {/* Meta tags */}
         <meta name="viewport" content="initial-scale=1, width=device-width" />
         <meta name="theme-color" content="#6366f1" />
-        <meta name="description" content="TalkCart Super Admin Dashboard - Manage your marketplace with ease" />
+        <meta name="description" content="Vetora Super Admin Dashboard - Manage your marketplace with ease" />
       </Head>
       <body>
         <Main />

@@ -55,7 +55,7 @@ const WalletConnectDialog: React.FC<WalletConnectDialogProps> = ({ open, onClose
       setStep('signing');
 
       // Create message to sign for authentication
-      const message = `Welcome to TalkCart!
+      const message = `Welcome to Vetora!
 
 Please sign this message to verify your wallet ownership.
 
@@ -230,7 +230,7 @@ Timestamp: ${Date.now()}`;
                         Security Notice
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        TalkCart will never ask for your private keys or seed phrase. 
+                        Vetora will never ask for your private keys or seed phrase. 
                         Only connect wallets you trust and verify the URL before signing any transactions.
                       </Typography>
                     </Box>
@@ -304,7 +304,7 @@ Timestamp: ${Date.now()}`;
                   Wallet Connected!
                 </Typography>
                 <Typography variant="body2" color="text.secondary" textAlign="center">
-                  Your wallet has been successfully connected to TalkCart. 
+                  Your wallet has been successfully connected to Vetora.
                   You can now access all Web3 features.
                 </Typography>
                 {address && (

@@ -180,10 +180,10 @@ export default function SettingsAdmin() {
         });
         
         setSystemSettings({
-          siteName: 'TalkCart',
+          siteName: 'Vetora',
           siteDescription: 'Web3 Marketplace',
-          contactEmail: 'admin@talkcart.com',
-          supportEmail: 'support@talkcart.com',
+          contactEmail: 'admin@vetora.com',
+          supportEmail: 'support@vetora.com',
           timezone: 'UTC',
           dateFormat: 'MM/DD/YYYY',
           timeFormat: 'HH:mm',
@@ -359,10 +359,10 @@ export default function SettingsAdmin() {
             break;
           case 'system':
             setSystemSettings({
-              siteName: 'TalkCart',
+              siteName: 'Vetora',
               siteDescription: 'Web3 Marketplace',
-              contactEmail: 'admin@talkcart.com',
-              supportEmail: 'support@talkcart.com',
+              contactEmail: 'admin@vetora.com',
+              supportEmail: 'support@vetora.com',
               timezone: 'UTC',
               dateFormat: 'MM/DD/YYYY',
               timeFormat: 'HH:mm',

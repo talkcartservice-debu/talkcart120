@@ -331,7 +331,7 @@ export const SidebarComponent: React.FC<SidebarProps> = ({
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-                TalkCart
+                Vetora
               </Typography>
               <Typography variant="caption" color="text.secondary" fontWeight={500}>
                 E_social Platform
@@ -535,7 +535,7 @@ export const SidebarComponent: React.FC<SidebarProps> = ({
             >
               <CardContent sx={{ p: 2, textAlign: 'center', '&:last-child': { pb: 2 } }}>
                 <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
-                  Join TalkCart Today
+                  Join Vetora Today
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   Connect, trade, and explore Web3
