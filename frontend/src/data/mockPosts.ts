@@ -129,7 +129,7 @@ export const mockPosts: Post[] = [
       avatar: 'https://randomuser.me/api/portraits/women/17.jpg',
       verified: true,
     },
-    content: 'Just published my article on the future of Web3 social platforms on Vetora's blog section. Would love your feedback! #Web3 #ContentCreation #Feedback'
+    content: 'Just published my article on the future of Web3 social platforms on Vetora\'s blog section. Would love your feedback! #Web3 #ContentCreation #Feedback',
     createdAt: '2023-06-10T15:55:00Z',
     likes: 276,
     comments: 63,
@@ -138,6 +138,6 @@ export const mockPosts: Post[] = [
     trending: true,
     favorite: true,
     fromFollowing: true,
-    global: true
+    global: true,
   }
 ];

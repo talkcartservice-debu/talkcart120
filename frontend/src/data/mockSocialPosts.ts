@@ -163,7 +163,7 @@ export const mockSocialPosts: SocialPost[] = [
   },
   {
     id: '6',
-    content: 'Just published my article on the future of Web3 social platforms on Vetora's blog section. Would love your feedback! #Web3 #ContentCreation #Feedback'
+    content: 'Just published my article on the future of Web3 social platforms on Vetora\'s blog section. Would love your feedback! #Web3 #ContentCreation #Feedback',
     author: {
       id: 'user6',
       name: 'Olivia Taylor',
@@ -178,6 +178,6 @@ export const mockSocialPosts: SocialPost[] = [
     liked: true,
     bookmarked: true,
     tags: ['Web3', 'ContentCreation', 'Feedback'],
-    privacy: 'public'
-  }
+    privacy: 'public',
+  },
 ];
