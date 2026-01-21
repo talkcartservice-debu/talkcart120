@@ -120,14 +120,27 @@ backend/
 
 ### Available Scripts
 
+#### Core Scripts
 - `npm start` - Start production server
 - `npm run dev` - Start development server with nodemon
 - `npm run lint` - Run linter
+
+#### Database Management Scripts
 - `npm run init-db` - Initialize database with seed data
 - `npm run init-defi` - Initialize DeFi data
 - `npm run reset-db` - Reset database
-- `npm run check-admin` - Check admin users
 - `npm run optimize-db` - Optimize database
+
+#### Post Management Scripts (in scripts/ directory)
+- `node scripts/managePosts.js delete` - Delete all posts and related data
+- `node scripts/managePosts.js delete --silent` - Delete posts without confirmation
+- `node scripts/managePosts.js verify` - Verify database cleanup status
+- `node scripts/managePosts.js help` - Show help information
+
+#### Other Utility Scripts
+- `npm run check-admin` - Check admin users
+- `node scripts/seedDatabase.js` - Seed database with initial data
+- `node scripts/optimizeDatabase.js` - Optimize database indexes and performance
 
 ### Environment Variables
 

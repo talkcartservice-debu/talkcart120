@@ -159,10 +159,10 @@ class EmailService {
   async sendEmail({ to, subject, message, template = 'admin-notification', user }) {
     try {
       const emailData = {
-        from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@vetora.com'
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@vetora.com',
         to: to,
         subject: subject,
-        html: this.generateEmailTemplate(template, { user, message, subject })
+        html: this.generateEmailTemplate(template, { user, message, subject }),
       };
 
       if (this.isConfigured && this.transporter) {

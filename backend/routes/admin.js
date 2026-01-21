@@ -3113,7 +3113,7 @@ router.post('/users/:id/send-email', authenticateTokenStrict, requireAdmin, asyn
       message,
       template,
       sentBy: req.user.userId,
-      sentByEmail: req.user.email || 'admin@vetora.com'
+      sentByEmail: req.user.email || 'admin@vetora.com',
       status: 'pending'
     };
 
