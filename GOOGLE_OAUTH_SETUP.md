@@ -1,59 +1,78 @@
-# Google OAuth Setup Guide
+# Google OAuth Setup Instructions
 
-This guide explains how to set up Google OAuth for the Vetora application.
+This document explains how to properly configure Google OAuth for the Vetora application.
 
-## Step 1: Create Google OAuth Credentials
+## Required Configuration in Google Cloud Console
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable the Google+ API (or Google People API) for your project
-4. Go to "Credentials" in the left sidebar
-5. Click "Create Credentials" > "OAuth 2.0 Client IDs"
-6. For application type, select "Web application"
-7. Add authorized redirect URIs:
-   - For local development: `http://localhost:4000/auth/login`, `http://localhost:4000/auth/register`
-   - For production: `https://yourdomain.com/auth/login`, `https://yourdomain.com/auth/register`
-8. Add authorized JavaScript origins:
-   - For local development: `http://localhost:4000`
-   - For production: `https://yourdomain.com`
+### 1. Create/Edit OAuth 2.0 Client ID
+Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Credentials → OAuth 2.0 Client IDs
 
-## Step 2: Configure Environment Variables
+### 2. Configure Authorized JavaScript Origins
+Add the following origins based on your environment:
 
-### Backend Configuration
+**Development:**
+- `http://localhost:3000`
+- `http://localhost:4000`
+- `http://localhost:4100`
+- `http://localhost:8000`
+- `https://localhost:3000`
+- `https://localhost:4000`
+- `https://localhost:4100`
+- `https://localhost:8000`
 
-In your backend `.env` file, add:
+**Production:**
+- Your production domain (e.g., `https://vetora.yourdomain.com`)
+- Any other domains where the app will be hosted
 
-```env
-GOOGLE_CLIENT_ID=your-google-client-id-from-google-cloud-console
+### 3. Configure Authorized Redirect URIs (if needed)
+Though the current implementation uses Google Identity Services (One Tap) which doesn't require redirects, you might want to add:
+- `http://localhost:3000/auth/callback`
+- `http://localhost:4000/auth/callback`
+- Your production callback URLs
+
+### 4. Application Type
+- **Application type:** Web application
+- **Client ID:** `526100733591-id3kqhm1t13gtbpqii8kihmn8u5k3kh5.apps.googleusercontent.com` (or your new client ID)
+- **Client Secret:** (keep this secure)
+
+### 5. Domain Verification (if needed)
+If you encounter issues, make sure your domains are verified in Google Search Console.
+
+## Environment Variables
+
+### Backend (.env)
+```bash
+# OAuth Configuration
+GOOGLE_CLIENT_ID=526100733591-id3kqhm1t13gtbpqii8kihmn8u5k3kh5.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=  # Only needed for some OAuth flows
 ```
 
-### Frontend Configuration
-
-In your frontend `.env.local` file, add:
-
-```env
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id-from-google-cloud-console
+### Frontend (.env.local)
+```bash
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=526100733591-id3kqhm1t13gtbpqii8kihmn8u5k3kh5.apps.googleusercontent.com
 ```
 
-## Step 3: Update Your Application
+## Troubleshooting Common Issues
 
-Once you've set up the environment variables, the Google OAuth login should work properly. The application will:
+### "Access blocked: Authorization Error" / "no registered origin"
+- Verify all JavaScript origins are added in Google Cloud Console
+- Make sure the domains match exactly (including http/https)
+- Check that the client ID is exactly the same in both backend and frontend
 
-1. Use the client ID to initialize Google Identity Services
-2. Verify the ID token with Google's tokeninfo endpoint
-3. Match the audience of the token with your client ID for security
-4. Create or update user accounts based on the Google authentication
+### "Error 401: invalid_client"
+- Ensure the client ID is properly configured
+- Verify the application type is set to "Web application"
+- Check that the OAuth consent screen is properly configured
 
-## Common Issues and Troubleshooting
+### Development vs Production
+Remember to update your Google Cloud Console configuration when moving from development to production, adding your production domains as authorized origins.
 
-1. **"Access blocked: Authorization Error"**: This usually means the client ID is not properly configured or the domain is not authorized in the Google Cloud Console.
+## Testing the Configuration
 
-2. **"Invalid Google token (aud mismatch)"**: This error occurs when the audience of the ID token doesn't match the expected client ID. Make sure the `GOOGLE_CLIENT_ID` environment variable matches exactly what's in your Google Cloud Console.
+1. Start your backend server
+2. Start your frontend development server
+3. Navigate to the login page
+4. Click the Google Sign-In button
+5. The Google One Tap should appear and allow sign-in
 
-3. **Script loading errors**: Make sure your domain is properly added as an authorized JavaScript origin in the Google Cloud Console.
-
-## Security Notes
-
-- Keep your client ID secure and do not expose it unnecessarily
-- The application verifies the audience of the ID token to prevent token misuse
-- All Google OAuth requests are validated server-side for security
+If you continue to have issues, check the browser console and server logs for more detailed error messages.
