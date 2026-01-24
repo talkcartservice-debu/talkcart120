@@ -14,6 +14,13 @@ Add the following origins based on your environment:
 - `http://localhost:4000`
 - `https://vetora.vercel.app`
 
+**IMPORTANT: Check All Access Domains**
+If you're still getting "no registered origin" errors, you might be accessing the application from a domain that isn't registered. Common domains that need to be added:
+- `http://localhost:3000` (if using port 3000)
+- `http://localhost:4100` (if using port 4100)
+- `http://localhost:8000` (if accessing backend directly)
+- Your production domain
+
 **Note:** Update these as needed based on your deployment setup.
 
 ### 3. Configure Authorized Redirect URIs
@@ -48,9 +55,19 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=526100733591-id3kqhm1t13gtbpqii8kihmn8u5k3kh5.apps.
 ## Troubleshooting Common Issues
 
 ### "Access blocked: Authorization Error" / "no registered origin"
-- Verify all JavaScript origins are added in Google Cloud Console
+- Verify ALL JavaScript origins are added in Google Cloud Console
+- Make sure the domain you're accessing the site from is in the list (check browser address bar)
 - Make sure the domains match exactly (including http/https)
 - Check that the client ID is exactly the same in both backend and frontend
+
+### How to Identify the Problem Domain
+1. Open your application in the browser where you're experiencing the error
+2. Look at the URL in your browser's address bar - this is the domain that needs to be registered
+3. Go to Google Cloud Console and verify this exact domain is listed in "Authorized JavaScript Origins"
+4. Common examples:
+   - If accessing from `http://localhost:3000`, then `http://localhost:3000` must be registered
+   - If accessing from `http://localhost:4000`, then `http://localhost:4000` must be registered
+   - If accessing from `https://yourdomain.vercel.app`, then `https://yourdomain.vercel.app` must be registered
 
 ### "Error 401: invalid_client"
 - Ensure the client ID is properly configured
