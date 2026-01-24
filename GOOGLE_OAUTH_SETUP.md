@@ -10,25 +10,18 @@ Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Crede
 ### 2. Configure Authorized JavaScript Origins
 Add the following origins based on your environment:
 
-**Development:**
-- `http://localhost:3000`
+**Your Current Configuration:**
 - `http://localhost:4000`
-- `http://localhost:4100`
-- `http://localhost:8000`
-- `https://localhost:3000`
-- `https://localhost:4000`
-- `https://localhost:4100`
-- `https://localhost:8000`
+- `https://vetora.vercel.app`
 
-**Production:**
-- Your production domain (e.g., `https://vetora.yourdomain.com`)
-- Any other domains where the app will be hosted
+**Note:** Update these as needed based on your deployment setup.
 
-### 3. Configure Authorized Redirect URIs (if needed)
-Though the current implementation uses Google Identity Services (One Tap) which doesn't require redirects, you might want to add:
-- `http://localhost:3000/auth/callback`
-- `http://localhost:4000/auth/callback`
-- Your production callback URLs
+### 3. Configure Authorized Redirect URIs
+For your current setup, you have configured:
+- `https://vetora.vercel.app/auth/login`
+- `http://localhost:4000/auth/login`
+
+These are properly set for your deployment.
 
 ### 4. Application Type
 - **Application type:** Web application
