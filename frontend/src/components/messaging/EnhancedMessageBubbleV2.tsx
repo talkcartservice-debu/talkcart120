@@ -298,11 +298,19 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
         return undefined;
     }, [isRead, message.id, message.isOwn]);
 
-    const handleDelete = async () => {
-        if (onDelete) {
-            await onDelete(message.id);
+    const handleDelete = async (): Promise<boolean> => {
+        try {
+            if (onDelete) {
+                const result = await onDelete(message.id);
+                handleMenuClose();
+                return result;
+            }
+            handleMenuClose();
+            return true;
+        } catch (error) {
+            console.error('Error deleting message:', error);
+            return false;
         }
-        handleMenuClose();
     };
 
     const handleReaction = async (emoji: string) => {
@@ -434,6 +442,28 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
             return null;
         }
 
+        // Check if this is an audio message to use the specialized VoiceMessageBubble
+        const audioMedia = message.media.find(media => media.type === 'audio');
+        
+        if (audioMedia) {
+            // Use VoiceMessageBubble for audio messages
+            return (
+                <VoiceMessageBubble
+                    audioUrl={audioMedia.url}
+                    filename={audioMedia.filename || 'Voice Message'}
+                    duration={audioMedia.duration}
+                    fileSize={audioMedia.fileSize}
+                    isOwn={message.isOwn}
+                    timestamp={message.createdAt}
+                    onReply={onReply}
+                    onForward={onForward}
+                    onDelete={message.isOwn ? () => handleDelete() : undefined}
+                    onDownload={() => window.open(audioMedia.url, '_blank')}
+                />
+            );
+        }
+
+        // Use MediaMessageContainer for other media types (images, videos, files)
         return (
             <MediaMessageContainer
                 message={message}

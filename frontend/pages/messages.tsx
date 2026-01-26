@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import {
   Box,
   Container,
@@ -33,6 +33,7 @@ import {
   ListItemIcon,
   Tooltip,
 } from '@mui/material';
+
 import {
   Search,
   Send,
@@ -954,7 +955,9 @@ const MessagesPage: React.FC = () => {
               backgroundColor: theme.palette.background.paper,
               flexShrink: { xs: 0, sm: 0 },
               minHeight: { xs: 0, sm: 'auto' },
-              transition: 'all 0.3s ease-in-out'
+              transition: 'all 0.3s ease-in-out',
+              // Better mobile scrolling behavior
+              WebkitOverflowScrolling: 'touch'
             }}
           >
             <Box sx={{ p: { xs: 1, sm: 2 }, borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.background.paper }}>
@@ -993,7 +996,7 @@ const MessagesPage: React.FC = () => {
             </Box>
             <Divider sx={{ display: { xs: 'block', sm: 'none' } }} />
 
-            <Box sx={{ flexGrow: 1, overflow: 'auto', minHeight: 0 }}>
+            <Box sx={{ flexGrow: 1, overflow: 'auto', minHeight: 0, WebkitOverflowScrolling: 'touch' }}>
               {loading && !activeConversation ? (
                 <Box sx={{ p: 2 }}>
                   <CircularProgress size={24} />
@@ -1061,7 +1064,9 @@ const MessagesPage: React.FC = () => {
                         display: 'flex',
                         wordBreak: 'break-word',
                         transition: 'all 0.2s ease-in-out',
-                        borderRadius: { xs: 1, sm: 2 }
+                        borderRadius: { xs: 1, sm: 2 },
+                        // Optimize for mobile touch
+                        WebkitTapHighlightColor: 'transparent'
                       }}
                     >
                       <ListItemAvatar sx={{ minWidth: 0, flexShrink: 0 }}>
@@ -1198,15 +1203,17 @@ const MessagesPage: React.FC = () => {
 
           {/* Messages Area */}
           {activeConversation ? (
-            <Box 
-              sx={{ 
-                flexGrow: 1, 
-                display: 'flex', 
+            <Box
+              sx={{
+                flexGrow: 1,
+                display: 'flex',
                 flexDirection: 'column',
                 height: { xs: 'auto', sm: '100%' },
                 minHeight: 0,
                 width: { xs: '100%', sm: 'auto' },
-                backgroundColor: theme.palette.background.default
+                backgroundColor: theme.palette.background.default,
+                // Better mobile scrolling behavior
+                WebkitOverflowScrolling: 'touch'
               }}
             >
               {/* Conversation Header */}
@@ -1226,7 +1233,9 @@ const MessagesPage: React.FC = () => {
                   top: 0,
                   zIndex: 10,
                   backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)'
+                  WebkitBackdropFilter: 'blur(10px)',
+                  // Better mobile touch area
+                  WebkitTapHighlightColor: 'transparent'
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
@@ -1505,20 +1514,22 @@ const MessagesPage: React.FC = () => {
               <Box
                 sx={{
                   flexGrow: 1,
-                  p: { xs: 0.5, sm: 3 },
+                  p: { xs: 0.5, sm: 2 },
                   overflow: 'auto',
                   display: 'flex',
                   flexDirection: 'column',
                   bgcolor: alpha(theme.palette.background.default, 0.5),
                   height: '100%',
                   minHeight: 0,
-                  pt: { xs: 0.5, sm: 2 },
-                  pb: { xs: 0.5, sm: 2 },
+                  pt: { xs: 0.5, sm: 1 },
+                  pb: { xs: 0.5, sm: 1 },
                   backgroundColor: theme.palette.background.paper,
                   flexShrink: 1,
                   scrollBehavior: 'smooth',
                   scrollbarWidth: 'thin',
-                  scrollbarColor: `${theme.palette.divider} transparent`
+                  scrollbarColor: `${theme.palette.divider} transparent`,
+                  // Better mobile scrolling behavior
+                  WebkitOverflowScrolling: 'touch'
                 }}
                 onScroll={async (e) => {
                   const element = e.target as HTMLElement;
@@ -1865,7 +1876,13 @@ const MessagesPage: React.FC = () => {
                       }
                     },
                     minHeight: { xs: 36, sm: 40 },
-                    flex: { xs: '1 1 auto', sm: 1 }
+                    flex: { xs: '1 1 auto', sm: 1 },
+                    // Better mobile input experience
+                    inputProps: {
+                      style: {
+                        padding: isMobile ? '8px 12px' : '12px 16px'
+                      }
+                    }
                   }}
                 />
                 <IconButton 
@@ -1877,6 +1894,10 @@ const MessagesPage: React.FC = () => {
                     backgroundColor: isRecording ? alpha(theme.palette.error.main, 0.1) : 'transparent',
                     '&:hover': {
                       backgroundColor: isRecording ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.action.hover, 0.04)
+                    },
+                    // Better touch targets for mobile
+                    '& .MuiTouchRipple-root': {
+                      display: { xs: 'block', sm: 'block' }
                     }
                   }}
                 >
@@ -1895,9 +1916,16 @@ const MessagesPage: React.FC = () => {
                     }
                   `}</style>
                 </IconButton>
-                <IconButton 
+                <IconButton
                   onClick={() => setShowEmojiPicker(v => !v)}
-                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
+                  sx={{ 
+                    p: { xs: 0.75, sm: 1 }, 
+                    minWidth: { xs: 36, sm: 40 },
+                    // Better touch targets for mobile
+                    '& .MuiTouchRipple-root': {
+                      display: { xs: 'block', sm: 'block' }
+                    }
+                  }}
                 >
                   <Smile size={isMobile ? 14 : 20} />
                 </IconButton>
@@ -1909,7 +1937,14 @@ const MessagesPage: React.FC = () => {
                     handleSendMessage();
                   }}
                   disabled={!newMessage.trim() || sending}
-                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
+                  sx={{ 
+                    p: { xs: 0.75, sm: 1 }, 
+                    minWidth: { xs: 36, sm: 40 },
+                    // Better touch targets for mobile
+                    '& .MuiTouchRipple-root': {
+                      display: { xs: 'block', sm: 'block' }
+                    }
+                  }}
                 >
                   {sending ? <CircularProgress size={isMobile ? 14 : 20} /> : <Send size={isMobile ? 14 : 20} />}
                 </IconButton>
