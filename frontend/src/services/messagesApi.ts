@@ -174,7 +174,7 @@ export const getMessages = async (
     // Create a temporary axios instance with a longer timeout for this operation
     const longTimeoutApi = axios.create({
         baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
-        timeout: 45000, // 45 seconds timeout for this operation
+        timeout: 90000, // 90 seconds timeout for this operation (increased from 45s)
     });
     
     // Add auth token to requests

@@ -14,7 +14,8 @@
     "init-messaging": "node scripts/seedMessagingData.js",
     "reset-db": "node scripts/resetDatabase.js",
     "optimize-db": "node scripts/optimizeDatabase.js",
-    "delete-all-posts": "node ../delete_all_posts.js"
+    "delete-all-posts": "node ../delete_all_posts.js",
+    "delete-all-messages": "node scripts/deleteAllMessages.js"
   },
   "keywords": [
     "web3",

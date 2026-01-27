@@ -102,5 +102,7 @@ const messageSchema = new mongoose.Schema({
 
 messageSchema.index({ conversationId: 1, createdAt: -1 });
 messageSchema.index({ senderId: 1 });
+// Index for optimized conversation queries with deleted status
+messageSchema.index({ conversationId: 1, isDeleted: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Message', messageSchema);

@@ -109,6 +109,7 @@ const AudioWaveform: React.FC<AudioWaveformProps> = ({
     return (
       <Box 
         sx={{ 
+          width: '100%',
           height: `${height}px`, 
           display: 'flex', 
           alignItems: 'center', 
@@ -117,7 +118,9 @@ const AudioWaveform: React.FC<AudioWaveformProps> = ({
           borderRadius: 1,
         }}
       >
-        Loading waveform...
+        <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+          Loading...
+        </Box>
       </Box>
     );
   }
@@ -125,9 +128,7 @@ const AudioWaveform: React.FC<AudioWaveformProps> = ({
   return (
     <Box 
       sx={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: '100%',
         px: 1,
         cursor: 'pointer'
       }}

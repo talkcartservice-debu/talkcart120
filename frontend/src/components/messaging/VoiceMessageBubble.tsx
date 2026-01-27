@@ -485,8 +485,9 @@ const VoiceMessageBubble: React.FC<VoiceMessageBubbleProps> = ({
                 sx={{
                     p: 0.75,
                     borderRadius: 2,
-                    minWidth: 100,
-                    maxWidth: 140,
+                    minWidth: 120,
+                    maxWidth: 240,
+                    width: '100%',
                     bgcolor: isOwn
                         ? alpha(theme.palette.primary.main, 0.1)
                         : alpha(theme.palette.background.paper, 0.8),
@@ -565,7 +566,7 @@ const VoiceMessageBubble: React.FC<VoiceMessageBubbleProps> = ({
                 </Box>
 
                 {/* Audio Waveform Visualization */}
-                <Box sx={{ px: 0.5, mb: 0 }}>
+                <Box sx={{ px: 0.5, mb: 0, width: '100%' }}>
                     <AudioWaveform
                         audioUrl={audioUrl}
                         isPlaying={isPlaying}

@@ -136,33 +136,73 @@ const useMessages = (options?: UseMessagesOptions): UseMessagesReturn => {
         return;
       }
 
-      try {
-        setLoading(true);
-        const res = await client.getMessages(currentConversationId, {
-          limit: 50,
-          page: loadMore ? Math.floor(messages.length / 50) + 1 : 1,
-        });
-        if (res.success) {
-          if (loadMore) {
-            setMessages((prev) => [...(prev || []), ...res.data.messages]);
+      // Retry logic with exponential backoff
+      const maxRetries = 3;
+      let retryCount = 0;
+      let lastError: any = null;
+
+      while (retryCount <= maxRetries) {
+        try {
+          setLoading(true);
+          
+          const res = await client.getMessages(currentConversationId, {
+            limit: 50,
+            page: loadMore ? Math.floor(messages.length / 50) + 1 : 1,
+          });
+          
+          if (res.success) {
+            if (loadMore) {
+              setMessages((prev) => [...(prev || []), ...res.data.messages]);
+            } else {
+              setMessages(res.data.messages);
+              // Store messages in history for this conversation
+              setMessageHistory(prev => ({
+                ...prev,
+                [currentConversationId]: res.data.messages
+              }));
+            }
+            setHasMore(res.data.pagination.hasMore);
+            
+            // Reset error on success
+            if (error) setError(null);
+            
+            return; // Success, exit retry loop
           } else {
-            setMessages(res.data.messages);
-            // Store messages in history for this conversation
-            setMessageHistory(prev => ({
-              ...prev,
-              [currentConversationId]: res.data.messages
-            }));
+            // Type assertion to handle possible error response structure
+            const errorRes = res as any;
+            const errorMessage = errorRes.message || errorRes.error || 'Failed to fetch messages';
+            throw new Error(errorMessage);
           }
-          setHasMore(res.data.pagination.hasMore);
+        } catch (e: any) {
+          lastError = e;
+          console.error(`Fetch messages error (attempt ${retryCount + 1}/${maxRetries + 1}):`, e);
+          
+          // Check if it's a timeout or network error that warrants retry
+          const shouldRetry = e.timeout || e.networkError || 
+                       (e.message && (e.message.includes('timeout') || e.message.includes('network')));
+          
+          if (retryCount < maxRetries && shouldRetry) {
+            // Exponential backoff: wait 1s, 2s, 4s between retries
+            const delay = Math.pow(2, retryCount) * 1000;
+            console.log(`Retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            retryCount++;
+          } else {
+            // Final error - don't retry
+            break;
+          }
+        } finally {
+          // Only set loading to false after final attempt
+          if (retryCount >= maxRetries || lastError === null) {
+            setLoading(false);
+          }
         }
-      } catch (e: any) {
-        setError(e.message || 'Failed to fetch messages. Please check your network connection.');
-        console.error('Fetch messages error:', e);
-      } finally {
-        setLoading(false);
       }
+      
+      // If we get here, all retries failed
+      setError(lastError?.message || 'Failed to fetch messages. Please check your network connection.');
     },
-    [conversationId, activeConversation?.id, messages.length]
+    [conversationId, activeConversation?.id, messages.length, error]
   );
 
   // Add effect to fetch messages when activeConversation changes
