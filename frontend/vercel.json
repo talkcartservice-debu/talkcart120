@@ -5,5 +5,23 @@
       "src": "package.json",
       "use": "@vercel/next"
     }
+  ],
+  "routes": [
+    {
+      "src": "/icons/(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable",
+        "content-type": "image/png"
+      },
+      "continue": true
+    },
+    {
+      "src": "/maskable_icon.png",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable",
+        "content-type": "image/png"
+      },
+      "continue": true
+    }
   ]
 }
