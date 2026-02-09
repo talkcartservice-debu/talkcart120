@@ -34,16 +34,16 @@ router.get('/check-username', async (req, res) => {
     
     // Check if username meets requirements
     if (username.length < 3 || username.length > 30) {
-      return res.json({
-        success: true,
+      return res.status(400).json({
+        success: false,
         message: 'Username must be between 3 and 30 characters',
         available: false
       });
     }
     
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      return res.json({
-        success: true,
+      return res.status(400).json({
+        success: false,
         message: 'Username can only contain letters, numbers, and underscores',
         available: false
       });

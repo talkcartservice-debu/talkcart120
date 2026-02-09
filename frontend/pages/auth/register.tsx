@@ -186,6 +186,17 @@ export default function RegisterPage() {
       return;
     }
     
+    // Validate username format before making API call
+    const usernameValidation = isValidUsername(username);
+    if (!usernameValidation.isValid) {
+      setValidationErrors(prev => ({
+        ...prev,
+        username: [usernameValidation.errors[0] || 'Invalid username format']
+      }));
+      setUsernameAvailable(false);
+      return;
+    }
+    
     try {
       setIsCheckingUsername(true);
       const response = await api.users.checkUsernameAvailability(username);
@@ -217,9 +228,28 @@ export default function RegisterPage() {
   // Check username when it changes
   useEffect(() => {
     if (formData.username && formData.username.length >= 3) {
-      checkUsernameAvailability(formData.username);
+      // Only trigger check if username format is valid
+      const usernameValidation = isValidUsername(formData.username);
+      if (usernameValidation.isValid) {
+        checkUsernameAvailability(formData.username);
+      } else {
+        // Clear any previous availability status if format is invalid
+        setUsernameAvailable(false);
+        setValidationErrors(prev => ({
+          ...prev,
+          username: [usernameValidation.errors[0] || 'Invalid username format']
+        }));
+      }
     } else {
       setUsernameAvailable(null);
+      // Clear username error when field is empty or too short
+      if (validationErrors.username) {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.username;
+          return newErrors;
+        });
+      }
     }
     
     return () => {
