@@ -471,8 +471,28 @@ router.post('/oauth/google', async (req, res) => {
       console.log('  Match:', data?.aud === GOOGLE_CLIENT_ID);
 
       // Expect audience to match our client id
-      if (!data || data.aud !== GOOGLE_CLIENT_ID) {
-        return res.status(401).json({ success: false, message: 'Invalid Google token (aud mismatch)' });
+      if (!data) {
+        return res.status(401).json({ success: false, message: 'Invalid Google token (no data received)' });
+      }
+      
+      // More flexible audience verification - check if it's one of our valid client IDs
+      const validAudiences = [GOOGLE_CLIENT_ID];
+      
+      // If we have multiple client IDs in the future, add them here
+      // validAudiences.push('additional-client-id.apps.googleusercontent.com');
+      
+      if (!validAudiences.includes(data.aud)) {
+        console.error('Audience mismatch detected:');
+        console.error('  Token audience:', data.aud);
+        console.error('  Expected audiences:', validAudiences);
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Invalid Google token (audience mismatch)',
+          debug: {
+            receivedAud: data.aud,
+            expectedAud: GOOGLE_CLIENT_ID
+          }
+        });
       }
       
       // Continue with the rest of the OAuth flow...

@@ -173,10 +173,14 @@ export default function LoginPage() {
                 toast.success('Signed in with Google');
                 router.push('/social');
               } else {
-                // Handle specific error cases
+                // Handle specific error cases with detailed messages
                 let errorMessage = res?.message || 'Google sign-in failed';
                 
-                if (res?.status === 400) {
+                // Handle audience mismatch specifically
+                if (res?.message?.includes('audience mismatch') || res?.debug?.receivedAud) {
+                  console.error('Audience mismatch details:', res.debug);
+                  errorMessage = 'Google authentication configuration issue. Please contact support.';
+                } else if (res?.status === 400) {
                   errorMessage = res?.message || 'Invalid Google token. Please try again.';
                 } else if (res?.status === 401) {
                   errorMessage = res?.message || 'Authentication failed. Please try again.';

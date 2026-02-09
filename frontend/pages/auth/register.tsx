@@ -893,7 +893,24 @@ export default function RegisterPage() {
                                     toast.success('Signed in with Google');
                                     router.push('/social');
                                   } else {
-                                    throw new Error(res?.message || 'Google sign-in failed');
+                                    // Handle specific error cases
+                                    let errorMessage = res?.message || 'Google sign-in failed';
+                                    
+                                    // Handle audience mismatch specifically
+                                    if (res?.message?.includes('audience mismatch') || res?.debug?.receivedAud) {
+                                      console.error('Audience mismatch details:', res.debug);
+                                      errorMessage = 'Google authentication configuration issue. Please contact support.';
+                                    } else if (res?.status === 400) {
+                                      errorMessage = res?.message || 'Invalid Google token. Please try again.';
+                                    } else if (res?.status === 401) {
+                                      errorMessage = res?.message || 'Authentication failed. Please try again.';
+                                    } else if (res?.status === 504) {
+                                      errorMessage = 'Google verification service timeout. Please check your connection and try again.';
+                                    } else if (res?.status >= 500) {
+                                      errorMessage = 'Server error during Google authentication. Please try again later.';
+                                    }
+                                    
+                                    throw new Error(errorMessage);
                                   }
                                 } catch (err: any) {
                                   toast.error(err.message || 'Google sign-in failed');
