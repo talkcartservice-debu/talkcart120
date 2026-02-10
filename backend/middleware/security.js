@@ -44,7 +44,7 @@ const securityHeaders = helmet({
       connectSrc: [
         "'self'",
         "http://localhost:*",
-        "https://api.flutterwave.com",
+        "https://api.paystack.co",
         "wss://localhost:*"
       ],
       objectSrc: ["'none'"],

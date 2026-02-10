@@ -212,7 +212,6 @@ export default function PaymentsAdmin() {
 
   const getPaymentMethodLabel = (method: string) => {
     switch (method) {
-      case 'flutterwave': return 'Flutterwave';
       case 'mobile_money': return 'Mobile Money';
       case 'airtel_money': return 'Airtel Money';
       case 'paystack': return 'Paystack';
@@ -288,7 +287,6 @@ export default function PaymentsAdmin() {
               sx={{ minWidth: 150 }}
             >
               <MenuItem value="">All Methods</MenuItem>
-              <MenuItem value="flutterwave">Flutterwave</MenuItem>
               <MenuItem value="mobile_money">Mobile Money</MenuItem>
               <MenuItem value="airtel_money">Airtel Money</MenuItem>
               <MenuItem value="paystack">Paystack</MenuItem>

@@ -11,6 +11,7 @@ const Joi = require('joi');
 const { ethers } = require('ethers');
 const { validate } = require('../middleware/validation');
 const { asyncHandler, sendSuccess, sendError } = require('../middleware/errorHandler');
+const { verifyPayment: verifyPaystackPayment } = require('../services/paystackService');
 
 
 // Canonical categories list reused across routes and validation
@@ -28,47 +29,6 @@ const CATEGORIES = [
   'Fitness',
   'Other'
 ];
-
-// Optional Stripe initialization for real payments verification
-let stripe = null;
-if (process.env.STRIPE_SECRET_KEY) {
-  try {
-    const Stripe = require('stripe');
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
-  } catch (e) {
-    console.warn('Stripe SDK not initialized in marketplace routes:', e.message);
-  }
-}
-
-// Flutterwave config and verification helper
-const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
-
-async function verifyFlutterwaveTransaction(txId, expectedTxRef, expectedAmount, expectedCurrency) {
-  if (!FLW_SECRET_KEY) {
-    throw new Error('Flutterwave secret key not configured');
-  }
-  const url = `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(txId)}/verify`;
-  const resp = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${FLW_SECRET_KEY}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(`Flutterwave verify failed (${resp.status}): ${text}`);
-  }
-  const json = await resp.json();
-  const data = json?.data || {};
-
-  // Required checks per best practices
-  const statusOk = (data.status || '').toLowerCase() === 'successful';
-  const refOk = !expectedTxRef || String(data.tx_ref) === String(expectedTxRef);
-  const currencyOk = !expectedCurrency || String(data.currency || '').toUpperCase() === String(expectedCurrency).toUpperCase();
-  const amountOk = !expectedAmount || Number(data.amount || 0) >= Number(expectedAmount);
-
-  return { ok: !!(statusOk && refOk && currencyOk && amountOk), data };
-}
 
 // Configure multer for memory storage
 const upload = multer({
@@ -967,119 +927,7 @@ router.get('/categories', async (req, res) => {
 });
 
 // @route   POST /api/marketplace/products/:id/buy
-// @desc    Buy a product directly (not through cart)
-// @access  Private
-router.post('/products/:id/buy', authenticateTokenStrict, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const productId = req.params.id;
-    const { paymentMethod, paymentDetails } = req.body;
-
-    // Validate ObjectId early to avoid CastError
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({ success: false, error: 'Invalid product ID' });
-    }
-
-    // Find the product
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
-    }
-
-    // Check if product is available
-    if (!product.isActive || product.stock <= 0) {
-      return res.status(400).json({ success: false, error: 'Product is not available' });
-    }
-
-    // Handle different payment methods
-    let orderData = {
-      userId,
-      items: [{
-        productId: product._id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        currency: product.currency,
-        isNFT: product.isNFT
-      }],
-      totalAmount: product.price,
-      currency: product.currency,
-      paymentMethod,
-      paymentDetails: paymentDetails || {},
-      status: 'pending'
-    };
-
-    // Special handling for Flutterwave
-    if (paymentMethod === 'flutterwave') {
-      // Check if we have the required Flutterwave details
-      if (!paymentDetails || (!paymentDetails.tx_ref && !paymentDetails.flw_tx_id)) {
-        // If we don't have the details, we need to initialize the payment
-        // For now, we'll create a placeholder and expect the client to provide details later
-        orderData.tx_ref = `vetora-product-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-        orderData.status = 'initialized';
-      } else {
-        // We have the payment details, mark as completed
-        orderData.tx_ref = paymentDetails.tx_ref;
-        orderData.status = 'completed';
-      }
-    } 
-    // Special handling for Stripe
-    else if (paymentMethod === 'stripe') {
-      if (paymentDetails && paymentDetails.paymentIntentId) {
-        orderData.paymentDetails.paymentIntentId = paymentDetails.paymentIntentId;
-        orderData.status = 'completed';
-      }
-    }
-    // Special handling for Crypto
-    else if (paymentMethod === 'crypto') {
-      orderData.status = 'completed';
-    }
-    // Special handling for NFT
-    else if (paymentMethod === 'nft') {
-      orderData.status = 'completed';
-    }
-
-    // Create the order
-    const order = new Order(orderData);
-    await order.save();
-
-    // Update product stock
-    if (!product.isNFT) {
-      product.stock -= 1;
-      product.sales += 1;
-      await product.save();
-    }
-
-    // Populate the product vendor data
-    await order.populate({
-      path: 'items.productId',
-      select: 'name images category vendorId'
-    });
-
-    res.status(201).json({
-      success: true,
-      data: {
-        order,
-        product,
-        payment: {
-          status: order.status
-        }
-      },
-      message: 'Purchase successful'
-    });
-
-  } catch (error) {
-    console.error('Buy product error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to process purchase',
-      message: error.message
-    });
-  }
-});
-
-// @route   POST /api/marketplace/products/:id/buy
-// @desc    Purchase a product. For NFTs, returns on-chain transfer instructions. For non-NFTs, requires real payment proof (Stripe or crypto).
+// @desc    Purchase a product. For NFTs, returns on-chain transfer instructions. For non-NFTs, requires real payment proof (Paystack or crypto).
 // @access  Private (strict)
 router.post('/products/:id/buy', authenticateTokenStrict, async (req, res) => {
   try {
@@ -1165,44 +1013,30 @@ router.post('/products/:id/buy', authenticateTokenStrict, async (req, res) => {
       // Non-NFT: require real payment proof
       const { paymentMethod, paymentDetails } = req.body || {};
 
-      if (paymentMethod === 'stripe') {
-        if (!stripe) {
-          return res.status(400).json({ success: false, error: 'Stripe not configured' });
+      if (paymentMethod === 'paystack') {
+        const reference = paymentDetails?.reference || paymentDetails?.transaction_id || paymentDetails?.id;
+        if (!reference) {
+          return res.status(400).json({ success: false, error: 'Missing Paystack payment details (reference)' });
         }
-        const paymentIntentId = paymentDetails?.paymentIntentId;
-        if (!paymentIntentId || typeof paymentIntentId !== 'string') {
-          return res.status(400).json({ success: false, error: 'Missing Stripe paymentIntentId' });
+        // Verify with Paystack API
+        const verify = await verifyPaystackPayment(reference);
+        if (!verify || !verify.status || verify.data.status !== 'success') {
+          return res.status(400).json({ success: false, error: 'Payment not completed or failed' });
         }
-        const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
-        if (!intent || intent.status !== 'succeeded') {
-          return res.status(400).json({ success: false, error: 'Payment not completed' });
+        
+        // Check amount (Paystack amount is in kobo/cents)
+        const paidAmount = verify.data.amount / 100;
+        if (paidAmount < product.price) {
+          return res.status(400).json({ success: false, error: 'Payment amount mismatch' });
         }
+
         paymentResult = {
           status: 'completed',
-          provider: 'stripe',
-          transactionId: intent.id,
-          amount: (intent.amount || 0) / 100,
-          currency: String(intent.currency || '').toUpperCase() || product.currency
-        };
-      } else if (paymentMethod === 'flutterwave') {
-        const tx_ref = paymentDetails?.tx_ref;
-        const flw_tx_id = paymentDetails?.flw_tx_id || paymentDetails?.transaction_id || paymentDetails?.id;
-        if (!tx_ref || !flw_tx_id) {
-          return res.status(400).json({ success: false, error: 'Missing Flutterwave payment details (tx_ref/flw_tx_id)' });
-        }
-        // Verify with Flutterwave API
-        const verify = await verifyFlutterwaveTransaction(flw_tx_id, tx_ref, product.price, product.currency);
-        if (!verify.ok) {
-          return res.status(400).json({ success: false, error: 'Payment not completed' });
-        }
-        paymentResult = {
-          status: 'completed',
-          provider: 'flutterwave',
-          transactionId: String(verify.data.id || flw_tx_id),
-          amount: Number(verify.data.amount || product.price),
+          provider: 'paystack',
+          transactionId: String(verify.data.id || reference),
+          amount: paidAmount,
           currency: String(verify.data.currency || product.currency).toUpperCase(),
-          tx_ref,
-          flw_tx_id: String(verify.data.id || flw_tx_id)
+          reference
         };
       } else if (paymentMethod === 'crypto') {
         // Basic crypto proof check (txHash + walletAddress), optionally extend with chain verification
@@ -1292,7 +1126,7 @@ router.post('/products/:id/buy', authenticateTokenStrict, async (req, res) => {
 
     // Add payment transaction details if available
     if (paymentResult.transactionId) {
-      orderData.tx_ref = paymentResult.transactionId;
+      orderData.transactionReference = paymentResult.transactionId;
     }
 
     const order = new Order(orderData);
@@ -1371,72 +1205,6 @@ router.get('/stats', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to get marketplace stats',
-      message: error.message
-    });
-  }
-});
-
-// @route   GET /api/marketplace/products/random
-// @desc    Get random products for trending display
-// @access  Public
-router.get('/products/random', async (req, res) => {
-  try {
-    const { limit = 10 } = req.query;
-    
-    // Get random products using MongoDB aggregation
-    const randomProducts = await Product.aggregate([
-      { $match: { isActive: true } },
-      { $sample: { size: parseInt(limit) } },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'vendorId',
-          foreignField: '_id',
-          as: 'vendor'
-        }
-      },
-      { $unwind: '$vendor' },
-      {
-        $project: {
-          id: '$_id',
-          name: 1,
-          description: 1,
-          price: 1,
-          currency: 1,
-          images: 1,
-          category: 1,
-          isNFT: 1,
-          featured: 1,
-          tags: 1,
-          stock: 1,
-          rating: 1,
-          reviewCount: 1,
-          sales: 1,
-          views: 1,
-          createdAt: 1,
-          vendor: {
-            id: '$vendor._id',
-            username: '$vendor.username',
-            displayName: '$vendor.displayName',
-            avatar: '$vendor.avatar',
-            isVerified: '$vendor.isVerified',
-            walletAddress: '$vendor.walletAddress'
-          }
-        }
-      }
-    ]);
-
-    res.json({
-      success: true,
-      data: {
-        products: randomProducts
-      }
-    });
-  } catch (error) {
-    console.error('Get random products error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get random products',
       message: error.message
     });
   }
@@ -3827,22 +3595,63 @@ router.delete('/cart', authenticateTokenStrict, async (req, res) => {
 });
 
 // @route   POST /api/marketplace/cart/checkout
-// @desc    Checkout cart
+// @desc    Checkout cart and create an order
 // @access  Private
 router.post('/cart/checkout', authenticateTokenStrict, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { shippingAddress, paymentMethod, paymentDetails } = req.body;
+    const { shippingAddress, paymentMethod } = req.body;
     
-    // In a real implementation, you would process the checkout
-    // For now, we'll just return a success response
+    // Find user's cart
+    const cart = await Cart.findOne({ userId });
+    
+    if (!cart || !cart.items || cart.items.length === 0) {
+      return res.status(400).json({ success: false, error: 'Cart is empty' });
+    }
+    
+    // Calculate total amount and prepare order items
+    let totalAmount = 0;
+    const orderItems = [];
+    
+    for (const item of cart.items) {
+      const product = await Product.findById(item.productId);
+      if (product) {
+        totalAmount += product.price * item.quantity;
+        orderItems.push({
+          productId: item.productId,
+          name: product.name,
+          price: product.price,
+          quantity: item.quantity,
+          currency: product.currency || 'USD',
+          color: item.color
+        });
+      }
+    }
+    
+    if (orderItems.length === 0) {
+      return res.status(400).json({ success: false, error: 'No valid products in cart' });
+    }
+    
+    // Create the order
+    const order = new Order({
+      userId,
+      items: orderItems,
+      totalAmount,
+      currency: orderItems[0].currency,
+      paymentMethod,
+      shippingAddress,
+      status: 'pending',
+      paymentStatus: 'pending'
+    });
+    
+    await order.save();
+    
+    // Do NOT clear cart yet. Clear it after payment is confirmed.
+    
     res.status(201).json({
       success: true,
-      data: {
-        orderId: `ORDER-${Date.now()}`,
-        status: 'pending',
-        message: 'Checkout initiated successfully'
-      }
+      data: order,
+      message: 'Order created successfully'
     });
   } catch (error) {
     console.error('Checkout error:', error);

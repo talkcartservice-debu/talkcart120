@@ -19,7 +19,6 @@ import {
 import { CreditCard, Phone, ArrowLeft } from '@mui/icons-material';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { formatCurrencyAmount } from '@/utils/currencyConverter';
-import FlutterwaveProductCheckout from './FlutterwaveProductCheckout';
 import PaystackProductCheckout from './PaystackProductCheckout';
 
 interface BuyModalProps {
@@ -51,14 +50,10 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
         await onPurchase('nft');
       } else {
         // For regular products, use the selected payment method
-        if (paymentMethod === 'card_payment') {
-          // For Paystack card payments, we need to initialize the payment and process it
+        if (paymentMethod === 'card_payment' || paymentMethod === 'mobile_money' || paymentMethod === 'airtel_money') {
+          // For Paystack payments, we need to initialize the payment and process it
           setProcessing(true);
-          await processCardPayment();
-        } else if (paymentMethod === 'mobile_money' || paymentMethod === 'airtel_money') {
-          // For Flutterwave mobile money payments, we need to initialize the payment and process it
-          setProcessing(true);
-          await processFlutterwavePayment();
+          await processPaystackPayment();
         } else {
           // For other payment methods, proceed directly
           await onPurchase(paymentMethod);
@@ -72,7 +67,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
     }
   };
 
-  const processCardPayment = async () => {
+  const processPaystackPayment = async () => {
     try {
       // Set the payment data to trigger the Paystack checkout component
       setPaymentData({
@@ -81,21 +76,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
         paymentMethod: paymentMethod
       });
     } catch (err: any) {
-      console.error('Card payment error:', err);
-      setError(err.message || 'Payment failed. Please try again.');
-    }
-  };
-
-  const processFlutterwavePayment = async () => {
-    try {
-      // Set the payment data to trigger the Flutterwave checkout component
-      setPaymentData({
-        productId: product._id,
-        product: product,
-        paymentMethod: paymentMethod
-      });
-    } catch (err: any) {
-      console.error('Flutterwave payment error:', err);
+      console.error('Paystack payment error:', err);
       setError(err.message || 'Payment failed. Please try again.');
     }
   };
@@ -115,27 +96,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
     }
   };
 
-  const handleFlutterwaveCompleted = async (paymentDetails: any) => {
-    try {
-      // For Flutterwave, we need to pass the payment details to complete the purchase
-      await onPurchase(paymentMethod, paymentDetails);
-      // Close the modal
-      onClose();
-    } catch (err: any) {
-      console.error('Flutterwave completion error:', err);
-      const errorMessage = err.message || 'Failed to complete payment. Please try again.';
-      setError(errorMessage);
-    } finally {
-      setPaymentData(null);
-    }
-  };
-
   const handlePaystackError = (error: string) => {
-    setError(error);
-    setPaymentData(null);
-  };
-
-  const handleFlutterwaveError = (error: string) => {
     setError(error);
     setPaymentData(null);
   };
@@ -152,20 +113,12 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
         hideBackdrop={false}  // Ensure backdrop is properly handled
       >
         <DialogContent>
-          {paymentData.paymentMethod === 'card_payment' ? (
-            <PaystackProductCheckout
-              product={paymentData.product}
-              onCompleted={handlePaystackCompleted}
-              onError={handlePaystackError}
-              onClose={() => setPaymentData(null)}
-            />
-          ) : (
-            <FlutterwaveProductCheckout
-              product={paymentData.product}
-              onCompleted={handleFlutterwaveCompleted}
-              onError={handleFlutterwaveError}
-            />
-          )}
+          <PaystackProductCheckout
+            product={paymentData.product}
+            onCompleted={handlePaystackCompleted}
+            onError={handlePaystackError}
+            onClose={() => setPaymentData(null)}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Close</Button>

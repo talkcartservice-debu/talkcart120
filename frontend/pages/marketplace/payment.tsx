@@ -34,7 +34,7 @@ import {
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
-import FlutterwaveProductCheckout from '@/components/marketplace/FlutterwaveProductCheckout';
+import PaystackProductCheckout from '@/components/marketplace/PaystackProductCheckout';
 
 interface Order {
   id: string;
@@ -57,7 +57,7 @@ const PaymentPage: React.FC = () => {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
-  const [showFlutterwave, setShowFlutterwave] = useState(false);
+  const [showPaystack, setShowPaystack] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -100,16 +100,16 @@ const PaymentPage: React.FC = () => {
     }
   };
 
-  const handleFlutterwaveSuccess = async (paymentDetails: any) => {
+  const handlePaystackSuccess = async (paymentDetails: any) => {
     if (!order) return;
     
     setConfirming(true);
     try {
-      // Confirm payment with Flutterwave transaction details
+      // Confirm payment with Paystack transaction details
       const response: any = await api.marketplace.confirmPayment(
         order.id, 
-        order.paymentMethod, 
-        paymentDetails.flw_tx_id
+        'paystack', 
+        paymentDetails.reference
       );
       
       if (response?.success) {
@@ -122,13 +122,13 @@ const PaymentPage: React.FC = () => {
       setError(err.message || 'Failed to confirm payment');
     } finally {
       setConfirming(false);
-      setShowFlutterwave(false);
+      setShowPaystack(false);
     }
   };
 
-  const handleFlutterwaveError = (errorMessage: string) => {
+  const handlePaystackError = (errorMessage: string) => {
     setError(errorMessage);
-    setShowFlutterwave(false);
+    setShowPaystack(false);
   };
 
   const handleConfirmPayment = async () => {
@@ -137,34 +137,9 @@ const PaymentPage: React.FC = () => {
     // Use the payment method that was already selected during checkout
     const paymentMethod = order.paymentMethod;
     
-    // For mobile money, show Flutterwave checkout
-    if (paymentMethod === 'mobile_money') {
-      setShowFlutterwave(true);
-      return;
-    }
-    
-    // For card payments, show Paystack checkout
-    if (paymentMethod === 'card_payment' || paymentMethod === 'paystack') {
-      // For card payments, we would show a Paystack checkout component
-      // For now, we'll confirm the payment immediately but status will be pending until verified
-      setConfirming(true);
-      try {
-        const response: any = await api.marketplace.confirmPayment(
-          order.id, 
-          paymentMethod
-        );
-        
-        if (response?.success) {
-          // Redirect to order details page
-          router.push(`/marketplace/orders/${order.id}`);
-        } else {
-          setError(response?.error || 'Failed to confirm payment');
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to confirm payment');
-      } finally {
-        setConfirming(false);
-      }
+    // For mobile money and card payments, show Paystack checkout
+    if (paymentMethod === 'mobile_money' || paymentMethod === 'card_payment' || paymentMethod === 'paystack') {
+      setShowPaystack(true);
       return;
     }
     
@@ -385,10 +360,10 @@ const PaymentPage: React.FC = () => {
                   {order.paymentMethod === 'mobile_money' && (
                     <Alert severity="info" sx={{ mb: 2 }}>
                       <Typography variant="subtitle2" fontWeight={600}>
-                        Mobile Money Payment (MTN, Airtel)
+                        Mobile Money Payment
                       </Typography>
                       <Typography variant="body2">
-                        You will be redirected to Flutterwave to complete your payment securely.
+                        You will be redirected to Paystack to complete your payment securely.
                         Payment will be confirmed instantly.
                       </Typography>
                     </Alert>
@@ -465,28 +440,29 @@ const PaymentPage: React.FC = () => {
           </Grid>
         </Grid>
 
-        {/* Flutterwave Payment Dialog */}
+        {/* Paystack Payment Dialog */}
         <Dialog 
-          open={showFlutterwave} 
-          onClose={() => setShowFlutterwave(false)}
+          open={showPaystack} 
+          onClose={() => setShowPaystack(false)}
           maxWidth="sm"
           fullWidth
         >
           <DialogTitle>Complete Payment</DialogTitle>
           <DialogContent>
-            <FlutterwaveProductCheckout
+            <PaystackProductCheckout
               product={{
                 _id: order.id,
                 name: `Order #${order.orderNumber}`,
                 price: order.totalAmount,
                 currency: order.currency
               }}
-              onCompleted={handleFlutterwaveSuccess}
-              onError={handleFlutterwaveError}
+              onCompleted={handlePaystackSuccess}
+              onError={handlePaystackError}
+              onClose={() => setShowPaystack(false)}
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShowFlutterwave(false)}>Cancel</Button>
+            <Button onClick={() => setShowPaystack(false)}>Cancel</Button>
           </DialogActions>
         </Dialog>
       </Container>

@@ -64,13 +64,12 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     required: true,
-    enum: ['flutterwave', 'paystack', 'crypto', 'nft', 'mobile_money', 'airtel_money', 'cash_on_delivery', 'card_payment']
+    enum: ['paystack', 'crypto', 'nft', 'mobile_money', 'airtel_money', 'cash_on_delivery', 'card_payment']
   },
   paymentDetails: {
     type: Object,
     required: false
   },
-  tx_ref: { type: String, index: true },
   status: {
     type: String,
     required: true,

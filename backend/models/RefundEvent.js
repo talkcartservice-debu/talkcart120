@@ -5,7 +5,7 @@ const RefundEventSchema = new mongoose.Schema(
     type: { type: String, enum: ['submitted', 'failed'], required: true },
     at: { type: Date, default: Date.now }, // TTL / time-based indexes defined below
     // Payment/amount context
-    paymentIntentId: { type: String, index: true },
+    transactionReference: { type: String, index: true },
     currency: { type: String, uppercase: true, index: true },
     amountCents: { type: Number },
     // Optional error info

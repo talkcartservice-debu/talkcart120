@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 // Stores processed webhook events to ensure idempotency
 // Unique constraints prevent double-processing on retries
 const webhookEventSchema = new mongoose.Schema({
-  source: { type: String, required: true, enum: ['flutterwave'] },
-  eventId: { type: String, required: true }, // Stripe: event.id, Flutterwave: transaction id
-  tx_ref: { type: String }, // Flutterwave primary linkage (optional)
+  source: { type: String, required: true, enum: ['paystack'] },
+  eventId: { type: String, required: true }, // Paystack: event.id or reference
+  reference: { type: String }, // Reference linkage (optional)
   meta: { type: Object },
 }, {
   timestamps: true

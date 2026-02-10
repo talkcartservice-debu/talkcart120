@@ -1,30 +1,11 @@
 const express = require('express');
 const router = express.Router();
-// Stripe require removed as part of Stripe cleanup
 const Joi = require('joi');
 const { authenticateToken } = require('./auth');
 const Order = require('../models/Order');
 const { initializePayment: initializePaystackPayment, verifyPayment: verifyPaystackPayment } = require('../services/paystackService');
-const { initializePayment: initializeFlutterwavePayment, verifyPayment: verifyFlutterwavePayment } = require('../services/flutterwaveService');
 
-// Stripe initialization removed as part of Stripe cleanup
-
-// Flutterwave config
-const FLW_PUBLIC_KEY = process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY || process.env.FLW_PUBLIC_KEY; // for reference
-const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY;
-
-// Validation schema for Flutterwave init
-const flwInitSchema = Joi.object({
-  amount: Joi.number().positive().required(), // major units
-  currency: Joi.string().uppercase().valid('RWF', 'USD', 'EUR', 'KES', 'UGX', 'TZS', 'SOS').required(),
-  tx_ref: Joi.string().min(8).required(),
-  customer: Joi.object({
-    email: Joi.string().email().required(),
-    name: Joi.string().optional(),
-    phonenumber: Joi.string().optional(),
-  }).required(),
-  meta: Joi.object().unknown(true).default({}),
-}).required();
+// Paystack initialization
 
 // Validation schema for Paystack init
 const paystackInitSchema = Joi.object({
@@ -36,56 +17,6 @@ const paystackInitSchema = Joi.object({
   metadata: Joi.object().unknown(true).optional(),
   channels: Joi.array().items(Joi.string()).optional(),
 }).required();
-
-// @route   POST /api/payments/flutterwave/init
-// @desc    Initialize Flutterwave payment (Inline/Standard)
-// @access  Private
-router.post('/flutterwave/init', authenticateToken, async (req, res) => {
-  try {
-    if (!FLW_SECRET_KEY) {
-      return res.status(400).json({ success: false, error: 'Flutterwave not configured' });
-    }
-    const { error, value } = flwInitSchema.validate(req.body || {}, { abortEarly: false });
-    if (error) {
-      return res.status(400).json({ success: false, error: 'Validation failed', details: error.details.map(d => d.message) });
-    }
-
-    // Add user's currency information to meta for tracking
-    const enhancedMeta = {
-      ...value.meta,
-      user_currency: req.user?.currency || 'USD',
-      original_amount: value.amount,
-      original_currency: value.currency,
-    };
-
-    const payload = {
-      ...value,
-      meta: enhancedMeta,
-      // Set redirect_url for Standard; Inline can ignore
-      redirect_url: value.redirect_url || undefined,
-    };
-
-    const resp = await fetch('https://api.flutterwave.com/v3/payments', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${FLW_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await resp.json().catch(() => null);
-    if (!resp.ok || !data) {
-      return res.status(500).json({ success: false, error: 'Failed to init Flutterwave', details: data });
-    }
-
-    // Return ids needed for client Inline checkout if applicable
-    return res.json({ success: true, data });
-  } catch (err) {
-    console.error('Flutterwave init error:', err);
-    return res.status(500).json({ success: false, error: 'Failed to initialize payment', message: err.message });
-  }
-});
 
 // @route   POST /api/payments/paystack/init
 // @desc    Initialize Paystack payment
@@ -149,49 +80,6 @@ router.get('/paystack/verify/:reference', authenticateToken, async (req, res) =>
   } catch (err) {
     console.error('Paystack verify error:', err);
     return res.status(500).json({ success: false, error: 'Failed to verify payment', message: err.message });
-  }
-});
-
-// @route   POST /api/payments/intent
-// @desc    Create a test payment intent for admin testing
-// @access  Private (Admin only in practice, but using general auth for simplicity)
-router.post('/intent', authenticateToken, async (req, res) => {
-  try {
-    const { amount, currency } = req.body;
-
-    // Validate input
-    if (!amount || !currency) {
-      return res.status(400).json({
-        success: false,
-        message: 'Amount and currency are required'
-      });
-    }
-
-    // For testing purposes, we'll just return a mock payment intent
-    // In a real implementation, this would create an actual payment intent
-    const paymentIntent = {
-      id: `pi_test_${Date.now()}`,
-      amount: amount * 100, // Convert to cents/smallest unit
-      currency: currency.toLowerCase(),
-      status: 'requires_payment_method',
-      client_secret: `pi_test_${Date.now()}_secret_${Math.random().toString(36).substr(2, 10)}`,
-      created: Math.floor(Date.now() / 1000),
-      livemode: false,
-      payment_method_types: ['card'],
-      description: 'Test Payment Intent'
-    };
-
-    res.json({
-      success: true,
-      data: paymentIntent
-    });
-
-  } catch (error) {
-    console.error('Error creating payment intent:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create payment intent'
-    });
   }
 });
 
@@ -296,7 +184,5 @@ router.get('/:id', authenticateToken, async (req, res) => {
     });
   }
 });
-
-// Stripe intent route removed as part of Stripe cleanup
 
 module.exports = router;

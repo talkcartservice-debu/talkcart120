@@ -134,7 +134,7 @@ const settingsSchema = new mongoose.Schema({
   },
   
   // Payment Settings
-  enableStripe: {
+  enablePaystack: {
     type: Boolean,
     default: true
   },
@@ -210,7 +210,7 @@ settingsSchema.statics.updateSettings = async function(type, updates, updatedBy)
     'maintenanceMode', 'maintenanceMessage', 'maxProductsPerVendor',
     'enableNotifications', 'enableAnalytics', 'enableTwoFactor', 'sessionTimeout',
     'maxLoginAttempts', 'passwordMinLength', 'requirePasswordComplexity',
-    'enableStripe', 'enableCrypto', 'enableNFT', 'minimumOrderAmount', 'maximumOrderAmount'
+    'enablePaystack', 'enableCrypto', 'enableNFT', 'minimumOrderAmount', 'maximumOrderAmount'
   ];
   
   const filteredUpdates = {};
@@ -242,7 +242,7 @@ settingsSchema.methods.updateSettings = async function(updates, updatedBy) {
     'maintenanceMode', 'maintenanceMessage', 'maxProductsPerVendor',
     'enableNotifications', 'enableAnalytics', 'enableTwoFactor', 'sessionTimeout',
     'maxLoginAttempts', 'passwordMinLength', 'requirePasswordComplexity',
-    'enableStripe', 'enableCrypto', 'enableNFT', 'minimumOrderAmount', 'maximumOrderAmount'
+    'enablePaystack', 'enableCrypto', 'enableNFT', 'minimumOrderAmount', 'maximumOrderAmount'
   ];
   
   const filteredUpdates = {};

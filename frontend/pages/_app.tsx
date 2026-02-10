@@ -20,7 +20,6 @@ import { Toaster, toast } from 'react-hot-toast';
 import '@/styles/globals.css';
 import 'react-image-crop/dist/ReactCrop.css'; // global import for cropper styles
 import { ProfileCacheProvider } from '@/contexts/ProfileCacheContext';
-// CartProvider and StripeProvider removed as part of cleanup
 import { SessionExpiredError } from '@/lib/api';
 import { isAuthError } from '@/lib/authErrors';
 import ErrorBoundary from '@/components/common/ErrorBoundary';

@@ -17,7 +17,7 @@ const RefundSchema = new mongoose.Schema(
       required: true,
       index: true
     },
-    paymentIntentId: {
+    transactionReference: {
       type: String,
       required: true,
       index: true
@@ -117,7 +117,7 @@ const RefundSchema = new mongoose.Schema(
       default: 'manual'
     },
     externalRefundId: {
-      type: String // Stripe refund ID or other external reference
+      type: String // External gateway refund ID or other reference
     },
     
     // Additional metadata

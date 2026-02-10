@@ -367,7 +367,7 @@ export const AdminApi = {
     const res = await fetchWithConfig(`${API_BASE}/admin/refunds/analytics?${params.toString()}`);
     return safeJsonParse(res);
   },
-  processRefund: async (data: { paymentIntentId: string; amount: number; currency: string; reason?: string }) => {
+  processRefund: async (data: { transactionReference: string; amount: number; currency: string; reason?: string }) => {
     const res = await fetchWithConfig(`${API_BASE}/admin/refunds/process`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

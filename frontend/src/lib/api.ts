@@ -2012,8 +2012,9 @@ class ApiService {
     },
 
     // Buy a product
-    buyProduct: async (productId: string, purchaseData: { quantity?: number; shippingAddress: any }) => {
-      return this.post(`/marketplace/products/${productId}/buy`, purchaseData);
+    // Purchase product (direct buy)
+    buyProduct: async (productId: string, data: { paymentMethod?: string; paymentDetails?: any; quantity?: number; shippingAddress?: any }) => {
+      return this.post(`/marketplace/products/${productId}/buy`, data);
     },
 
     // Get product by ID (alias for getProduct)

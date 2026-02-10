@@ -15,7 +15,7 @@ const adminPaymentPreferencesSchema = new mongoose.Schema({
     },
     provider: {
       type: String,
-      enum: ['mtn', 'airtel', 'vodacom', 'tigo', 'orange', 'ecocash', 'flutterwave', 'other'],
+      enum: ['mtn', 'airtel', 'vodacom', 'tigo', 'orange', 'ecocash', 'paystack', 'other'],
       default: 'other'
     },
     phoneNumber: {

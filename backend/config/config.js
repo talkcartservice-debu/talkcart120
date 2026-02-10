@@ -134,10 +134,10 @@ class Config {
   // Payment Configuration
   get payments() {
     return {
-      flutterwave: {
-        enabled: !!process.env.FLW_SECRET_KEY,
-        secretKey: process.env.FLW_SECRET_KEY,
-        publicKey: process.env.FLW_PUBLIC_KEY
+      paystack: {
+        enabled: !!process.env.PAYSTACK_SECRET_KEY,
+        secretKey: process.env.PAYSTACK_SECRET_KEY,
+        publicKey: process.env.PAYSTACK_PUBLIC_KEY
       }
     };
   }
@@ -243,7 +243,7 @@ class Config {
       jwt: this.jwt.secret ? 'configured' : 'missing',
       cloudinary: this.cloudinary.enabled ? 'enabled' : 'disabled',
       payments: {
-        flutterwave: this.payments.flutterwave.enabled ? 'enabled' : 'disabled'
+        paystack: this.payments.paystack.enabled ? 'enabled' : 'disabled'
       },
       email: this.email.enabled ? 'enabled' : 'disabled',
       redis: this.redis.enabled ? 'enabled' : 'disabled',

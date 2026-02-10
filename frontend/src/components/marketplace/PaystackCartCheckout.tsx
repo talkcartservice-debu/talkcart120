@@ -2,15 +2,19 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
-  TextField,
   Typography,
   Alert,
   CircularProgress,
   useTheme
 } from '@mui/material';
-import { CreditCard, ArrowLeft } from '@mui/icons-material';
+import { CreditCard } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
-import api from '@/lib/api';
+
+declare global {
+  interface Window {
+    PaystackPop: any;
+  }
+}
 
 interface PaystackCartCheckoutProps {
   amount: number;
@@ -18,14 +22,6 @@ interface PaystackCartCheckoutProps {
   email: string;
   onSuccess: (reference: string) => Promise<void>;
   onError: (error: string) => void;
-}
-
-interface PaymentResponse {
-  success: boolean;
-  error?: string;
-  data?: {
-    reference: string;
-  };
 }
 
 const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({ 
@@ -40,9 +36,6 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState(initialEmail);
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
 
   // Initialize email from user data
   useEffect(() => {
@@ -51,13 +44,7 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
     }
   }, [user, initialEmail]);
 
-  // Generate unique transaction reference
-  const generateReference = () => {
-    return `vetora-cart-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-  };
-
-  const handlePay = async () => {
-    // Validate inputs
+  const handlePay = () => {
     if (!email) {
       const emailError = 'Email address is required for payment processing.';
       setError(emailError);
@@ -65,58 +52,68 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
       return;
     }
 
-    if (!cardNumber || !expiryDate || !cvv) {
-      const cardError = 'Please fill in all card details.';
-      setError(cardError);
-      onError(cardError);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
+    const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+
+    if (!paystackPublicKey) {
+      const configError = 'Paystack public key is not configured.';
+      setError(configError);
+      onError(configError);
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Initialize Paystack payment
-      const reference = generateReference();
-      
-      const response = await api.post('/payments/paystack/init', {
-        amount: amount * 100, // Convert to kobo (smallest currency unit)
-        email,
+      const handler = window.PaystackPop.setup({
+        key: paystackPublicKey,
+        email: email,
+        amount: Math.round(amount * 100), // amount in kobo/cents
         currency: currency?.toUpperCase() || 'NGN',
-        reference,
+        callback: async (response: any) => {
+          setLoading(true);
+          try {
+            await onSuccess(response.reference);
+          } catch (e: any) {
+            setError(e.message || 'Payment confirmation failed.');
+            onError(e.message || 'Payment confirmation failed.');
+          } finally {
+            setLoading(false);
+          }
+        },
+        onClose: () => {
+          setLoading(false);
+          toast.info('Payment window closed.');
+        },
         metadata: {
-          cartPayment: true,
-          userId: user?.id,
+          custom_fields: [
+            {
+              display_name: "User ID",
+              variable_name: "user_id",
+              value: user?.id || "anonymous"
+            }
+          ]
         }
-      }) as PaymentResponse;
+      });
 
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to initialize payment');
-      }
-
-      // For demo purposes, we'll simulate a successful payment
-      // In a real implementation, you would redirect to Paystack's payment page
-      // or use their inline payment widget
-      
-      // Simulate successful payment after a short delay
-      setTimeout(async () => {
-        await onSuccess(response.data?.reference || reference);
-        setLoading(false);
-      }, 2000);
-      
+      handler.openIframe();
     } catch (e: any) {
-      console.error('Paystack payment error:', e);
-      const errorMessage = e?.message || 'Failed to initialize payment. Please try again.';
-      setError(errorMessage);
-      onError(errorMessage);
+      console.error('Paystack initialization error:', e);
+      setError('Could not open payment window. Please try again.');
+      onError('Could not open payment window. Please try again.');
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, textAlign: 'center' }}>
       <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
-        Card Payment
+        Payment with Paystack
+      </Typography>
+      
+      <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>
+        You will be redirected to Paystack&apos;s secure payment page to complete your transaction.
       </Typography>
       
       {error && (
@@ -125,71 +122,44 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
         </Alert>
       )}
 
-      <TextField
-        label="Email"
-        type="email"
-        fullWidth
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        sx={{ mb: 2 }}
-        disabled={!!user?.email}
-      />
-
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>
-          Card Details
+      <Box sx={{ mb: 4, p: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2, border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.1) }}>
+        <Typography variant="subtitle2" gutterBottom color="text.secondary">Total Amount</Typography>
+        <Typography variant="h4" fontWeight={700} color="primary.main">
+          {new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency || 'USD',
+          }).format(amount)}
         </Typography>
-        <TextField
-          label="Card Number"
-          fullWidth
-          placeholder="1234 5678 9012 3456"
-          value={cardNumber}
-          onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, '').slice(0, 16))}
-          sx={{ mb: 2 }}
-        />
-        
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <TextField
-            label="Expiry Date"
-            placeholder="MM/YY"
-            value={expiryDate}
-            onChange={(e) => setExpiryDate(e.target.value.replace(/\D/g, '').slice(0, 4))}
-            sx={{ flex: 1 }}
-          />
-          <TextField
-            label="CVV"
-            placeholder="123"
-            value={cvv}
-            onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-            sx={{ flex: 1 }}
-          />
-        </Box>
-      </Box>
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 2 }}>
-        <Box>
-          <Typography variant="subtitle2">Total Amount</Typography>
-          <Typography variant="h6" color="primary">
-            {new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: currency || 'USD',
-            }).format(amount)}
-          </Typography>
-        </Box>
       </Box>
 
       <Button
-        startIcon={loading ? <CircularProgress size={20} /> : <CreditCard />}
+        startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <CreditCard />}
         onClick={handlePay}
         variant="contained"
         color="primary"
+        size="large"
         fullWidth
         disabled={loading}
+        sx={{ py: 1.5, borderRadius: 2, fontSize: '1.1rem', fontWeight: 600 }}
       >
-        {loading ? 'Processing...' : 'Pay Now'}
+        {loading ? 'Processing...' : 'Proceed to Payment'}
       </Button>
+      
+      <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'text.secondary' }}>
+        Secured by Paystack. Your card details are never stored on our servers.
+      </Typography>
     </Box>
   );
+};
+
+// Helper for alpha colors since it's not imported
+const alpha = (color: string, opacity: number) => {
+  return `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`;
+};
+
+// Mock toast if not imported
+const toast = {
+  info: (msg: string) => console.log('Toast Info:', msg)
 };
 
 export default PaystackCartCheckout;

@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
+const Cart = require('../models/Cart');
+const Product = require('../models/Product');
 const { authenticateTokenStrict } = require('./auth');
+const { verifyPayment: verifyPaystackPayment } = require('../services/paystackService');
 
 // @route   GET /api/orders
 // @desc    Get user's order history
@@ -249,6 +252,71 @@ Thank you for your purchase!
     res.status(500).json({
       success: false,
       message: 'Failed to generate invoice'
+    });
+  }
+});
+
+// @route   POST /api/orders/:id/confirm-payment
+// @desc    Confirm payment for an order using Paystack reference
+// @access  Private
+router.post('/:id/confirm-payment', authenticateTokenStrict, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const orderId = req.params.id;
+    const { paymentMethod, transactionReference } = req.body;
+
+    if (!transactionReference) {
+      return res.status(400).json({ success: false, message: 'Transaction reference is required' });
+    }
+
+    const order = await Order.findOne({ _id: orderId, userId });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    if (order.status !== 'pending' && order.status !== 'failed') {
+      return res.status(400).json({ success: false, message: 'Order is already processed or paid' });
+    }
+
+    // Verify with Paystack API
+    const verify = await verifyPaystackPayment(transactionReference);
+    
+    if (!verify || !verify.status || verify.data.status !== 'success') {
+      return res.status(400).json({ success: false, message: 'Payment verification failed' });
+    }
+
+    // Update order status
+    order.status = 'paid';
+    order.paymentStatus = 'confirmed';
+    order.paymentConfirmedAt = new Date();
+    order.transactionReference = transactionReference;
+    order.paymentMethod = paymentMethod || order.paymentMethod;
+    
+    await order.save();
+
+    // Increment sales for products
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.productId, {
+        $inc: { sales: item.quantity, stock: -item.quantity }
+      });
+    }
+
+    // Clear user's cart
+    await Cart.findOneAndUpdate({ userId }, { $set: { items: [] } });
+
+    res.json({
+      success: true,
+      message: 'Payment confirmed and order updated',
+      data: order
+    });
+
+  } catch (error) {
+    console.error('Error confirming payment:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to confirm payment',
+      error: error.message
     });
   }
 });

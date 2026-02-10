@@ -225,7 +225,7 @@ export const AdminExtraApi = {
   // Refunds Management
   createRefund: async (data: {
     orderId: string;
-    paymentIntentId: string;
+    transactionReference: string;
     customerId: string;
     refundAmount: number;
     originalAmount?: number;

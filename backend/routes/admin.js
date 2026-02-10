@@ -54,13 +54,13 @@ router.get('/me', authenticateTokenStrict, requireAdmin, async (req, res) => {
 // List recent processed webhook events with filters (admin-only)
 router.get('/webhooks/events/recent', authenticateTokenStrict, requireAdmin, async (req, res) => {
   try {
-    const { limit: limitRaw, page: pageRaw, source, tx_ref, eventId, since, until } = req.query;
+    const { limit: limitRaw, page: pageRaw, source, reference, eventId, since, until } = req.query;
     const limit = Math.min(200, Math.max(1, Number(limitRaw) || 50));
     const page = Math.max(1, Number(pageRaw) || 1);
 
     const q = {};
     if (source) q.source = String(source);
-    if (tx_ref) q.tx_ref = String(tx_ref);
+    if (reference) q.reference = String(reference);
     if (eventId) q.eventId = String(eventId);
     if (since || until) {
       q.createdAt = {};
@@ -82,11 +82,11 @@ router.get('/webhooks/events/recent', authenticateTokenStrict, requireAdmin, asy
 
 // Build query helper for refunds
 function buildRefundsQuery(params) {
-  const { status, currency, since, until, paymentIntentId, userId } = params;
+  const { status, currency, since, until, transactionReference, userId } = params;
   const q = {};
   if (status && (status === 'submitted' || status === 'failed')) q.type = status;
   if (currency) q.currency = String(currency).toUpperCase();
-  if (paymentIntentId) q.paymentIntentId = String(paymentIntentId);
+  if (transactionReference) q.transactionReference = String(transactionReference);
   if (userId) {
     try {
       q.userId = new mongoose.Types.ObjectId(String(userId));
@@ -103,7 +103,7 @@ function buildRefundsQuery(params) {
 }
 
 // GET /api/admin/refunds/recent
-// Query params: limit (1..200), page (>=1), status, currency, since (ms), until (ms), paymentIntentId, userId
+// Query params: limit (1..200), page (>=1), status, currency, since (ms), until (ms), transactionReference, userId
 router.get('/refunds/recent', authenticateTokenStrict, requireAdmin, async (req, res) => {
   try {
     const { limit: limitRaw, page: pageRaw } = req.query;
@@ -134,7 +134,7 @@ router.get('/refunds/export.csv', authenticateTokenStrict, requireAdmin, async (
     res.setHeader('Content-Disposition', `attachment; filename="refund-events-${Date.now()}.csv"`);
 
     // CSV header
-    const headers = ['_id', 'type', 'at', 'currency', 'amount', 'paymentIntentId', 'userId', 'error'];
+    const headers = ['_id', 'type', 'at', 'currency', 'amount', 'transactionReference', 'userId', 'error'];
     res.write(headers.join(',') + '\n');
 
     // Helper to escape CSV values
@@ -155,7 +155,7 @@ router.get('/refunds/export.csv', authenticateTokenStrict, requireAdmin, async (
         csvEscape(new Date(doc.at).toISOString()),
         csvEscape(doc.currency),
         csvEscape(((doc.amountCents || 0) / 100).toFixed(2)),
-        csvEscape(doc.paymentIntentId || ''),
+        csvEscape(doc.transactionReference || ''),
         csvEscape(doc.userId || ''),
         csvEscape(doc.error || ''),
       ];
@@ -227,12 +227,12 @@ router.get('/refunds/analytics', authenticateTokenStrict, requireAdmin, async (r
 // Process a manual refund
 router.post('/refunds/process', authenticateTokenStrict, requireAdmin, async (req, res) => {
   try {
-    const { paymentIntentId, amount, currency, reason } = req.body;
+    const { transactionReference, amount, currency, reason } = req.body;
 
-    if (!paymentIntentId || !amount || !currency) {
+    if (!transactionReference || !amount || !currency) {
       return res.status(400).json({
         success: false,
-        message: 'Payment Intent ID, amount, and currency are required'
+        message: 'Transaction reference, amount, and currency are required'
       });
     }
 
@@ -245,11 +245,11 @@ router.post('/refunds/process', authenticateTokenStrict, requireAdmin, async (re
       });
     }
 
-    // Here you would integrate with your payment processor (Stripe, etc.)
+    // Here you would integrate with your payment processor (Paystack, etc.)
     // For now, we'll create a refund event
     const refundEvent = new RefundEvent({
       type: 'submitted',
-      paymentIntentId,
+      transactionReference,
       currency: currency.toUpperCase(),
       amountCents,
       userId: req.user.id,
@@ -268,7 +268,7 @@ router.post('/refunds/process', authenticateTokenStrict, requireAdmin, async (re
       socketService.broadcastRefundSubmitted({
         currency: currency.toUpperCase(),
         amountCents,
-        paymentIntentId,
+        transactionReference,
         userId: req.user.id,
         status: 'submitted'
       });
@@ -330,7 +330,7 @@ router.get('/refunds/management', authenticateTokenStrict, requireAdmin, async (
     if (search) {
       query.$or = [
         { refundId: { $regex: search, $options: 'i' } },
-        { paymentIntentId: { $regex: search, $options: 'i' } },
+        { transactionReference: { $regex: search, $options: 'i' } },
         { reasonDetails: { $regex: search, $options: 'i' } }
       ];
     }
@@ -371,7 +371,7 @@ router.post('/refunds/create', authenticateTokenStrict, requireAdmin, async (req
   try {
     const {
       orderId,
-      paymentIntentId,
+      transactionReference,
       customerId,
       refundAmount,
       originalAmount,
@@ -384,7 +384,7 @@ router.post('/refunds/create', authenticateTokenStrict, requireAdmin, async (req
     } = req.body;
 
     // Validation
-    if (!orderId || !paymentIntentId || !customerId || !refundAmount || !currency || !reason) {
+    if (!orderId || !transactionReference || !customerId || !refundAmount || !currency || !reason) {
       return res.status(400).json({
         success: false,
         message: 'Missing required fields'
@@ -403,7 +403,7 @@ router.post('/refunds/create', authenticateTokenStrict, requireAdmin, async (req
     // Create refund
     const refund = new Refund({
       orderId,
-      paymentIntentId,
+      transactionReference,
       customerId,
       refundAmount: Math.round(refundAmount * 100), // Convert to cents
       originalAmount: originalAmount ? Math.round(originalAmount * 100) : order.totalAmount,
@@ -1105,436 +1105,9 @@ router.get('/products/export.csv', authenticateTokenStrict, requireAdmin, async 
   }
 });
 
-// ============================================================================
-// PAYOUTS (Stripe-backed or internal) â€” stubs using Stripe if configured
-// ============================================================================
-
-const Stripe = require('stripe');
-const stripeSecret = process.env.STRIPE_SECRET_KEY;
-const stripe = stripeSecret ? new Stripe(stripeSecret, { apiVersion: '2024-06-20' }) : null;
-
-// GET /api/admin/payouts (cursor-based)
-// Query: limit (1..100), after (starting_after id), before (ending_before id), status, destination
-router.get('/payouts', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    const { status, destination, after, before, limit = 50 } = req.query;
-    const limitN = Math.min(100, Math.max(1, Number(limit) || 50));
-    if (!stripe) return res.json({ success: true, data: [], page_info: { has_more: false, limit: 0, after: null, before: null } });
-
-    const list = await stripe.payouts.list({
-      limit: limitN,
-      status,
-      destination,
-      starting_after: after || undefined,
-      ending_before: before || undefined,
-    });
-
-    const data = list.data || [];
-    const firstId = data[0]?.id || null;
-    const lastId = data[data.length - 1]?.id || null;
-    res.json({ success: true, data, page_info: { has_more: !!list.has_more, limit: limitN, first_id: firstId, last_id: lastId, next_after: list.has_more ? lastId : null, before: firstId } });
-  } catch (e) {
-    console.error('admin payouts list error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch payouts' });
-  }
-});
-
-// POST /api/admin/payouts - Create a new payout
-const payoutCreateSchema = Joi.object({
-  amount: Joi.number().positive().required(),
-  currency: Joi.string().length(3).required(),
-  destination: Joi.string().optional(),
-  description: Joi.string().max(500).optional(),
-  metadata: Joi.object().unknown(true).optional()
-}).required();
-
-router.post('/payouts', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.status(400).json({ success: false, message: 'Stripe not configured' });
-
-    const { error, value } = payoutCreateSchema.validate(req.body || {}, { abortEarly: false });
-    if (error) return res.status(400).json({ success: false, message: 'Validation failed', details: error.details.map(d=>d.message) });
-
-    const { amount, currency, destination, description, metadata } = value;
-
-    const payoutData = {
-      amount: Math.round(amount * 100), // Convert to cents
-      currency: currency.toLowerCase(),
-      method: 'instant' // or 'standard'
-    };
-
-    if (destination) payoutData.destination = destination;
-    if (description) payoutData.description = description;
-    if (metadata) payoutData.metadata = metadata;
-
-    const payout = await stripe.payouts.create(payoutData);
-    res.json({ success: true, data: payout });
-  } catch (e) {
-    console.error('admin payout create error:', e);
-    res.status(500).json({ success: false, message: 'Failed to create payout' });
-  }
-});
-
-// POST /api/admin/payouts/:id/cancel
-router.post('/payouts/:id/cancel', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!stripe) return res.status(400).json({ success: false, message: 'Stripe not configured' });
-    const canceled = await stripe.payouts.cancel(id);
-    res.json({ success: true, data: canceled });
-  } catch (e) {
-    console.error('admin payout cancel error:', e);
-    res.status(500).json({ success: false, message: 'Failed to cancel payout' });
-  }
-});
-
-// POST /api/admin/payouts/bulk/cancel - Cancel multiple payouts
-const bulkCancelSchema = Joi.object({
-  payout_ids: Joi.array().items(Joi.string().required()).min(1).max(50).required()
-}).required();
-
-router.post('/payouts/bulk/cancel', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.status(400).json({ success: false, message: 'Stripe not configured' });
-
-    const { error, value } = bulkCancelSchema.validate(req.body || {}, { abortEarly: false });
-    if (error) return res.status(400).json({ success: false, message: 'Validation failed', details: error.details.map(d=>d.message) });
-
-    const { payout_ids } = value;
-    const results = [];
-
-    for (const id of payout_ids) {
-      try {
-        const canceled = await stripe.payouts.cancel(id);
-        results.push({ id, success: true, data: canceled });
-      } catch (e) {
-        console.error(`Failed to cancel payout ${id}:`, e);
-        results.push({ id, success: false, error: e.message });
-      }
-    }
-
-    const successCount = results.filter(r => r.success).length;
-    const failureCount = results.length - successCount;
-
-    res.json({
-      success: true,
-      data: {
-        results,
-        summary: {
-          total: results.length,
-          successful: successCount,
-          failed: failureCount
-        }
-      }
-    });
-  } catch (e) {
-    console.error('admin bulk payout cancel error:', e);
-    res.status(500).json({ success: false, message: 'Failed to cancel payouts' });
-  }
-});
-
-// GET /api/admin/payouts/analytics/overview - Get payouts analytics
-router.get('/payouts/analytics/overview', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.json({ success: true, data: { total: 0, by_status: {}, by_destination: {}, recent_trend: [] } });
-
-    const { timeRange = '30d' } = req.query;
-    const now = new Date();
-    let startDate;
-
-    switch (timeRange) {
-      case '7d': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-      case '30d': startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-      case '90d': startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); break;
-      default: startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    }
-
-    const payouts = await stripe.payouts.list({
-      limit: 100,
-      created: { gte: Math.floor(startDate.getTime() / 1000) }
-    });
-
-    const data = payouts.data || [];
-
-    const analytics = {
-      total: data.length,
-      by_status: {},
-      by_destination: {},
-      total_amount: 0,
-      average_amount: 0,
-      recent_trend: []
-    };
-
-    data.forEach(payout => {
-      analytics.by_status[payout.status] = (analytics.by_status[payout.status] || 0) + 1;
-      if (payout.destination) {
-        analytics.by_destination[payout.destination] = (analytics.by_destination[payout.destination] || 0) + 1;
-      }
-      analytics.total_amount += payout.amount;
-    });
-
-    analytics.average_amount = data.length > 0 ? analytics.total_amount / data.length : 0;
-
-    // Generate 7-day trend
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dayStart = Math.floor(date.setHours(0, 0, 0, 0) / 1000);
-      const dayEnd = Math.floor(date.setHours(23, 59, 59, 999) / 1000);
-
-      const dayPayouts = data.filter(p => p.created >= dayStart && p.created <= dayEnd);
-      analytics.recent_trend.push({
-        date: new Date(dayStart * 1000).toISOString().split('T')[0],
-        count: dayPayouts.length,
-        amount: dayPayouts.reduce((sum, p) => sum + p.amount, 0)
-      });
-    }
-
-    res.json({ success: true, data: analytics });
-  } catch (e) {
-    console.error('admin payouts analytics error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch payouts analytics' });
-  }
-});
-
-// GET /api/admin/payouts/analytics/detailed - Get detailed payouts analytics
-router.get('/payouts/analytics/detailed', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.json({ success: true, data: { monthly_trends: [], success_rate: {}, processing_times: {} } });
-
-    const { timeRange = '90d' } = req.query;
-    const now = new Date();
-    let startDate;
-
-    switch (timeRange) {
-      case '30d': startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-      case '90d': startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); break;
-      case '180d': startDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000); break;
-      default: startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-    }
-
-    const payouts = await stripe.payouts.list({
-      limit: 100,
-      created: { gte: Math.floor(startDate.getTime() / 1000) }
-    });
-
-    const data = payouts.data || [];
-
-    // Calculate monthly trends
-    const monthlyTrends = [];
-    const monthsToShow = timeRange === '180d' ? 6 : (timeRange === '90d' ? 3 : 1);
-
-    for (let i = monthsToShow - 1; i >= 0; i--) {
-      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
-
-      const monthPayouts = data.filter(p => {
-        const payoutDate = new Date(p.created * 1000);
-        return payoutDate >= monthStart && payoutDate <= monthEnd;
-      });
-
-      monthlyTrends.push({
-        month: monthStart.toISOString().slice(0, 7),
-        count: monthPayouts.length,
-        amount: monthPayouts.reduce((sum, p) => sum + p.amount, 0),
-        successful: monthPayouts.filter(p => p.status === 'paid').length,
-        failed: monthPayouts.filter(p => p.status === 'failed').length
-      });
-    }
-
-    // Calculate success rate
-    const totalPayouts = data.length;
-    const successfulPayouts = data.filter(p => p.status === 'paid').length;
-    const failedPayouts = data.filter(p => p.status === 'failed').length;
-
-    const successRate = {
-      total: totalPayouts,
-      successful: successfulPayouts,
-      failed: failedPayouts,
-      success_percentage: totalPayouts > 0 ? (successfulPayouts / totalPayouts) * 100 : 0
-    };
-
-    // Calculate processing times (estimated)
-    const processingTimes = {
-      average_hours: 24, // Stripe typically processes in 1-2 business days
-      fastest_hours: 2,
-      slowest_hours: 72
-    };
-
-    res.json({
-      success: true,
-      data: {
-        monthly_trends: monthlyTrends,
-        success_rate: successRate,
-        processing_times: processingTimes
-      }
-    });
-  } catch (e) {
-    console.error('admin detailed payouts analytics error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch detailed analytics' });
-  }
-});
-
-// GET /api/admin/payouts/summary - Get payouts summary for dashboard
-router.get('/payouts/summary', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.json({ success: true, data: { pending_count: 0, total_pending_amount: 0, failed_count: 0 } });
-
-    // Get pending payouts
-    const pendingPayouts = await stripe.payouts.list({
-      status: 'pending',
-      limit: 100
-    });
-
-    // Get failed payouts from last 7 days
-    const weekAgo = Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000);
-    const failedPayouts = await stripe.payouts.list({
-      status: 'failed',
-      created: { gte: weekAgo },
-      limit: 100
-    });
-
-    const summary = {
-      pending_count: pendingPayouts.data.length,
-      total_pending_amount: pendingPayouts.data.reduce((sum, p) => sum + p.amount, 0),
-      failed_count: failedPayouts.data.length,
-      total_failed_amount: failedPayouts.data.reduce((sum, p) => sum + p.amount, 0)
-    };
-
-    res.json({ success: true, data: summary });
-  } catch (e) {
-    console.error('admin payouts summary error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch payouts summary' });
-  }
-});
-
-// Export payouts CSV
-router.get('/payouts/export.csv', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.status(200).end('id,status,amount,currency,destination,created\n');
-    const { status, destination, timeRange } = req.query;
-
-    let created = undefined;
-    if (timeRange) {
-      const now = new Date();
-      let startDate;
-      switch (timeRange) {
-        case '7d': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-        case '30d': startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-        case '90d': startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); break;
-      }
-      if (startDate) {
-        created = { gte: Math.floor(startDate.getTime() / 1000) };
-      }
-    }
-
-    const payoutList = await stripe.payouts.list({ limit: 100, status, destination, created });
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="payouts-${Date.now()}.csv"`);
-    res.write('id,status,amount,currency,destination,created,arrival_date,description\n');
-    payoutList.data.forEach(p => {
-      const arrivalDate = p.arrival_date ? new Date(p.arrival_date * 1000).toISOString() : '';
-      res.write(`${p.id},${p.status},${(p.amount/100).toFixed(2)},${p.currency},${p.destination || ''},${new Date(p.created*1000).toISOString()},${arrivalDate},"${(p.description || '').replace(/"/g, '""')}"\n`);
-    });
-    res.end();
-  } catch (e) {
-    console.error('admin payouts export error:', e);
-    if (!res.headersSent) res.status(500).end();
-  }
-});
-
-// GET /api/admin/payouts/:id - Get detailed payout information
-router.get('/payouts/:id', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.status(400).json({ success: false, message: 'Stripe not configured' });
-    const { id } = req.params;
-    const payout = await stripe.payouts.retrieve(id);
-    res.json({ success: true, data: payout });
-  } catch (e) {
-    console.error('admin payout details error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch payout details' });
-  }
-});
-
-// GET /api/admin/disputes - Get disputes list
-router.get('/disputes', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.json({ success: true, data: [] });
-
-    let { status, payment_intent, timeRange } = req.query;
-    let created = undefined;
-
-    if (timeRange) {
-      const now = new Date();
-      let startDate;
-      switch (timeRange) {
-        case '7d': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-        case '30d': startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-        case '90d': startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); break;
-      }
-      if (startDate) created = { gte: Math.floor(startDate.getTime() / 1000) };
-    }
-
-    const disputes = await stripe.disputes.list({
-      limit: 100,
-      status,
-      payment_intent,
-      created
-    });
-
-    res.json({ success: true, data: disputes.data });
-  } catch (e) {
-    console.error('admin disputes list error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch disputes list' });
-  }
-});
-
-// Export disputes CSV
-router.get('/disputes/export.csv', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Stripe not configured. Disputes export requires Stripe integration.' 
-      });
-    }
-    const { status, paymentIntentId, timeRange } = req.query;
-
-    let created = undefined;
-    if (timeRange) {
-      const now = new Date();
-      let startDate;
-      switch (timeRange) {
-        case '7d': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-        case '30d': startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-        case '90d': startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); break;
-      }
-      if (startDate) created = { gte: Math.floor(startDate.getTime() / 1000) };
-    }
-
-    const disputes = await stripe.disputes.list({
-      limit: 100,
-      payment_intent: paymentIntentId,
-      status,
-      created
-    });
-
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="disputes-${Date.now()}.csv"`);
-    res.write('id,status,reason,amount,currency,payment_intent,created,evidence_due_by\n');
-
-    disputes.data.forEach(d => {
-      const evidenceDueBy = d.evidence_details?.due_by ? new Date(d.evidence_details.due_by * 1000).toISOString() : '';
-      res.write(`${d.id},${d.status},${d.reason || ''},${(d.amount/100).toFixed(2)},${d.currency},${d.payment_intent || ''},${new Date(d.created*1000).toISOString()},${evidenceDueBy}\n`);
-    });
-    res.end();
-  } catch (e) {
-    console.error('admin disputes export error:', e);
-    if (!res.headersSent) res.status(500).json({ success: false, message: 'Failed to export disputes' });
-  }
-});
 
 // ============================================================================
-// PAYMENTS â€” Stripe-backed (Payment Intents, Charges, Payment Methods)
+// PAYMENTS — Marketplace Orders and Transactions
 // ============================================================================
 
 // GET /api/admin/payments (cursor-based)
@@ -1835,8 +1408,7 @@ router.get('/payments/:id', authenticateTokenStrict, requireAdmin, async (req, r
       createdAt: order.createdAt,
       orderNumber: order.orderNumber,
       paymentDetails: order.paymentDetails,
-      transactionReference: order.transactionReference,
-      tx_ref: order.tx_ref
+      transactionReference: order.transactionReference
     };
 
     res.json({
@@ -1881,69 +1453,6 @@ router.post('/payments/:id/cancel', authenticateTokenStrict, requireAdmin, async
   } catch (e) {
     console.error('admin payment cancel error:', e);
     res.status(500).json({ success: false, message: 'Failed to cancel payment' });
-  }
-});
-
-// GET /api/admin/charges - Get charges list
-router.get('/charges', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.json({ success: true, data: [], page_info: { has_more: false, limit: 0, after: null, before: null } });
-
-    const { customer, payment_intent, after, before, limit = 50, created } = req.query;
-    const limitN = Math.min(100, Math.max(1, Number(limit) || 50));
-
-    const listParams = {
-      limit: limitN,
-      starting_after: after || undefined,
-      ending_before: before || undefined,
-    };
-
-    if (customer) listParams.customer = customer;
-    if (payment_intent) listParams.payment_intent = payment_intent;
-    if (created) {
-      try {
-        listParams.created = typeof created === 'string' && created.trim().startsWith('{')
-          ? JSON.parse(created)
-          : created;
-      } catch (_) {
-        listParams.created = created;
-      }
-    }
-
-    const list = await stripe.charges.list(listParams);
-    const data = list.data || [];
-    const firstId = data[0]?.id || null;
-    const lastId = data[data.length - 1]?.id || null;
-
-    res.json({
-      success: true,
-      data,
-      page_info: {
-        has_more: !!list.has_more,
-        limit: limitN,
-        first_id: firstId,
-        last_id: lastId,
-        next_after: list.has_more ? lastId : null,
-        before: firstId
-      }
-    });
-  } catch (e) {
-    console.error('admin charges list error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch charges' });
-  }
-});
-
-// GET /api/admin/charges/:id - Get detailed charge information
-router.get('/charges/:id', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.status(400).json({ success: false, message: 'Stripe not configured' });
-    const { id } = req.params;
-
-    const charge = await stripe.charges.retrieve(id);
-    res.json({ success: true, data: charge });
-  } catch (e) {
-    console.error('admin charge detail error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch charge details' });
   }
 });
 
@@ -2015,326 +1524,6 @@ router.get('/payments/export.csv', authenticateTokenStrict, requireAdmin, async 
   } catch (e) {
     console.error('admin payments export error:', e);
     if (!res.headersSent) res.status(500).end();
-  }
-});
-
-// ============================================================================
-// DISPUTES â€” Stripe-backed
-// ============================================================================
-
-// GET /api/admin/disputes (cursor-based)
-// Query: limit (1..100), after, before, status, paymentIntentId
-router.get('/disputes', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.json({ success: true, data: [], page_info: { has_more: false, limit: 0, after: null, before: null } });
-    const { status, paymentIntentId, after, before, limit = 50 } = req.query;
-    const limitN = Math.min(100, Math.max(1, Number(limit)||50));
-    const list = await stripe.disputes.list({ limit: limitN, payment_intent: paymentIntentId, status, starting_after: after || undefined, ending_before: before || undefined });
-    const data = list.data || [];
-    const firstId = data[0]?.id || null;
-    const lastId = data[data.length - 1]?.id || null;
-    res.json({ success: true, data, page_info: { has_more: !!list.has_more, limit: limitN, first_id: firstId, last_id: lastId, next_after: list.has_more ? lastId : null, before: firstId } });
-  } catch (e) {
-    console.error('admin disputes list error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch disputes' });
-  }
-});
-
-// POST /api/admin/disputes/:id/submit-evidence
-const disputeEvidenceSchema = Joi.object({
-  evidence: Joi.object({
-    product_description: Joi.string().allow(''),
-    customer_communication: Joi.string().allow(''),
-    refund_policy: Joi.string().allow(''),
-    service_date: Joi.string().allow(''),
-    service_documentation: Joi.string().allow(''),
-    shipping_carrier: Joi.string().allow(''),
-    shipping_tracking_number: Joi.string().allow(''),
-    uncategorized_text: Joi.string().allow(''),
-  }).unknown(true).required(),
-}).required();
-
-router.post('/disputes/:id/submit-evidence', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.status(400).json({ success: false, message: 'Stripe not configured' });
-    const { id } = req.params;
-    const { error, value } = disputeEvidenceSchema.validate(req.body || {}, { abortEarly: false });
-    if (error) return res.status(400).json({ success: false, message: 'Validation failed', details: error.details.map(d=>d.message) });
-    const { evidence } = value;
-    // Update evidence then submit
-    const updated = await stripe.disputes.update(id, { evidence });
-    const submitted = await stripe.disputes.submit(id);
-    res.json({ success: true, data: submitted });
-  } catch (e) {
-    console.error('admin disputes submit error:', e);
-    res.status(500).json({ success: false, message: 'Failed to submit evidence' });
-  }
-});
-
-// GET /api/admin/disputes/analytics/overview - Get disputes analytics
-router.get('/disputes/analytics/overview', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.json({ success: true, data: { total: 0, by_status: {}, by_reason: {}, recent_trend: [] } });
-
-    const { timeRange = '30d' } = req.query;
-    const now = new Date();
-    let startDate;
-
-    switch (timeRange) {
-      case '7d': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-      case '30d': startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-      case '90d': startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); break;
-      default: startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    }
-
-    // Fetch all disputes in the time range
-    const disputes = await stripe.disputes.list({
-      limit: 100,
-      created: { gte: Math.floor(startDate.getTime() / 1000) }
-    });
-
-    const data = disputes.data || [];
-
-    // Calculate analytics
-    const analytics = {
-      total: data.length,
-      by_status: {},
-      by_reason: {},
-      total_amount: 0,
-      average_amount: 0,
-      recent_trend: []
-    };
-
-    // Group by status and reason
-    data.forEach(dispute => {
-      analytics.by_status[dispute.status] = (analytics.by_status[dispute.status] || 0) + 1;
-      analytics.by_reason[dispute.reason] = (analytics.by_reason[dispute.reason] || 0) + 1;
-      analytics.total_amount += dispute.amount;
-    });
-
-    analytics.average_amount = data.length > 0 ? analytics.total_amount / data.length : 0;
-
-    // Calculate daily trend for the last 7 days
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dayStart = Math.floor(date.setHours(0, 0, 0, 0) / 1000);
-      const dayEnd = Math.floor(date.setHours(23, 59, 59, 999) / 1000);
-
-      const dayDisputes = data.filter(d => d.created >= dayStart && d.created <= dayEnd);
-      analytics.recent_trend.push({
-        date: new Date(dayStart * 1000).toISOString().split('T')[0],
-        count: dayDisputes.length,
-        amount: dayDisputes.reduce((sum, d) => sum + d.amount, 0)
-      });
-    }
-
-    res.json({ success: true, data: analytics });
-  } catch (e) {
-    console.error('admin disputes analytics error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch disputes analytics' });
-  }
-});
-
-// GET /api/admin/disputes/analytics/detailed - Get detailed dispute analytics
-router.get('/disputes/analytics/detailed', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.json({ success: true, data: { monthly_trends: [], win_loss_ratio: {}, response_times: {} } });
-
-    const { timeRange = '90d' } = req.query;
-    const now = new Date();
-    let startDate;
-
-    switch (timeRange) {
-      case '30d': startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-      case '90d': startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); break;
-      case '180d': startDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000); break;
-      case '365d': startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000); break;
-      default: startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-    }
-
-    // Fetch all disputes in the time range
-    const disputes = await stripe.disputes.list({
-      limit: 100,
-      created: { gte: Math.floor(startDate.getTime() / 1000) }
-    });
-
-    const data = disputes.data || [];
-
-    // Calculate monthly trends
-    const monthlyTrends = {};
-    data.forEach(dispute => {
-      const month = new Date(dispute.created * 1000).toISOString().substring(0, 7); // YYYY-MM
-      if (!monthlyTrends[month]) {
-        monthlyTrends[month] = { count: 0, amount: 0, won: 0, lost: 0 };
-      }
-      monthlyTrends[month].count++;
-      monthlyTrends[month].amount += dispute.amount;
-      if (dispute.status === 'won') monthlyTrends[month].won++;
-      if (dispute.status === 'lost') monthlyTrends[month].lost++;
-    });
-
-    // Calculate win/loss ratio
-    const winLossRatio = {
-      won: data.filter(d => d.status === 'won').length,
-      lost: data.filter(d => d.status === 'lost').length,
-      pending: data.filter(d => ['needs_response', 'under_review'].includes(d.status)).length
-    };
-
-    // Calculate average response times (mock data - would need actual response tracking)
-    const responseTimes = {
-      average_response_hours: 24,
-      fastest_response_hours: 2,
-      slowest_response_hours: 72,
-      on_time_responses: Math.floor(data.length * 0.85)
-    };
-
-    const analytics = {
-      monthly_trends: Object.entries(monthlyTrends).map(([month, stats]) => ({
-        month,
-        ...stats
-      })).sort((a, b) => a.month.localeCompare(b.month)),
-      win_loss_ratio: winLossRatio,
-      response_times: responseTimes,
-      total_disputes: data.length,
-      total_amount: data.reduce((sum, d) => sum + d.amount, 0)
-    };
-
-    res.json({ success: true, data: analytics });
-  } catch (e) {
-    console.error('admin detailed disputes analytics error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch detailed analytics' });
-  }
-});
-
-// GET /api/admin/disputes/summary - Get dispute summary for dashboard
-router.get('/disputes/summary', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.json({ success: true, data: { urgent_count: 0, total_pending: 0, total_amount_at_risk: 0 } });
-
-    // Get disputes that need immediate attention
-    const urgentDisputes = await stripe.disputes.list({
-      status: 'needs_response',
-      limit: 100
-    });
-
-    const allPending = await stripe.disputes.list({
-      limit: 100
-    });
-
-    const pendingDisputes = allPending.data.filter(d =>
-      ['needs_response', 'under_review'].includes(d.status)
-    );
-
-    // Calculate urgent disputes (evidence due within 24 hours)
-    const now = Math.floor(Date.now() / 1000);
-    const urgentCount = urgentDisputes.data.filter(d =>
-      d.evidence_details?.due_by && (d.evidence_details.due_by - now) < 86400
-    ).length;
-
-    const summary = {
-      urgent_count: urgentCount,
-      total_pending: pendingDisputes.length,
-      total_amount_at_risk: pendingDisputes.reduce((sum, d) => sum + d.amount, 0),
-      needs_response: urgentDisputes.data.length,
-      overdue_evidence: urgentDisputes.data.filter(d =>
-        d.evidence_details?.due_by && d.evidence_details.due_by < now
-      ).length
-    };
-
-    res.json({ success: true, data: summary });
-  } catch (e) {
-    console.error('admin disputes summary error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch dispute summary' });
-  }
-});
-
-// GET /api/admin/disputes/:id - Get detailed dispute information
-router.get('/disputes/:id', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) return res.status(400).json({ success: false, message: 'Stripe not configured' });
-    const { id } = req.params;
-    const dispute = await stripe.disputes.retrieve(id);
-    res.json({ success: true, data: dispute });
-  } catch (e) {
-    console.error('admin dispute detail error:', e);
-    res.status(500).json({ success: false, message: 'Failed to fetch dispute details' });
-  }
-});
-
-// POST /api/admin/disputes/:id/notes - Add internal notes to dispute
-const disputeNotesSchema = Joi.object({
-  note: Joi.string().required().min(1).max(1000),
-  priority: Joi.string().valid('low', 'medium', 'high').default('medium')
-}).required();
-
-router.post('/disputes/:id/notes', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { error, value } = disputeNotesSchema.validate(req.body || {}, { abortEarly: false });
-    if (error) return res.status(400).json({ success: false, message: 'Validation failed', details: error.details.map(d=>d.message) });
-
-    const { note, priority } = value;
-    const userId = req.user.userId;
-
-    // Store note in metadata (since Stripe doesn't have a notes field)
-    // In a real implementation, you might want to store this in your own database
-    const noteData = {
-      note,
-      priority,
-      added_by: userId,
-      added_at: new Date().toISOString()
-    };
-
-    // For now, we'll just return success - in production you'd store this in your database
-    res.json({ success: true, data: noteData });
-  } catch (e) {
-    console.error('admin dispute notes error:', e);
-    res.status(500).json({ success: false, message: 'Failed to add note' });
-  }
-});
-
-// Export disputes CSV
-router.get('/disputes/export.csv', authenticateTokenStrict, requireAdmin, async (req, res) => {
-  try {
-    if (!stripe) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Stripe not configured. Disputes export requires Stripe integration.' 
-      });
-    }
-    const { status, paymentIntentId, timeRange } = req.query;
-
-    let created = undefined;
-    if (timeRange) {
-      const now = new Date();
-      let startDate;
-      switch (timeRange) {
-        case '7d': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-        case '30d': startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-        case '90d': startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); break;
-      }
-      if (startDate) created = { gte: Math.floor(startDate.getTime() / 1000) };
-    }
-
-    const disputes = await stripe.disputes.list({
-      limit: 100,
-      payment_intent: paymentIntentId,
-      status,
-      created
-    });
-
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="disputes-${Date.now()}.csv"`);
-    res.write('id,status,reason,amount,currency,payment_intent,created,evidence_due_by\n');
-
-    disputes.data.forEach(d => {
-      const evidenceDueBy = d.evidence_details?.due_by ? new Date(d.evidence_details.due_by * 1000).toISOString() : '';
-      res.write(`${d.id},${d.status},${d.reason || ''},${(d.amount/100).toFixed(2)},${d.currency},${d.payment_intent || ''},${new Date(d.created*1000).toISOString()},${evidenceDueBy}\n`);
-    });
-    res.end();
-  } catch (e) {
-    console.error('admin disputes export error:', e);
-    if (!res.headersSent) res.status(500).json({ success: false, message: 'Failed to export disputes' });
   }
 });
 
@@ -5704,9 +4893,9 @@ router.get('/dashboard/system-health', authenticateTokenStrict, requireAdmin, as
       storageStatus = 'error';
     }
     
-    // Check payment services (check if Stripe is configured)
-    const stripeSecret = process.env.STRIPE_SECRET_KEY;
-    const paymentsStatus = stripeSecret ? 'healthy' : 'warning';
+    // Check payment services (check if Paystack is configured)
+    const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
+    const paymentsStatus = paystackSecret ? 'healthy' : 'warning';
     
     const healthData = {
       database: dbStatus,

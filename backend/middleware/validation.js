@@ -216,7 +216,7 @@ const orderSchemas = {
       })
     ).min(1).required(),
     paymentMethod: Joi.string().valid(
-      'flutterwave', 'paystack', 'crypto', 'nft', 
+      'paystack', 'crypto', 'nft', 
       'mobile_money', 'airtel_money', 'cash_on_delivery', 'card_payment'
     ).required(),
     shippingAddress: Joi.object({

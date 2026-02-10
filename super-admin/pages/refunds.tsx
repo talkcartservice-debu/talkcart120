@@ -46,7 +46,7 @@ export default function RefundsAdmin() {
   const [limit, setLimit] = useState(50);
   const [status, setStatus] = useState('');
   const [currency, setCurrency] = useState('');
-  const [paymentIntentId, setPaymentIntentId] = useState('');
+  const [transactionReference, setPaymentIntentId] = useState('');
   const [userId, setUserId] = useState('');
   const [loading, setLoading] = useState(false);
   const [meta, setMeta] = useState<any>(null);
@@ -57,7 +57,7 @@ export default function RefundsAdmin() {
   const [until, setUntil] = useState('');
   const [processDialogOpen, setProcessDialogOpen] = useState(false);
   const [processForm, setProcessForm] = useState({
-    paymentIntentId: '',
+    transactionReference: '',
     amount: '',
     currency: 'USD',
     reason: ''
@@ -67,7 +67,7 @@ export default function RefundsAdmin() {
   const fetchRefunds = async () => {
     setLoading(true);
     try {
-      const params: any = { page, limit, status, currency, paymentIntentId, userId };
+      const params: any = { page, limit, status, currency, transactionReference, userId };
       if (since) params.since = new Date(since).getTime();
       if (until) params.until = new Date(until).getTime();
 
@@ -164,14 +164,14 @@ export default function RefundsAdmin() {
   };
 
   const handleProcessRefund = async () => {
-    if (!processForm.paymentIntentId || !processForm.amount || !processForm.currency) {
+    if (!processForm.transactionReference || !processForm.amount || !processForm.currency) {
       return;
     }
 
     setProcessing(true);
     try {
       const res = await AdminApi.processRefund({
-        paymentIntentId: processForm.paymentIntentId,
+        transactionReference: processForm.transactionReference,
         amount: parseFloat(processForm.amount),
         currency: processForm.currency,
         reason: processForm.reason
@@ -179,7 +179,7 @@ export default function RefundsAdmin() {
 
       if (res?.success) {
         setProcessDialogOpen(false);
-        setProcessForm({ paymentIntentId: '', amount: '', currency: 'USD', reason: '' });
+        setProcessForm({ transactionReference: '', amount: '', currency: 'USD', reason: '' });
         fetchRefunds(); // Refresh the list
         fetchAnalytics(); // Refresh analytics
       }
@@ -194,7 +194,7 @@ export default function RefundsAdmin() {
   if (!guard.allowed) return <div style={{ padding: 20, color: 'crimson' }}>{guard.error || 'Access denied'}</div>;
 
   const exportCsv = async () => {
-    const url = AdminApi.refundsExportUrl({ status, currency, paymentIntentId, userId });
+    const url = AdminApi.refundsExportUrl({ status, currency, transactionReference, userId });
     await downloadCsvWithAuth(url, `refunds-${Date.now()}.csv`);
   };
 
@@ -315,8 +315,8 @@ export default function RefundsAdmin() {
           </Grid>
           <Grid item xs={12} sm={6} md={2}>
             <TextField
-              label="Payment Intent ID"
-              value={paymentIntentId}
+              label="Transaction Reference"
+              value={transactionReference}
               onChange={(e) => setPaymentIntentId(e.target.value)}
               fullWidth
               size="small"
@@ -417,7 +417,7 @@ export default function RefundsAdmin() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                        {refund.paymentIntentId || 'N/A'}
+                        {refund.transactionReference || 'N/A'}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -504,9 +504,9 @@ export default function RefundsAdmin() {
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" color="textSecondary">Payment Intent ID</Typography>
+                <Typography variant="subtitle2" color="textSecondary">Transaction Reference</Typography>
                 <Typography variant="body1" sx={{ fontFamily: 'monospace', mb: 2 }}>
-                  {selectedRefund.paymentIntentId || 'N/A'}
+                  {selectedRefund.transactionReference || 'N/A'}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
@@ -552,13 +552,13 @@ export default function RefundsAdmin() {
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
             <TextField
-              label="Payment Intent ID"
-              value={processForm.paymentIntentId}
-              onChange={(e) => setProcessForm({ ...processForm, paymentIntentId: e.target.value })}
+              label="Transaction Reference"
+              value={processForm.transactionReference}
+              onChange={(e) => setProcessForm({ ...processForm, transactionReference: e.target.value })}
               fullWidth
               required
               placeholder="pi_1234567890abcdef"
-              helperText="The Payment Intent ID to refund"
+              helperText="The Transaction Reference to refund"
             />
             <Grid container spacing={2}>
               <Grid item xs={8}>
@@ -596,7 +596,7 @@ export default function RefundsAdmin() {
             />
             <Alert severity="warning">
               <Typography variant="body2">
-                This will process a manual refund. Make sure the Payment Intent ID is correct and the amount is accurate.
+                This will process a manual refund. Make sure the Transaction Reference is correct and the amount is accurate.
               </Typography>
             </Alert>
           </Stack>
@@ -608,7 +608,7 @@ export default function RefundsAdmin() {
           <Button
             onClick={handleProcessRefund}
             variant="contained"
-            disabled={processing || !processForm.paymentIntentId || !processForm.amount}
+            disabled={processing || !processForm.transactionReference || !processForm.amount}
             startIcon={processing ? <CircularProgress size={16} /> : <RefundIcon />}
           >
             {processing ? 'Processing...' : 'Process Refund'}

@@ -151,12 +151,9 @@ class EnvValidator {
     }
 
     // Payment processing
-    if (process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.startsWith('sk_')) {
-      this.warnings.push('STRIPE_SECRET_KEY should start with "sk_"');
-    }
 
-    if (process.env.FLW_SECRET_KEY && !process.env.FLW_SECRET_KEY.startsWith('FLWSECK_')) {
-      this.warnings.push('FLW_SECRET_KEY should start with "FLWSECK_"');
+    if (process.env.PAYSTACK_SECRET_KEY && !process.env.PAYSTACK_SECRET_KEY.startsWith('sk_')) {
+      this.warnings.push('PAYSTACK_SECRET_KEY should start with "sk_"');
     }
 
     // Email configuration
@@ -205,7 +202,7 @@ class EnvValidator {
       jwt: process.env.JWT_SECRET ? 'configured' : 'missing',
       cloudinary: process.env.CLOUDINARY_CLOUD_NAME ? 'configured' : 'not configured',
       payments: {
-        flutterwave: process.env.FLW_SECRET_KEY ? 'configured' : 'not configured'
+        paystack: process.env.PAYSTACK_SECRET_KEY ? 'configured' : 'not configured'
       },
       email: process.env.EMAIL_HOST ? 'configured' : 'not configured',
       redis: process.env.REDIS_URL ? 'configured' : 'not configured',

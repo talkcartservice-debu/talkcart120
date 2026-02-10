@@ -28,6 +28,9 @@ export default function Document() {
         {/* Theme color for mobile browsers */}
         <meta name="theme-color" content="#667eea" />
         <meta name="msapplication-TileColor" content="#667eea" />
+        
+        {/* Paystack Inline SDK */}
+        <script src="https://js.paystack.co/v1/inline.js" async></script>
       </Head>
       <body>
         <Main />

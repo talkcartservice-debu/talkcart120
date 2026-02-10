@@ -71,7 +71,7 @@ export default function DisputesAdmin() {
   // Main state
   const [tabValue, setTabValue] = useState(0);
   const [status, setStatus] = useState('');
-  const [paymentIntentId, setPaymentIntentId] = useState('');
+  const [transactionReference, setPaymentIntentId] = useState('');
   const [timeRange, setTimeRange] = useState('30d');
   const [items, setItems] = useState<any[]>([]);
   const [limit, setLimit] = useState(25);
@@ -107,7 +107,7 @@ export default function DisputesAdmin() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await AdminExtraApi.getDisputesCursor({ status, paymentIntentId }, { limit, after, before });
+      const res = await AdminExtraApi.getDisputesCursor({ status, transactionReference }, { limit, after, before });
       if (res?.success) {
         setItems(res.data || []);
         setPageInfo(res.page_info || {});
@@ -165,7 +165,7 @@ export default function DisputesAdmin() {
 
   const exportCsv = async () => {
     try {
-      const url = AdminExtraApi.disputesExportUrl({ status, paymentIntentId, timeRange });
+      const url = AdminExtraApi.disputesExportUrl({ status, transactionReference, timeRange });
       await downloadCsvWithAuth(url, `disputes-${Date.now()}.csv`);
     } catch (error: any) {
       console.error('Export failed:', error);
@@ -290,7 +290,7 @@ export default function DisputesAdmin() {
               <MenuItem value="won">Won</MenuItem>
               <MenuItem value="lost">Lost</MenuItem>
             </TextField>
-            <TextField label="PaymentIntent ID" value={paymentIntentId} onChange={(e) => setPaymentIntentId(e.target.value)} sx={{ minWidth: 260 }} />
+            <TextField label="Transaction Reference" value={transactionReference} onChange={(e) => setPaymentIntentId(e.target.value)} sx={{ minWidth: 260 }} />
             <TextField label="Time Range" value={timeRange} onChange={(e) => setTimeRange(e.target.value)} select sx={{ minWidth: 150 }}>
               <MenuItem value="7d">Last 7 days</MenuItem>
               <MenuItem value="30d">Last 30 days</MenuItem>

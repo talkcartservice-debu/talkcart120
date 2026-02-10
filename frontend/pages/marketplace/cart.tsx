@@ -84,7 +84,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/hooks/useCart';
 import OptimizedImage from '@/components/media/OptimizedImage';
 import api from '@/lib/api';
-import FlutterwaveProductCheckout from '@/components/marketplace/FlutterwaveProductCheckout';
 import PaystackCartCheckout from '@/components/marketplace/PaystackCartCheckout';
 
 interface CartItem {
@@ -124,7 +123,6 @@ const CartPage: React.FC = () => {
     zipCode: '',
     phone: '',
   });
-  const [showFlutterwave, setShowFlutterwave] = useState(false);
   const [showPaystack, setShowPaystack] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0);
@@ -310,16 +308,11 @@ const CartPage: React.FC = () => {
       console.log('Checkout API response:', response);
       
       if (response?.success && response?.data) {
-        // For mobile money, we need to process payment through Flutterwave
-        if (paymentMethod === 'mobile_money') {
-          setCreatedOrderId(response.data._id || null);
-          setShowFlutterwave(true);
-        } 
-        // For card payments, we need to process payment through Paystack
-        else if (paymentMethod === 'card_payment') {
+        // For mobile money and card payments, we need to process payment through Paystack
+        if (paymentMethod === 'mobile_money' || paymentMethod === 'card_payment') {
           setCreatedOrderId(response.data._id || null);
           setShowPaystack(true);
-        }
+        } 
         else {
           // For other payment methods or COD, redirect to order details page
           await fetchCart();
@@ -360,40 +353,6 @@ const CartPage: React.FC = () => {
     
     // Default to mobile money for quick checkout
     handleDirectCheckout('mobile_money');
-  };
-
-  const handleFlutterwaveSuccess = async (paymentDetails: any) => {
-    if (!createdOrderId) return;
-    
-    try {
-      // Confirm payment with Flutterwave transaction details
-      const response: any = await api.marketplace.confirmPayment(
-        createdOrderId, 
-        'mobile_money', 
-        paymentDetails.flw_tx_id
-      );
-      
-      if (response?.success) {
-        await fetchCart();
-        toast.success('Order created and payment confirmed successfully');
-        // Redirect to order details page
-        router.push(`/marketplace/orders/${createdOrderId}`);
-      } else {
-        toast.error(response?.error || 'Failed to confirm payment');
-      }
-    } catch (err: any) {
-      console.error('Payment confirmation error:', err);
-      toast.error(err.message || 'Failed to confirm payment');
-    } finally {
-      setShowFlutterwave(false);
-      setCreatedOrderId(null);
-    }
-  };
-
-  const handleFlutterwaveError = (errorMessage: string) => {
-    toast.error(errorMessage);
-    setShowFlutterwave(false);
-    setCreatedOrderId(null);
   };
 
   const handlePaystackSuccess = async (reference: string) => {
@@ -1247,54 +1206,6 @@ const CartPage: React.FC = () => {
             ) : (
               'Confirm Order'
             )}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Flutterwave Payment Dialog */}
-      <Dialog 
-        open={showFlutterwave && !!createdOrderId} 
-        onClose={() => setShowFlutterwave(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h5" fontWeight={700}>
-              Complete Payment
-            </Typography>
-            <IconButton onClick={() => setShowFlutterwave(false)}>
-              <X size={24} />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {createdOrderId ? (
-            <FlutterwaveProductCheckout
-              product={{
-                _id: createdOrderId,
-                name: 'Cart Order',
-                price: cart?.totalPrice || 0,
-                currency: cart?.items?.[0]?.currency || 'USD'
-              }}
-              onCompleted={handleFlutterwaveSuccess}
-              onError={handleFlutterwaveError}
-            />
-          ) : (
-            <Typography>Loading payment information...</Typography>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button 
-            onClick={() => setShowFlutterwave(false)}
-            variant="outlined"
-            sx={{ 
-              borderRadius: 2,
-              py: 1,
-              px: 3
-            }}
-          >
-            Cancel
           </Button>
         </DialogActions>
       </Dialog>

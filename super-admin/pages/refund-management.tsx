@@ -98,7 +98,7 @@ export default function RefundManagement() {
   // Forms
   const [createForm, setCreateForm] = useState({
     orderId: '',
-    paymentIntentId: '',
+    transactionReference: '',
     customerId: '',
     refundAmount: '',
     originalAmount: '',
@@ -191,7 +191,7 @@ export default function RefundManagement() {
     try {
       const response = await AdminExtraApi.createRefund({
         orderId: createForm.orderId,
-        paymentIntentId: createForm.paymentIntentId,
+        transactionReference: createForm.transactionReference,
         customerId: createForm.customerId,
         refundAmount: parseFloat(createForm.refundAmount),
         originalAmount: createForm.originalAmount ? parseFloat(createForm.originalAmount) : undefined,
@@ -207,7 +207,7 @@ export default function RefundManagement() {
         setCreateDialogOpen(false);
         setCreateForm({
           orderId: '',
-          paymentIntentId: '',
+          transactionReference: '',
           customerId: '',
           refundAmount: '',
           originalAmount: '',
@@ -961,9 +961,9 @@ export default function RefundManagement() {
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
-                label="Payment Intent ID"
-                value={createForm.paymentIntentId}
-                onChange={(e) => setCreateForm({ ...createForm, paymentIntentId: e.target.value })}
+                label="Transaction Reference"
+                value={createForm.transactionReference}
+                onChange={(e) => setCreateForm({ ...createForm, transactionReference: e.target.value })}
                 fullWidth
                 required
                 placeholder="pi_1234567890abcdef"
@@ -1079,7 +1079,7 @@ export default function RefundManagement() {
           <Button
             onClick={handleCreateRefund}
             variant="contained"
-            disabled={!createForm.orderId || !createForm.paymentIntentId || !createForm.customerId || !createForm.refundAmount}
+            disabled={!createForm.orderId || !createForm.transactionReference || !createForm.customerId || !createForm.refundAmount}
           >
             Create Refund
           </Button>

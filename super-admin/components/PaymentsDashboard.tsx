@@ -99,7 +99,6 @@ export default function PaymentsDashboard() {
 
   const getPaymentMethodLabel = (method: string) => {
     switch (method) {
-      case 'flutterwave': return 'Flutterwave';
       case 'mobile_money': return 'Mobile Money';
       case 'airtel_money': return 'Airtel Money';
       case 'paystack': return 'Paystack';

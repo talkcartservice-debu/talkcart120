@@ -600,7 +600,7 @@ export default function AdminPaymentSettings() {
                       <MenuItem value="tigo">Tigo</MenuItem>
                       <MenuItem value="orange">Orange</MenuItem>
                       <MenuItem value="ecocash">EcoCash</MenuItem>
-                      <MenuItem value="flutterwave">Flutterwave</MenuItem>
+                      <MenuItem value="paystack">Paystack</MenuItem>
                       <MenuItem value="other">Other</MenuItem>
                     </TextField>
                     

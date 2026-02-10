@@ -13,7 +13,7 @@ const AdminRefundsPage: NextPage = () => {
   const [joined, setJoined] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [currency, setCurrency] = useState<string>('');
-  const [paymentIntentId, setPaymentIntentId] = useState<string>('');
+  const [transactionReference, setPaymentIntentId] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(25);
@@ -36,7 +36,7 @@ const AdminRefundsPage: NextPage = () => {
       if (until) params.set('until', String(new Date(until).getTime()));
       if (status) params.set('status', status);
       if (currency) params.set('currency', currency);
-      if (paymentIntentId) params.set('paymentIntentId', paymentIntentId.trim());
+      if (transactionReference) params.set('transactionReference', transactionReference.trim());
       if (userId) params.set('userId', userId.trim());
       const res = await fetch(`/api/admin/refunds/recent?${params.toString()}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` } });
       const json = await res.json();
@@ -44,7 +44,7 @@ const AdminRefundsPage: NextPage = () => {
     } catch (e) {
       // ignore
     }
-  }, [limit, page, since, until, status, currency, paymentIntentId, userId]);
+  }, [limit, page, since, until, status, currency, transactionReference, userId]);
 
   useEffect(() => {
     if (user?.role !== 'admin') return;
@@ -108,8 +108,8 @@ const AdminRefundsPage: NextPage = () => {
                 sx={{ minWidth: 140 }}
               />
               <TextField
-                label="Payment Intent ID"
-                value={paymentIntentId}
+                label="Transaction Reference"
+                value={transactionReference}
                 onChange={(e) => setPaymentIntentId(e.target.value)}
                 sx={{ minWidth: 220 }}
               />
@@ -184,7 +184,7 @@ const AdminRefundsPage: NextPage = () => {
                 if (until) params.set('until', String(new Date(until).getTime()));
                 if (status) params.set('status', status);
                 if (currency) params.set('currency', currency);
-                if (paymentIntentId) params.set('paymentIntentId', paymentIntentId.trim());
+                if (transactionReference) params.set('transactionReference', transactionReference.trim());
                 if (userId) params.set('userId', userId.trim());
                 const url = `/api/admin/refunds/export.csv?${params.toString()}`;
                 const res = await fetch(url, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` } });
@@ -210,7 +210,7 @@ const AdminRefundsPage: NextPage = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Chip size="small" label={ev.type.toUpperCase()} color={ev.type === 'failed' ? 'error' : 'success'} />
                     <Typography variant="body2">
-                      {ev.currency} {((ev.amountCents || 0) / 100).toFixed(2)} — PI: {ev.paymentIntentId}
+                      {ev.currency} {((ev.amountCents || 0) / 100).toFixed(2)} — PI: {ev.transactionReference}
                     </Typography>
                   </Box>
                   <Typography variant="caption" color="text.secondary">{new Date(ev.at).toLocaleTimeString()}</Typography>

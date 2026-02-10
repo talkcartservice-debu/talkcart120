@@ -44,10 +44,6 @@ export const config = {
     uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
   },
 
-  // Stripe Configuration
-  stripe: {
-    publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
-  },
 
   // Feature Flags
   features: {
