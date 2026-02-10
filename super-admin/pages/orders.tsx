@@ -265,8 +265,12 @@ export default function OrdersAdmin() {
             sx={{ minWidth: 150 }}
           >
             <MenuItem value="">All Methods</MenuItem>
-
-            <MenuItem value="crypto">Crypto</MenuItem>
+            <MenuItem value="paystack">Paystack</MenuItem>
+            <MenuItem value="card_payment">Card Payment</MenuItem>
+            <MenuItem value="mobile_money">Mobile Money</MenuItem>
+            <MenuItem value="airtel_money">Airtel Money</MenuItem>
+            <MenuItem value="cash_on_delivery">Cash on Delivery</MenuItem>
+            <MenuItem value="nft">NFT</MenuItem>
           </TextField>
           <TextField 
             label="Vendor ID" 

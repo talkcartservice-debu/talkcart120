@@ -33,7 +33,7 @@ export interface Order {
   items: OrderItem[];
   totalAmount: number;
   currency: string;
-  paymentMethod: 'paystack' | 'crypto' | 'nft';
+  paymentMethod: 'paystack' | 'nft';
   paymentDetails: Record<string, any>;
   status: 'pending' | 'processing' | 'completed' | 'cancelled' | 'refunded';
   shippingAddress?: ShippingAddress;

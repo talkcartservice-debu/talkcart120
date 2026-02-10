@@ -1013,7 +1013,7 @@ router.post('/products/:id/buy', authenticateTokenStrict, async (req, res) => {
       // Non-NFT: require real payment proof
       const { paymentMethod, paymentDetails } = req.body || {};
 
-      if (paymentMethod === 'paystack') {
+      if (['paystack', 'card_payment', 'mobile_money', 'airtel_money'].includes(paymentMethod)) {
         const reference = paymentDetails?.reference || paymentDetails?.transaction_id || paymentDetails?.id;
         if (!reference) {
           return res.status(400).json({ success: false, error: 'Missing Paystack payment details (reference)' });
@@ -1037,31 +1037,6 @@ router.post('/products/:id/buy', authenticateTokenStrict, async (req, res) => {
           amount: paidAmount,
           currency: String(verify.data.currency || product.currency).toUpperCase(),
           reference
-        };
-      } else if (paymentMethod === 'crypto') {
-        // Basic crypto proof check (txHash + walletAddress), optionally extend with chain verification
-        const txHash = paymentDetails?.txHash;
-        const from = paymentDetails?.from;
-        if (!txHash || !from) {
-          return res.status(400).json({ success: false, error: 'Missing crypto payment details (txHash/from)' });
-        }
-        // Basic format validation for Ethereum tx hash and address
-        if (!/^0x([A-Fa-f0-9]{64})$/.test(txHash)) {
-          return res.status(400).json({ success: false, error: 'Invalid txHash format' });
-        }
-        try {
-          const { ethers } = require('ethers');
-          if (!ethers.isAddress(from)) {
-            return res.status(400).json({ success: false, error: 'Invalid sender address' });
-          }
-        } catch { }
-        paymentResult = {
-          status: 'completed',
-          provider: 'crypto',
-          transactionId: txHash,
-          from,
-          amount: product.price,
-          currency: product.currency
         };
       } else {
         return res.status(400).json({ success: false, error: 'Unsupported or missing paymentMethod' });

@@ -50,7 +50,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
         await onPurchase('nft');
       } else {
         // For regular products, use the selected payment method
-        if (paymentMethod === 'card_payment' || paymentMethod === 'mobile_money' || paymentMethod === 'airtel_money') {
+        if (['card_payment', 'mobile_money', 'airtel_money', 'paystack'].includes(paymentMethod)) {
           // For Paystack payments, we need to initialize the payment and process it
           setProcessing(true);
           await processPaystackPayment();
@@ -184,7 +184,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
           </FormLabel>
           <RadioGroup
             value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'nft' | 'paystack' | 'mobile_money' | 'airtel_money' | 'bank_transfer' | 'cash_on_delivery' | 'card_payment')}
+            onChange={(e) => setPaymentMethod(e.target.value as any)}
           >
             {!product.isNFT && (
               <>
@@ -194,37 +194,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <CreditCard fontSize="small" />
-                      <span>Card Payment</span>
-                    </Box>
-                  }
-                />
-                <FormControlLabel
-                  value="mobile_money"
-                  control={<Radio />}
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Phone fontSize="small" />
-                      <span>Mobile Money</span>
-                    </Box>
-                  }
-                />
-                <FormControlLabel
-                  value="airtel_money"
-                  control={<Radio />}
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Phone fontSize="small" />
-                      <span>Airtel Money</span>
-                    </Box>
-                  }
-                />
-                <FormControlLabel
-                  value="crypto"
-                  control={<Radio />}
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CreditCard fontSize="small" />
-                      <span>Crypto Payment</span>
+                      <span>Card / Mobile Money (Paystack)</span>
                     </Box>
                   }
                 />

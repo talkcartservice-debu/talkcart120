@@ -71,16 +71,16 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
         email: email,
         amount: Math.round(amount * 100), // amount in kobo/cents
         currency: currency?.toUpperCase() || 'NGN',
-        callback: async (response: any) => {
+        callback: (response: any) => {
           setLoading(true);
-          try {
-            await onSuccess(response.reference);
-          } catch (e: any) {
-            setError(e.message || 'Payment confirmation failed.');
-            onError(e.message || 'Payment confirmation failed.');
-          } finally {
-            setLoading(false);
-          }
+          onSuccess(response.reference)
+            .catch((e: any) => {
+              setError(e.message || 'Payment confirmation failed.');
+              onError(e.message || 'Payment confirmation failed.');
+            })
+            .finally(() => {
+              setLoading(false);
+            });
         },
         onClose: () => {
           setLoading(false);

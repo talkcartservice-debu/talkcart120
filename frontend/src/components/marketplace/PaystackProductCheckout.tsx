@@ -71,20 +71,18 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
         email: email,
         amount: Math.round(product.price * 100), // amount in kobo/cents
         currency: product.currency?.toUpperCase() || 'NGN',
-        callback: async (response: any) => {
+        callback: (response: any) => {
           setLoading(true);
-          try {
-            await onCompleted({
-              reference: response.reference,
-              amount: product.price,
-              currency: product.currency?.toUpperCase() || 'NGN',
-            });
-          } catch (e: any) {
+          onCompleted({
+            reference: response.reference,
+            amount: product.price,
+            currency: product.currency?.toUpperCase() || 'NGN',
+          }).catch((e: any) => {
             setError(e.message || 'Payment confirmation failed.');
             onError(e.message || 'Payment confirmation failed.');
-          } finally {
+          }).finally(() => {
             setLoading(false);
-          }
+          });
         },
         onClose: () => {
           setLoading(false);
