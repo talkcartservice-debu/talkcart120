@@ -5,9 +5,12 @@ import {
   Typography,
   Alert,
   CircularProgress,
-  useTheme
+  useTheme,
+  TextField,
+  alpha
 } from '@mui/material';
-import { CreditCard } from '@mui/icons-material';
+import { CreditCard, Phone } from '@mui/icons-material';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 declare global {
@@ -20,6 +23,8 @@ interface PaystackCartCheckoutProps {
   amount: number;
   currency: string;
   email: string;
+  phoneNumber?: string;
+  paymentMethod?: string;
   onSuccess: (reference: string) => Promise<void>;
   onError: (error: string) => void;
 }
@@ -28,6 +33,8 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
   amount,
   currency,
   email: initialEmail,
+  phoneNumber,
+  paymentMethod,
   onSuccess,
   onError
 }) => {
@@ -36,19 +43,29 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState(initialEmail);
+  const [phone, setPhone] = useState(phoneNumber || '');
 
   // Initialize email from user data
   useEffect(() => {
     if (user?.email && !initialEmail) {
       setEmail(user.email);
     }
-  }, [user, initialEmail]);
+    if (!phone && (user as any)?.phoneNumber) {
+      setPhone((user as any).phoneNumber);
+    }
+  }, [user, initialEmail, phone]);
 
   const handlePay = () => {
     if (!email) {
       const emailError = 'Email address is required for payment processing.';
       setError(emailError);
       onError(emailError);
+      return;
+    }
+
+    if (['mobile_money', 'airtel_money'].includes(paymentMethod || '') && !phone) {
+      const phoneError = 'Mobile number is required for this payment method.';
+      setError(phoneError);
       return;
     }
 
@@ -65,12 +82,22 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
       return;
     }
 
+    // Determine channels based on paymentMethod
+    let channels = ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'];
+    if (paymentMethod === 'mobile_money' || paymentMethod === 'airtel_money') {
+      channels = ['mobile_money'];
+    } else if (paymentMethod === 'card_payment') {
+      channels = ['card'];
+    }
+
     try {
       const handler = window.PaystackPop.setup({
         key: paystackPublicKey,
         email: email,
+        phone: phone,
         amount: Math.round(amount * 100), // amount in kobo/cents
         currency: currency?.toUpperCase() || 'NGN',
+        channels: channels,
         callback: (response: any) => {
           setLoading(true);
           onSuccess(response.reference)
@@ -109,7 +136,7 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
   return (
     <Box sx={{ p: 2, textAlign: 'center' }}>
       <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
-        Payment with Paystack
+        Payment with Card
       </Typography>
       
       <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>
@@ -120,6 +147,45 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
+      )}
+
+      <Box sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
+        <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CreditCard fontSize="small" color="primary" />
+          Email Address
+        </Typography>
+        <TextField
+          fullWidth
+          size="small"
+          label="Email Address"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@email.com"
+          variant="outlined"
+          required
+          helperText="Where your receipt will be sent"
+        />
+      </Box>
+
+      {['mobile_money', 'airtel_money'].includes(paymentMethod || '') && (
+        <Box sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Phone fontSize="small" color="primary" />
+            Payment Phone Number
+          </Typography>
+          <TextField
+            fullWidth
+            size="small"
+            label="Mobile Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="e.g. 07..."
+            variant="outlined"
+            required
+            helperText="The mobile money account to be charged"
+          />
+        </Box>
       )}
 
       <Box sx={{ mb: 4, p: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2, border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.1) }}>
@@ -150,16 +216,6 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
       </Typography>
     </Box>
   );
-};
-
-// Helper for alpha colors since it's not imported
-const alpha = (color: string, opacity: number) => {
-  return `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`;
-};
-
-// Mock toast if not imported
-const toast = {
-  info: (msg: string) => console.log('Toast Info:', msg)
 };
 
 export default PaystackCartCheckout;

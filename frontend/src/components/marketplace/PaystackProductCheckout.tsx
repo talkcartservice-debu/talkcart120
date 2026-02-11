@@ -6,9 +6,10 @@ import {
   Alert,
   CircularProgress,
   useTheme,
-  alpha
+  alpha,
+  TextField
 } from '@mui/material';
-import { CreditCard, ArrowLeft } from '@mui/icons-material';
+import { CreditCard, ArrowLeft, Phone } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrencyAmount } from '@/utils/currencyConverter';
 
@@ -20,6 +21,9 @@ declare global {
 
 interface PaystackProductCheckoutProps {
   product: any;
+  paymentMethod?: string;
+  phoneNumber?: string;
+  email?: string;
   onCompleted: (paymentDetails: any) => Promise<void>;
   onError: (error: string) => void;
   onClose: () => void;
@@ -27,6 +31,9 @@ interface PaystackProductCheckoutProps {
 
 const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({ 
   product, 
+  paymentMethod,
+  phoneNumber,
+  email: initialEmail,
   onCompleted, 
   onError,
   onClose
@@ -35,20 +42,30 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail || '');
+  const [phone, setPhone] = useState(phoneNumber || '');
 
-  // Initialize email from user data
+  // Initialize email from user data if not provided
   useEffect(() => {
-    if (user?.email) {
+    if (user?.email && !initialEmail) {
       setEmail(user.email);
     }
-  }, [user]);
+    if (!phone && (user as any)?.phoneNumber) {
+      setPhone((user as any).phoneNumber);
+    }
+  }, [user, phone, initialEmail]);
 
   const handlePay = () => {
     if (!email) {
       const emailError = 'Email address is required for payment processing.';
       setError(emailError);
       onError(emailError);
+      return;
+    }
+
+    if (['mobile_money', 'airtel_money'].includes(paymentMethod || '') && !phone) {
+      const phoneError = 'Mobile number is required for this payment method.';
+      setError(phoneError);
       return;
     }
 
@@ -65,12 +82,22 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
       return;
     }
 
+    // Determine channels based on paymentMethod
+    let channels = ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'];
+    if (paymentMethod === 'mobile_money' || paymentMethod === 'airtel_money') {
+      channels = ['mobile_money'];
+    } else if (paymentMethod === 'card_payment') {
+      channels = ['card'];
+    }
+
     try {
       const handler = window.PaystackPop.setup({
         key: paystackPublicKey,
         email: email,
+        phone: phone,
         amount: Math.round(product.price * 100), // amount in kobo/cents
         currency: product.currency?.toUpperCase() || 'NGN',
+        channels: channels,
         callback: (response: any) => {
           setLoading(true);
           onCompleted({
@@ -115,7 +142,7 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
   return (
     <Box sx={{ p: 2, textAlign: 'center' }}>
       <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
-        Payment with Paystack
+        Payment with Card
       </Typography>
       
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, textAlign: 'left' }}>
@@ -151,6 +178,45 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
+      )}
+
+      <Box sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
+        <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CreditCard fontSize="small" color="primary" />
+          Email Address
+        </Typography>
+        <TextField
+          fullWidth
+          size="small"
+          label="Email Address"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@email.com"
+          variant="outlined"
+          required
+          helperText="Where your receipt will be sent"
+        />
+      </Box>
+
+      {['mobile_money', 'airtel_money'].includes(paymentMethod || '') && (
+        <Box sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Phone fontSize="small" color="primary" />
+            Payment Phone Number
+          </Typography>
+          <TextField
+            fullWidth
+            size="small"
+            label="Mobile Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="e.g. 07..."
+            variant="outlined"
+            required
+            helperText="The mobile money account to be charged"
+          />
+        </Box>
       )}
 
       <Box sx={{ mb: 4, p: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2, border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.1) }}>

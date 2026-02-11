@@ -3600,7 +3600,7 @@ router.delete('/cart', authenticateTokenStrict, async (req, res) => {
 router.post('/cart/checkout', authenticateTokenStrict, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { shippingAddress, paymentMethod } = req.body;
+    const { shippingAddress, paymentMethod, paymentDetails } = req.body;
     
     // Find user's cart
     const cart = await Cart.findOne({ userId });
@@ -3639,6 +3639,7 @@ router.post('/cart/checkout', authenticateTokenStrict, async (req, res) => {
       totalAmount,
       currency: orderItems[0].currency,
       paymentMethod,
+      paymentDetails,
       shippingAddress,
       status: 'pending',
       paymentStatus: 'pending'

@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
-  Alert,
-  CircularProgress,
-  useTheme
+import { 
+  Box, 
+  Button, 
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogTitle, 
+  Typography, 
+  Radio, 
+  RadioGroup, 
+  FormControlLabel, 
+  FormControl, 
+  FormLabel, 
+  Alert, 
+  CircularProgress, 
+  useTheme,
+  TextField,
+  alpha
 } from '@mui/material';
-import { CreditCard, Phone, ArrowLeft } from '@mui/icons-material';
+import { CreditCard, Phone, ArrowLeft, AccountBalanceWallet } from '@mui/icons-material';
 import { useWeb3 } from '@/contexts/Web3Context';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrencyAmount } from '@/utils/currencyConverter';
 import PaystackProductCheckout from './PaystackProductCheckout';
 
@@ -32,10 +35,25 @@ interface BuyModalProps {
 const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase, purchasing }) => {
   const theme = useTheme();
   const { connected, account } = useWeb3();
+  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'nft' | 'paystack' | 'mobile_money' | 'airtel_money' | 'bank_transfer' | 'cash_on_delivery' | 'card_payment'>('card_payment');
   const [error, setError] = useState<string | null>(null);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
+  const [txHash, setTxHash] = useState('');
+  const [senderAddress, setSenderAddress] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState((user as any)?.phoneNumber || '');
+  const [email, setEmail] = useState(user?.email || '');
+
+  // Update fields if user data becomes available
+  React.useEffect(() => {
+    if (user?.email && !email) {
+      setEmail(user.email);
+    }
+    if ((user as any)?.phoneNumber && !phoneNumber) {
+      setPhoneNumber((user as any).phoneNumber);
+    }
+  }, [user, email, phoneNumber]);
 
   const handlePurchase = async () => {
     try {
@@ -51,9 +69,31 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
       } else {
         // For regular products, use the selected payment method
         if (['card_payment', 'mobile_money', 'airtel_money', 'paystack'].includes(paymentMethod)) {
+          // Validation for card payment
+          if (paymentMethod === 'card_payment' && !email) {
+            setError('Please provide your email address for payment');
+            return;
+          }
+          // Validation for mobile money
+          if (['mobile_money', 'airtel_money'].includes(paymentMethod)) {
+            if (!phoneNumber) {
+              setError('Please provide your mobile number for payment');
+              return;
+            }
+            if (!email) {
+              setError('Please provide your email address for payment');
+              return;
+            }
+          }
           // For Paystack payments, we need to initialize the payment and process it
           setProcessing(true);
           await processPaystackPayment();
+        } else if (paymentMethod === 'crypto') {
+          if (!txHash || !senderAddress) {
+            setError('Please provide transaction hash and sender address for crypto payment');
+            return;
+          }
+          await onPurchase('crypto', { txHash, from: senderAddress });
         } else {
           // For other payment methods, proceed directly
           await onPurchase(paymentMethod);
@@ -73,7 +113,9 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
       setPaymentData({
         productId: product._id,
         product: product,
-        paymentMethod: paymentMethod
+        paymentMethod: paymentMethod,
+        phoneNumber: phoneNumber,
+        email: email
       });
     } catch (err: any) {
       console.error('Paystack payment error:', err);
@@ -115,6 +157,9 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
         <DialogContent>
           <PaystackProductCheckout
             product={paymentData.product}
+            paymentMethod={paymentData.paymentMethod}
+            phoneNumber={paymentData.phoneNumber}
+            email={paymentData.email}
             onCompleted={handlePaystackCompleted}
             onError={handlePaystackError}
             onClose={() => setPaymentData(null)}
@@ -223,7 +268,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
                   control={<Radio />}
                   label={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CreditCard fontSize="small" />
+                      <AccountBalanceWallet fontSize="small" />
                       <span>Crypto Payment</span>
                     </Box>
                   }
@@ -239,6 +284,74 @@ const BuyModal: React.FC<BuyModalProps> = ({ open, onClose, product, onPurchase,
             )}
           </RadioGroup>
         </FormControl>
+
+        {['card_payment', 'mobile_money', 'airtel_money'].includes(paymentMethod) && (
+          <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2, p: 2, border: `1px solid ${theme.palette.primary.main}`, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+            <Typography variant="subtitle2" fontWeight={600} color="primary">
+              {paymentMethod === 'card_payment' ? 'Payment Details Required' : 'Mobile Money Details Required'}
+            </Typography>
+            
+            <TextField
+              fullWidth
+              label="Email Address"
+              variant="outlined"
+              size="small"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              required
+              helperText="Required for payment receipt"
+              sx={{ bgcolor: 'background.paper' }}
+            />
+
+            {['mobile_money', 'airtel_money'].includes(paymentMethod) && (
+              <TextField
+                fullWidth
+                label="Mobile Number"
+                variant="outlined"
+                size="small"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="e.g. 07..."
+                required
+                helperText="Enter the number to be charged"
+                sx={{ bgcolor: 'background.paper' }}
+              />
+            )}
+          </Box>
+        )}
+
+        {paymentMethod === 'crypto' && (
+          <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="subtitle2" fontWeight={600}>
+              Crypto Payment Details
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Please send {formatCurrencyAmount(product.price, product.currency)} to our corporate wallet and provide the details below.
+            </Typography>
+            <TextField
+              fullWidth
+              label="Transaction Hash"
+              variant="outlined"
+              size="small"
+              value={txHash}
+              onChange={(e) => setTxHash(e.target.value)}
+              placeholder="0x..."
+              required
+            />
+            <TextField
+              fullWidth
+              label="Your Wallet Address"
+              variant="outlined"
+              size="small"
+              value={senderAddress}
+              onChange={(e) => setSenderAddress(e.target.value)}
+              placeholder="0x..."
+              required
+            />
+          </Box>
+        )}
       </DialogContent>
       
       <DialogActions sx={{ p: 2 }}>

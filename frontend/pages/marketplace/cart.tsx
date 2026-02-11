@@ -125,6 +125,8 @@ const CartPage: React.FC = () => {
   });
   const [showPaystack, setShowPaystack] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState('');
+  const [senderAddress, setSenderAddress] = useState('');
   const [activeStep, setActiveStep] = useState(0);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [productDetails, setProductDetails] = useState<Record<string, any>>({});
@@ -298,18 +300,27 @@ const CartPage: React.FC = () => {
     console.log('Direct checkout initiated with payment method:', paymentMethod);
     console.log('Shipping address:', shippingAddress);
     
+    // Validation for crypto
+    if (paymentMethod === 'crypto') {
+      if (!txHash || !senderAddress) {
+        toast.error('Please provide transaction hash and sender address for crypto payment');
+        return;
+      }
+    }
+    
     setCheckoutLoading(true);
     try {
       const response: any = await api.marketplace.checkoutCart({
         shippingAddress,
-        paymentMethod
+        paymentMethod,
+        paymentDetails: paymentMethod === 'crypto' ? { txHash, from: senderAddress } : undefined
       });
       
       console.log('Checkout API response:', response);
       
       if (response?.success && response?.data) {
         // For mobile money and card payments, we need to process payment through Paystack
-        if (paymentMethod === 'mobile_money' || paymentMethod === 'card_payment') {
+        if (['mobile_money', 'card_payment', 'airtel_money'].includes(paymentMethod)) {
           setCreatedOrderId(response.data._id || null);
           setShowPaystack(true);
         } 
@@ -1156,6 +1167,26 @@ const CartPage: React.FC = () => {
                   }
                 />
                 <FormControlLabel
+                  value="airtel_money"
+                  control={<Radio />}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Phone size={18} />
+                      <Typography>Airtel Money</Typography>
+                    </Box>
+                  }
+                />
+                <FormControlLabel
+                  value="crypto"
+                  control={<Radio />}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Zap size={18} />
+                      <Typography>Crypto Payment</Typography>
+                    </Box>
+                  }
+                />
+                <FormControlLabel
                   value="cash_on_delivery"
                   control={<Radio />}
                   label={
@@ -1168,6 +1199,57 @@ const CartPage: React.FC = () => {
               </RadioGroup>
             </FormControl>
           </Box>
+
+          {['mobile_money', 'airtel_money'].includes(selectedPaymentMethod) && (
+            <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2, p: 2, border: `1px solid ${theme.palette.primary.main}`, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+              <Typography variant="subtitle2" fontWeight={600} color="primary">
+                Mobile Money Details
+              </Typography>
+              <TextField
+                fullWidth
+                label="Mobile Number"
+                variant="outlined"
+                size="small"
+                value={shippingAddress.phone}
+                onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
+                placeholder="e.g. 07..."
+                required
+                helperText="Confirm the number to be charged"
+                sx={{ bgcolor: 'background.paper' }}
+              />
+            </Box>
+          )}
+
+          {selectedPaymentMethod === 'crypto' && (
+            <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="subtitle2" fontWeight={600}>
+                Crypto Payment Details
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Please send the total amount to our corporate wallet and provide the transaction details below.
+              </Typography>
+              <TextField
+                fullWidth
+                label="Transaction Hash"
+                variant="outlined"
+                size="small"
+                value={txHash}
+                onChange={(e) => setTxHash(e.target.value)}
+                placeholder="0x..."
+                required
+              />
+              <TextField
+                fullWidth
+                label="Your Wallet Address"
+                variant="outlined"
+                size="small"
+                value={senderAddress}
+                onChange={(e) => setSenderAddress(e.target.value)}
+                placeholder="0x..."
+                required
+              />
+            </Box>
+          )}
           
           <Box sx={{ mt: 3, p: 2, backgroundColor: theme.palette.grey[50], borderRadius: 2 }}>
             <Typography variant="body2" color="text.secondary">
@@ -1233,6 +1315,8 @@ const CartPage: React.FC = () => {
               amount={cart?.totalPrice || 0}
               currency={cart?.items?.[0]?.currency || 'USD'}
               email={shippingAddress.email || user?.email || ''}
+              phoneNumber={shippingAddress.phone}
+              paymentMethod={selectedPaymentMethod}
               onSuccess={handlePaystackSuccess}
               onError={handlePaystackError}
             />
