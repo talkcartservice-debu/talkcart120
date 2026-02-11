@@ -140,12 +140,12 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
   };
 
   return (
-    <Box sx={{ p: 2, textAlign: 'center' }}>
-      <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
+    <Box sx={{ p: { xs: 1.5, sm: 3 }, textAlign: 'center' }}>
+      <Typography variant="h5" fontWeight={600} sx={{ mb: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
         Payment with Card
       </Typography>
       
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, textAlign: 'left' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, p: { xs: 1.5, sm: 2 }, border: '1px solid', borderColor: 'divider', borderRadius: 2, textAlign: 'left' }}>
         {product.images && product.images.length > 0 && (
           <Box
             component="img"
@@ -156,32 +156,32 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
             }
             alt={product.name}
             sx={{ 
-              width: 60, 
-              height: 60, 
+              width: { xs: 50, sm: 60 }, 
+              height: { xs: 50, sm: 60 }, 
               objectFit: 'contain',
               borderRadius: 1,
               border: `1px solid ${theme.palette.divider}`
             }}
           />
         )}
-        <Box>
-          <Typography variant="h6" fontWeight={600} noWrap sx={{ maxWidth: 200 }}>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="h6" fontWeight={600} noWrap sx={{ maxWidth: { xs: 150, sm: 250 }, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
             {product.name}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
             {formatCurrencyAmount(product.price, product.currency)}
           </Typography>
         </Box>
       </Box>
       
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2, fontSize: '0.875rem' }}>
           {error}
         </Alert>
       )}
 
-      <Box sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
-        <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ mb: 3, p: { xs: 1.5, sm: 2 }, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
+        <Typography variant="subtitle2" sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
           <CreditCard fontSize="small" color="primary" />
           Email Address
         </Typography>
@@ -196,12 +196,13 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
           variant="outlined"
           required
           helperText="Where your receipt will be sent"
+          FormHelperTextProps={{ sx: { fontSize: '0.75rem' } }}
         />
       </Box>
 
       {['mobile_money', 'airtel_money'].includes(paymentMethod || '') && (
-        <Box sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ mb: 3, p: { xs: 1.5, sm: 2 }, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05) }}>
+          <Typography variant="subtitle2" sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}>
             <Phone fontSize="small" color="primary" />
             Payment Phone Number
           </Typography>
@@ -215,24 +216,25 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
             variant="outlined"
             required
             helperText="The mobile money account to be charged"
+            FormHelperTextProps={{ sx: { fontSize: '0.75rem' } }}
           />
         </Box>
       )}
 
-      <Box sx={{ mb: 4, p: 3, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2, border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.1) }}>
-        <Typography variant="subtitle2" gutterBottom color="text.secondary">Total Amount</Typography>
-        <Typography variant="h4" fontWeight={700} color="primary.main">
+      <Box sx={{ mb: 4, p: { xs: 2, sm: 3 }, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2, border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.1) }}>
+        <Typography variant="subtitle2" gutterBottom color="text.secondary" sx={{ fontSize: '0.8rem' }}>Total Amount</Typography>
+        <Typography variant="h4" fontWeight={700} color="primary.main" sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>
           {formatCurrencyAmount(product.price, product.currency)}
         </Typography>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, flexDirection: { xs: 'column-reverse', sm: 'row' } }}>
         <Button
           startIcon={<ArrowLeft />}
           onClick={onClose}
           variant="outlined"
           disabled={loading}
-          sx={{ py: 1.5, borderRadius: 2, flex: 1 }}
+          sx={{ py: { xs: 1.2, sm: 1.5 }, borderRadius: 2, flex: 1, textTransform: 'none' }}
         >
           Cancel
         </Button>
@@ -243,13 +245,13 @@ const PaystackProductCheckout: React.FC<PaystackProductCheckoutProps> = ({
           color="primary"
           fullWidth
           disabled={loading}
-          sx={{ py: 1.5, borderRadius: 2, flex: 2, fontWeight: 600 }}
+          sx={{ py: { xs: 1.2, sm: 1.5 }, borderRadius: 2, flex: 2, fontWeight: 600, fontSize: { xs: '1rem', sm: '1.1rem' }, textTransform: 'none' }}
         >
           {loading ? 'Processing...' : 'Pay Now'}
         </Button>
       </Box>
       
-      <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'text.secondary' }}>
+      <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'text.secondary', fontSize: '0.75rem' }}>
         Secured by Paystack. Your card details are never stored on our servers.
       </Typography>
     </Box>
