@@ -129,15 +129,15 @@ const MessageBubble = styled(Box)(({ theme }) => ({
 const UserMessageBubble = styled(MessageBubble)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
   color: theme.palette.primary.contrastText,
-  alignSelf: 'flex-end',
-  borderRadius: '18px 4px 18px 18px',
+  alignSelf: 'flex-start',
+  borderRadius: '4px 18px 18px 18px',
 }));
 
 const AdminMessageBubble = styled(MessageBubble)(({ theme }) => ({
   backgroundColor: theme.palette.grey[200],
   color: theme.palette.text.primary,
-  alignSelf: 'flex-start',
-  borderRadius: '4px 18px 18px 18px',
+  alignSelf: 'flex-end',
+  borderRadius: '18px 4px 18px 18px',
 }));
 
 const MessageHeader = styled(Box)(({ theme }) => ({
@@ -499,7 +499,7 @@ const VendorChatInterface: React.FC<VendorChatInterfaceProps> = ({ vendor, open,
                   key={message._id}
                   sx={{
                     display: 'flex',
-                    justifyContent: message.senderId === 'admin' ? 'flex-end' : 'flex-start',
+                    justifyContent: message.senderId === 'admin' ? 'flex-start' : 'flex-end',
                     mb: 1,
                   }}
                 >

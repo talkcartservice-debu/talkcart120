@@ -497,7 +497,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
         <Box
           sx={{
             display: 'flex',
-            flexDirection: message.isOwn ? 'row-reverse' : 'row',
+            flexDirection: message.isOwn ? 'row' : 'row-reverse',
             alignItems: 'flex-end',
             gap: { xs: 1, sm: 2 },
             mb: 2,
@@ -683,7 +683,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
             <Box
                 sx={{
                     display: 'flex',
-                    flexDirection: message.isOwn ? 'row-reverse' : 'row',
+                    flexDirection: message.isOwn ? 'row' : 'row-reverse',
                     alignItems: 'flex-end',
                     gap: { xs: 1, sm: 2 },
                     mb: 2,
@@ -796,8 +796,8 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
                             sx={{
                                 p: message.content ? { xs: 1, sm: 2, md: 2.5 } : { xs: 0.5, sm: 1.5 },
                                 borderRadius: message.isOwn 
-                                    ? { xs: '16px 16px 4px 16px', sm: '24px 24px 8px 24px' } 
-                                    : { xs: '16px 16px 16px 4px', sm: '24px 24px 24px 8px' },
+                                    ? { xs: '16px 16px 16px 4px', sm: '24px 24px 24px 8px' }
+                                    : { xs: '16px 16px 4px 16px', sm: '24px 24px 8px 24px' },
                                 background: message.isOptimistic
                                     ? `linear-gradient(135deg, ${alpha(theme.palette.grey[400], 0.3)} 0%, ${alpha(theme.palette.grey[500], 0.2)} 100%)`
                                     : message.isOwn
@@ -831,24 +831,24 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
                                     content: '""',
                                     position: 'absolute',
                                     bottom: { xs: 6, sm: 8 },
-                                    right: { xs: -6, sm: -8 },
-                                    width: 0,
-                                    height: 0,
-                                    borderStyle: 'solid',
-                                    borderWidth: { xs: '6px 0 0 9px', sm: '8px 0 0 12px' },
-                                    borderColor: `transparent transparent transparent ${theme.palette.primary.main}`,
-                                    filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.1))'
-                                } : {
-                                    content: '""',
-                                    position: 'absolute',
-                                    bottom: { xs: 6, sm: 8 },
                                     left: { xs: -6, sm: -8 },
                                     width: 0,
                                     height: 0,
                                     borderStyle: 'solid',
                                     borderWidth: { xs: '6px 9px 0 0', sm: '8px 12px 0 0' },
-                                    borderColor: `transparent ${theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.95) : theme.palette.common.white} transparent transparent`,
+                                    borderColor: `transparent ${theme.palette.primary.main} transparent transparent`,
                                     filter: 'drop-shadow(-2px 2px 4px rgba(0,0,0,0.1))'
+                                } : {
+                                    content: '""',
+                                    position: 'absolute',
+                                    bottom: { xs: 6, sm: 8 },
+                                    right: { xs: -6, sm: -8 },
+                                    width: 0,
+                                    height: 0,
+                                    borderStyle: 'solid',
+                                    borderWidth: { xs: '6px 0 0 9px', sm: '8px 0 0 12px' },
+                                    borderColor: `transparent transparent transparent ${theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.95) : theme.palette.common.white}`,
+                                    filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.1))'
                                 }
                             }}
                         >
@@ -991,7 +991,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
                                     spacing={1}
                                     sx={{
                                         mt: 1.5,
-                                        justifyContent: message.isOwn ? 'flex-end' : 'flex-start',
+                                        justifyContent: message.isOwn ? 'flex-start' : 'flex-end',
                                         opacity: 0.85
                                     }}
                                 >
@@ -1072,9 +1072,9 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
                                 flexDirection: 'column',
                                 gap: 0.5,
                                 position: 'absolute',
-                                [message.isOwn ? 'left' : 'right']: { xs: -32, sm: -50 },
+                                [message.isOwn ? 'right' : 'left']: { xs: -32, sm: -50 },
                                 top: '50%',
-                                transform: `translateY(-50%) ${message.isOwn ? 'translateX(10px)' : 'translateX(-10px)'}`
+                                transform: `translateY(-50%) ${message.isOwn ? 'translateX(-10px)' : 'translateX(10px)'}`
                             }}
                         >
                             {/* Add Reaction Button */}
@@ -1274,7 +1274,7 @@ const EnhancedMessageBubbleV2: React.FC<EnhancedMessageBubbleV2Props> = (props) 
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',
-                            alignItems: 'flex-end',
+                            alignItems: 'flex-start',
                             gap: 0.5,
                             ml: 1
                         }}

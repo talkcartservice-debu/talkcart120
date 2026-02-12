@@ -125,15 +125,15 @@ const MessageBubble = styled(Box)(({ theme }) => ({
 const UserMessage = styled(MessageBubble)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
   color: theme.palette.primary.contrastText,
-  marginLeft: 'auto',
-  borderRadius: '18px 4px 18px 18px',
+  marginRight: 'auto',
+  borderRadius: '4px 18px 18px 18px',
 }));
 
 const AdminMessage = styled(MessageBubble)(({ theme }) => ({
   backgroundColor: theme.palette.grey[300],
   color: theme.palette.text.primary,
-  marginRight: 'auto',
-  borderRadius: '4px 18px 18px 18px',
+  marginLeft: 'auto',
+  borderRadius: '18px 4px 18px 18px',
 }));
 
 const ReactionsContainer = styled(Box)(({ theme }) => ({
@@ -1347,7 +1347,7 @@ const PersistentChatContainer: React.FC<PersistentChatContainerProps> = ({ isOpe
                     sx={{
                       display: 'flex',
                       flexDirection: 'column',
-                      alignItems: message.senderId === user?.id ? 'flex-end' : 'flex-start',
+                      alignItems: message.senderId === user?.id ? 'flex-start' : 'flex-end',
                       mb: 1,
                     }}
                   >
@@ -1412,7 +1412,7 @@ const PersistentChatContainer: React.FC<PersistentChatContainerProps> = ({ isOpe
                     sx={{
                       display: 'flex',
                       flexDirection: 'column',
-                      alignItems: message.senderId === user?.id ? 'flex-end' : 'flex-start',
+                      alignItems: message.senderId === user?.id ? 'flex-start' : 'flex-end',
                       mb: 1,
                     }}
                   >

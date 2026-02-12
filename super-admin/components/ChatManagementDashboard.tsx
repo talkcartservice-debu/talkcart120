@@ -468,9 +468,9 @@ export default function ChatManagementDashboard({ timeRange = '30d', onRefresh }
                   <ListItem
                     key={message._id}
                     sx={{
-                      justifyContent: message.senderId === 'admin' ? 'flex-end' : 'flex-start',
+                      justifyContent: message.senderId === 'admin' ? 'flex-start' : 'flex-end',
                       flexDirection: 'column',
-                      alignItems: message.senderId === 'admin' ? 'flex-end' : 'flex-start',
+                      alignItems: message.senderId === 'admin' ? 'flex-start' : 'flex-end',
                       py: 0.5,
                     }}
                   >
