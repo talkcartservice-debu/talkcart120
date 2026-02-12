@@ -485,7 +485,7 @@ export default function FeatureShowcaseBackground() {
                 textTransform: 'uppercase',
               }}
             >
-              Web3 Super Application
+              Vetora
             </Typography>
           </Box>
         </Fade>

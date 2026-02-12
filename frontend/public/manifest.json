@@ -1,7 +1,7 @@
 {
-  "name": "TalkCart - Social Commerce Platform",
-  "short_name": "TalkCart",
-  "description": "A modern social commerce platform with Web3 integration",
+  "name": "Vetora",
+  "short_name": "Vetora",
+  "description": "A modern social commerce platform",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -51,7 +51,7 @@
       "src": "/screenshots/home.png",
       "sizes": "1280x720",
       "type": "image/png",
-      "description": "TalkCart home feed with social posts"
+      "description": "Vetora home feed with social posts"
     },
     {
       "src": "/screenshots/marketplace.png",

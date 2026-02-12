@@ -1,7 +1,7 @@
 {
   "name": "vetora-frontend",
   "version": "1.0.0",
-  "description": "Vetora Frontend - Modern Web3 Super Application",
+  "description": "Vetora",
   "private": true,
   "scripts": {
     "dev": "next dev -p 4000",

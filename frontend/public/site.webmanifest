@@ -1,7 +1,7 @@
 {
-    "name": "TalkCart - Social Commerce Platform",
-    "short_name": "TalkCart",
-    "description": "A modern social commerce platform with Web3 integration",
+    "name": "Vetora",
+    "short_name": "Vetora",
+    "description": "A modern social commerce platform",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",

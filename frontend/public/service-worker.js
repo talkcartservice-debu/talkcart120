@@ -1,5 +1,5 @@
-// Service Worker for TalkCart PWA
-const CACHE_NAME = 'talkcart-v1.0.0';
+// Service Worker for Vetora PWA
+const CACHE_NAME = 'vetora-v1.0.0';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -117,7 +117,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'TalkCart', options)
+    self.registration.showNotification(data.title || 'Vetora', options)
   );
 });
 

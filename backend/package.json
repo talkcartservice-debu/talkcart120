@@ -1,7 +1,7 @@
 {
   "name": "vetora-backend",
   "version": "1.0.0",
-  "description": "Vetora Backend - Web3 Super Application API",
+  "description": "Vetora Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

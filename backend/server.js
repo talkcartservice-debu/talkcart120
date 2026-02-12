@@ -863,7 +863,7 @@ app.get('/', (req, res) => {
   res.json({
     name: 'Vetora API',
     version: '1.0.0',
-    description: 'Web3 Super Application Backend API',
+    description: 'Vetora Backend API',
     status: 'running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',

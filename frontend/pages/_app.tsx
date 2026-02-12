@@ -98,14 +98,14 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ErrorBoundary>
       <Head>
-        <title>Vetora - Web3 Super Application</title>
+        <title>Vetora</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         
         {/* PWA Meta Tags */}
         <meta name="application-name" content="Vetora" />
         <meta name="apple-mobile-web-app-title" content="Vetora" />
         <meta name="theme-color" content="#4f46e5" />
-        <meta name="description" content="A modern social commerce platform with Web3 integration" />
+        <meta name="description" content="A modern social commerce platform" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
