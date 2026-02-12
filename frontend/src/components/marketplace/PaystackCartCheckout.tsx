@@ -119,7 +119,7 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
         },
         onClose: () => {
           setLoading(false);
-          toast.info('Payment window closed.');
+          toast('Payment window closed.');
         },
         metadata: {
           custom_fields: [
