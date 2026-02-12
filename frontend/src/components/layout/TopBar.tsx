@@ -472,7 +472,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                       ) : searchSuggestions.length > 0 ? (
                         searchSuggestions.map((suggestion, index) => (
                           <ListItem
-                            key={`${suggestion.id || index}`}
+                            key={`mobile-search-suggestion-${suggestion.id || index}`}
                             component="button"
                             onClick={() => handleSuggestionClick(suggestion)}
                             sx={{
@@ -734,7 +734,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                       ) : searchSuggestions.length > 0 ? (
                         searchSuggestions.map((suggestion, index) => (
                           <ListItem
-                            key={`${suggestion.id || index}`}
+                            key={`desktop-search-suggestion-${suggestion.id || index}`}
                             component="button"
                             onClick={() => handleSuggestionClick(suggestion)}
                             sx={{
@@ -1201,7 +1201,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           </Box>
         ) : (
           <React.Fragment>
-          {notifications.map((notification) => {
+          {notifications.map((notification, index) => {
             // Format relative time
             const timeAgo = (date: string) => {
               const now = new Date();
@@ -1236,7 +1236,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
             return (
               <Box
-                key={notification.id}
+                key={notification.id || `notification-${index}`}
                 sx={{
                   p: 1.5,
                   borderRadius: 2,

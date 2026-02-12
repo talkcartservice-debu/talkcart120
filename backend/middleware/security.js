@@ -26,7 +26,25 @@ const securityHeaders = helmet({
         "'self'",
         "'unsafe-inline'",
         "https://cdnjs.cloudflare.com",
-        "https://unpkg.com"
+        "https://unpkg.com",
+        "https://js.paystack.co",
+        "https://checkout.paystack.com",
+        "https://*.paystack.com",
+        "https://*.paystack.co"
+      ],
+      scriptSrcElem: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdnjs.cloudflare.com",
+        "https://unpkg.com",
+        "https://js.paystack.co",
+        "https://checkout.paystack.com",
+        "https://*.paystack.com",
+        "https://*.paystack.co"
+      ],
+      scriptSrcAttr: [
+        "'self'",
+        "'unsafe-inline'"
       ],
       imgSrc: [
         "'self'",
@@ -34,7 +52,9 @@ const securityHeaders = helmet({
         "blob:",
         "http://localhost:*",
         "https://*",
-        "https://res.cloudinary.com"
+        "https://res.cloudinary.com",
+        "https://*.paystack.com",
+        "https://*.paystack.co"
       ],
       fontSrc: [
         "'self'",
@@ -45,6 +65,10 @@ const securityHeaders = helmet({
         "'self'",
         "http://localhost:*",
         "https://api.paystack.co",
+        "https://checkout.paystack.com",
+        "https://paystack.com",
+        "https://*.paystack.com",
+        "https://*.paystack.co",
         "wss://localhost:*"
       ],
       objectSrc: ["'none'"],
@@ -53,7 +77,12 @@ const securityHeaders = helmet({
         "https://res.cloudinary.com",
         "blob:"
       ],
-      frameSrc: ["'none'"],
+      frameSrc: [
+        "'self'",
+        "https://checkout.paystack.com",
+        "https://js.paystack.co",
+        "https://paystack.com"
+      ],
       upgradeInsecureRequests: config.server.isProduction ? [] : null,
     },
   } : false,

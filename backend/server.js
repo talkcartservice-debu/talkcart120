@@ -580,7 +580,7 @@ app.use('/uploads', cors({
     
     // Override restrictive CSP for static files to allow cross-origin loading
     res.removeHeader('Content-Security-Policy');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src * data: blob:; connect-src *");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src * data: blob:; connect-src *; script-src 'self' 'unsafe-inline' https://js.paystack.co https://checkout.paystack.com; frame-src 'self' https://checkout.paystack.com https://js.paystack.co");
   }
 }));
 
@@ -641,7 +641,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     
     // Override restrictive CSP for static files to allow cross-origin loading
     res.removeHeader('Content-Security-Policy');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src * data: blob:; connect-src *");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src * data: blob:; connect-src *; script-src 'self' 'unsafe-inline' https://js.paystack.co https://checkout.paystack.com; frame-src 'self' https://checkout.paystack.com https://js.paystack.co");
   }
 }));
 
