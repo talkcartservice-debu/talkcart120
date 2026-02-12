@@ -51,7 +51,8 @@ import {
   CheckCheck,
   Reply,
   X,
-  Pin
+  Pin,
+  ArrowLeft
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import data from '@emoji-mart/data';
@@ -190,6 +191,9 @@ const MessagesPage: React.FC = () => {
   // Load more state
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   
+  // Mobile UI state
+  const [showConversationList, setShowConversationList] = useState(true);
+  
   // Mobile menu state
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
   const isMobileMenuOpen = Boolean(mobileMenuAnchor);
@@ -327,8 +331,18 @@ const MessagesPage: React.FC = () => {
   // Handle conversation selection
   const handleSelectConversation = async (conversation: any) => {
     await openConversation(conversation);
+    if (isMobile) {
+      setShowConversationList(false);
+    }
     // fetchMessages will be called automatically when activeConversation changes
   };
+
+  // Switch back to conversation list if screen size changes from mobile to desktop
+  useEffect(() => {
+    if (!isMobile) {
+      setShowConversationList(true);
+    }
+  }, [isMobile]);
 
   // Handle typing indicator
   const handleTyping = () => {
@@ -943,23 +957,23 @@ const MessagesPage: React.FC = () => {
           }}
         >
           {/* Conversations List */}
-          <Box
-            sx={{
-              width: { xs: '100%', sm: 320 },
-              borderRight: { sm: `1px solid ${theme.palette.divider}` },
-              borderBottom: { xs: `1px solid ${theme.palette.divider}`, sm: 'none' },
-              display: 'flex',
-              flexDirection: 'column',
-              height: { xs: 'auto', sm: '100%' },
-              maxHeight: { xs: '40vh', sm: '100%' },
-              backgroundColor: theme.palette.background.paper,
-              flexShrink: { xs: 0, sm: 0 },
-              minHeight: { xs: 0, sm: 'auto' },
-              transition: 'all 0.3s ease-in-out',
-              // Better mobile scrolling behavior
-              WebkitOverflowScrolling: 'touch'
-            }}
-          >
+          {(showConversationList || !isMobile) && (
+            <Box
+              sx={{
+                width: { xs: '100%', sm: 320 },
+                borderRight: { sm: `1px solid ${theme.palette.divider}` },
+                borderBottom: { xs: `1px solid ${theme.palette.divider}`, sm: 'none' },
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                maxHeight: '100%',
+                backgroundColor: theme.palette.background.paper,
+                flexShrink: 0,
+                minHeight: 0,
+                transition: 'all 0.3s ease-in-out',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
             <Box sx={{ p: { xs: 1, sm: 2 }, borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.background.paper }}>
               <Typography 
                 variant="h6" 
@@ -1200,20 +1214,22 @@ const MessagesPage: React.FC = () => {
               </Button>
             </Box>
           </Box>
+        )}
 
           {/* Messages Area */}
-          {activeConversation ? (
+          {activeConversation && (!isMobile || !showConversationList) ? (
             <Box
               sx={{
                 flexGrow: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                height: { xs: 'auto', sm: '100%' },
+                height: '100%',
                 minHeight: 0,
-                width: { xs: '100%', sm: 'auto' },
+                width: '100%',
                 backgroundColor: theme.palette.background.default,
                 // Better mobile scrolling behavior
-                WebkitOverflowScrolling: 'touch'
+                WebkitOverflowScrolling: 'touch',
+                transition: 'all 0.3s ease-in-out'
               }}
             >
               {/* Conversation Header */}
@@ -1227,8 +1243,8 @@ const MessagesPage: React.FC = () => {
                   minHeight: { xs: 56, sm: 64 },
                   backgroundColor: alpha(theme.palette.background.paper, 0.8),
                   flexShrink: 0,
-                  flexWrap: { xs: 'wrap', sm: 'nowrap' },
-                  gap: { xs: 1, sm: 0 },
+                  flexWrap: 'nowrap',
+                  gap: { xs: 0.5, sm: 0 },
                   position: 'sticky',
                   top: 0,
                   zIndex: 10,
@@ -1238,7 +1254,15 @@ const MessagesPage: React.FC = () => {
                   WebkitTapHighlightColor: 'transparent'
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: { xs: 1, sm: 0 } }}>
+                  {isMobile && (
+                    <IconButton 
+                      onClick={() => setShowConversationList(true)}
+                      sx={{ p: 0.5, mr: 0.5 }}
+                    >
+                      <ArrowLeft size={20} />
+                    </IconButton>
+                  )}
                   <Badge
                     overlap="circular"
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -1951,7 +1975,7 @@ const MessagesPage: React.FC = () => {
               </Box>
               </form>
             </Box>
-          ) : (
+          ) : (showConversationList || !isMobile) && (
             <Box
               sx={{
                 flexGrow: 1,
@@ -1961,6 +1985,8 @@ const MessagesPage: React.FC = () => {
                 justifyContent: 'center',
                 p: 4,
                 textAlign: 'center',
+                height: '100%',
+                backgroundColor: theme.palette.background.paper
               }}
             >
               <Box

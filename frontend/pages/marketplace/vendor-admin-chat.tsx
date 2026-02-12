@@ -402,17 +402,24 @@ const VendorAdminChatPage = () => {
 
   return (
     <Layout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+        <Box sx={{ 
+          mb: 3, 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          gap: 2 
+        }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: 'primary.main' }}>
-              <SupportAgentIcon />
+            <Avatar sx={{ bgcolor: 'primary.main', width: { xs: 40, md: 56 }, height: { xs: 40, md: 56 } }}>
+              <SupportAgentIcon fontSize={typeof window !== 'undefined' && window.innerWidth < 600 ? 'medium' : 'large'} />
             </Avatar>
             <Box>
-              <Typography variant="h4" component="h1">
+              <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
                 Talk to Us
               </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '1rem' } }}>
                 Get help with your vendor account and products
               </Typography>
             </Box>
@@ -422,6 +429,8 @@ const VendorAdminChatPage = () => {
             startIcon={<RefreshIcon />}
             onClick={handleRefresh}
             disabled={loading}
+            size={typeof window !== 'undefined' && window.innerWidth < 600 ? 'small' : 'medium'}
+            sx={{ alignSelf: { xs: 'flex-end', sm: 'center' } }}
           >
             Refresh
           </Button>
@@ -447,10 +456,10 @@ const VendorAdminChatPage = () => {
           </Alert>
         )}
 
-        <Card sx={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
-          <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 0 }}>
+        <Card sx={{ height: { xs: 'calc(100vh - 250px)', sm: '70vh' }, display: 'flex', flexDirection: 'column' }}>
+          <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 0, overflow: 'hidden' }}>
             {/* Messages area */}
-            <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
+            <Box sx={{ flexGrow: 1, overflowY: 'auto', p: { xs: 1, sm: 2 } }}>
               {loading && messages.length === 0 ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                   <CircularProgress />
@@ -479,16 +488,16 @@ const VendorAdminChatPage = () => {
                     >
                       <Box
                         sx={{
-                          maxWidth: '80%',
+                          maxWidth: { xs: '90%', sm: '80%' },
                           backgroundColor: message.senderId === user?.id ? 'primary.main' : 'grey.200',
                           color: message.senderId === user?.id ? 'white' : 'text.primary',
                           borderRadius: 2,
-                          p: 2,
+                          p: { xs: 1.5, sm: 2 },
                           mb: 1,
                         }}
                       >
-                        <Typography variant="body1">{message.content}</Typography>
-                        <Typography variant="caption" sx={{ display: 'block', mt: 1, opacity: 0.7 }}>
+                        <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>{message.content}</Typography>
+                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7, fontSize: '0.7rem' }}>
                           {message.senderId === user?.id ? 'You' : 'Admin Support'} • {formatTime(message.createdAt)}
                         </Typography>
                       </Box>
@@ -501,12 +510,13 @@ const VendorAdminChatPage = () => {
 
             {/* Input area */}
             <Divider />
-            <Box sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ p: { xs: 1, sm: 2 } }}>
+              <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 } }}>
                 <TextField
                   fullWidth
                   variant="outlined"
-                  placeholder="Type your message..."
+                  placeholder="Type message..."
+                  size={typeof window !== 'undefined' && window.innerWidth < 600 ? 'small' : 'medium'}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={(e) => {
@@ -523,9 +533,10 @@ const VendorAdminChatPage = () => {
                   color="primary"
                   onClick={handleSendMessage}
                   disabled={sending || !newMessage.trim() || loading}
-                  sx={{ alignSelf: 'flex-end' }}
+                  sx={{ alignSelf: 'center' }}
+                  size={typeof window !== 'undefined' && window.innerWidth < 600 ? 'small' : 'medium'}
                 >
-                  {sending ? <CircularProgress size={24} /> : <SendIcon />}
+                  {sending ? <CircularProgress size={20} /> : <SendIcon />}
                 </IconButton>
               </Box>
             </Box>

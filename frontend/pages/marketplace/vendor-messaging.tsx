@@ -18,13 +18,17 @@ import {
   Alert, 
   Pagination,
   Paper,
-  Divider
+  Divider,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { Search as SearchIcon, Store as StoreIcon, Person as PersonIcon } from '@mui/icons-material';
 import { searchVendors, searchCustomers, Vendor, Customer } from '../../src/services/chatbotApi';
 
 const VendorMessagingDashboard: React.FC = () => {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -93,23 +97,24 @@ const VendorMessagingDashboard: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1, sm: 3 } }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>
         Vendor Messaging
       </Typography>
       
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
         <Tabs 
           value={activeTab} 
           onChange={handleTabChange} 
-          variant="fullWidth"
+          variant={isMobile ? "scrollable" : "fullWidth"}
+          scrollButtons="auto"
           sx={{ mb: 3 }}
         >
-          <Tab label="Search Vendors" icon={<StoreIcon />} />
-          <Tab label="Search Customers" icon={<PersonIcon />} />
+          <Tab label="Search Vendors" icon={<StoreIcon />} iconPosition="start" />
+          <Tab label="Search Customers" icon={<PersonIcon />} iconPosition="start" />
         </Tabs>
         
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
           <TextField
             fullWidth
             variant="outlined"
@@ -117,19 +122,18 @@ const VendorMessagingDashboard: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            InputProps={{
-              endAdornment: (
-                <Button 
-                  variant="contained" 
-                  onClick={() => handleSearch()}
-                  disabled={loading}
-                  startIcon={<SearchIcon />}
-                >
-                  Search
-                </Button>
-              )
-            }}
+            sx={{ flex: { xs: '1 1 100%', sm: 1 } }}
           />
+          <Button 
+            variant="contained" 
+            onClick={() => handleSearch()}
+            disabled={loading}
+            startIcon={<SearchIcon />}
+            fullWidth={isMobile}
+            sx={{ height: { sm: 56 } }}
+          >
+            Search
+          </Button>
         </Box>
         
         {error && (
@@ -164,15 +168,15 @@ const VendorMessagingDashboard: React.FC = () => {
                             <Avatar 
                               src={vendor.avatar} 
                               alt={vendor.displayName}
-                              sx={{ width: 56, height: 56 }}
+                              sx={{ width: { xs: 40, sm: 56 }, height: { xs: 40, sm: 56 } }}
                             >
                               <StoreIcon />
                             </Avatar>
                           </ListItemAvatar>
                           <ListItemText 
                             primary={
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="h6">
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="subtitle1" fontWeight={600} sx={{ fontSize: { xs: '0.9rem', sm: '1.1rem' } }}>
                                   {vendor.displayName || vendor.username}
                                 </Typography>
                                 {vendor.isVerified && (
@@ -181,16 +185,17 @@ const VendorMessagingDashboard: React.FC = () => {
                                     size="small" 
                                     color="primary" 
                                     variant="outlined" 
+                                    sx={{ height: 20, fontSize: '0.65rem' }}
                                   />
                                 )}
                               </Box>
                             }
                             secondary={
-                              <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-                                <Typography variant="body2" color="text.secondary">
+                              <Box sx={{ display: 'flex', gap: 2, mt: 0.5 }}>
+                                <Typography variant="caption" color="text.secondary">
                                   {vendor.productCount} products
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="caption" color="text.secondary">
                                   {vendor.followerCount} followers
                                 </Typography>
                               </Box>
@@ -230,15 +235,15 @@ const VendorMessagingDashboard: React.FC = () => {
                             <Avatar 
                               src={customer.avatar} 
                               alt={customer.displayName}
-                              sx={{ width: 56, height: 56 }}
+                              sx={{ width: { xs: 40, sm: 56 }, height: { xs: 40, sm: 56 } }}
                             >
                               <PersonIcon />
                             </Avatar>
                           </ListItemAvatar>
                           <ListItemText 
                             primary={
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="h6">
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="subtitle1" fontWeight={600} sx={{ fontSize: { xs: '0.9rem', sm: '1.1rem' } }}>
                                   {customer.displayName || customer.username}
                                 </Typography>
                                 {customer.isVerified && (
@@ -247,16 +252,17 @@ const VendorMessagingDashboard: React.FC = () => {
                                     size="small" 
                                     color="primary" 
                                     variant="outlined" 
+                                    sx={{ height: 20, fontSize: '0.65rem' }}
                                   />
                                 )}
                               </Box>
                             }
                             secondary={
-                              <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-                                <Typography variant="body2" color="text.secondary">
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, mt: 0.5 }}>
+                                <Typography variant="caption" color="text.secondary">
                                   {customer.orderCount} orders
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="caption" color="text.secondary">
                                   Member since {new Date(customer.createdAt).toLocaleDateString()}
                                 </Typography>
                               </Box>
