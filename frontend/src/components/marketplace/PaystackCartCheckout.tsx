@@ -90,6 +90,14 @@ const PaystackCartCheckout: React.FC<PaystackCartCheckoutProps> = ({
       channels = ['card'];
     }
 
+    if (!window.PaystackPop) {
+      const scriptError = 'Payment gateway is still loading. Please try again in a moment.';
+      setError(scriptError);
+      onError(scriptError);
+      setLoading(false);
+      return;
+    }
+
     try {
       const handler = window.PaystackPop.setup({
         key: paystackPublicKey,
