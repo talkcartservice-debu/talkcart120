@@ -47,30 +47,51 @@ self.addEventListener('fetch', (event) => {
         }
 
         // Otherwise fetch from network
-        return fetch(event.request).then((response) => {
-          // Check if we received a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
+        return fetch(event.request)
+          .then((networkResponse) => {
+            // Check if we received a valid response
+            if (!networkResponse) {
+              throw new Error('No network response');
+            }
+            
+            if (networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+              return networkResponse;
+            }
 
-          // Clone the response to store in cache
-          const responseToCache = response.clone();
+            // Clone the response to store in cache
+            const responseToCache = networkResponse.clone();
 
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
 
-          return response;
-        });
+            return networkResponse;
+          })
+          .catch(err => {
+            console.error('Fetch error:', err);
+            throw err; // Forward to the main catch block
+          });
       })
       .catch((error) => {
         console.error('Service Worker: Fetch failed:', error);
         
         // If both cache and network fail, return fallback for essential resources
         if (event.request.destination === 'document') {
-          return caches.match('/');
+          return caches.match('/').then(fallback => {
+            return fallback || new Response('Network error occurred', {
+              status: 408,
+              headers: { 'Content-Type': 'text/plain' }
+            });
+          });
         }
+        
+        // Return a basic error response instead of undefined to avoid 
+        // "TypeError: Failed to convert value to 'Response'"
+        return new Response('Network error occurred', {
+          status: 408,
+          headers: { 'Content-Type': 'text/plain' }
+        });
       })
   );
 });

@@ -243,13 +243,12 @@ export default function RegisterPage() {
     } else {
       setUsernameAvailable(null);
       // Clear username error when field is empty or too short
-      if (validationErrors.username) {
-        setValidationErrors(prev => {
-          const newErrors = { ...prev };
-          delete newErrors.username;
-          return newErrors;
-        });
-      }
+      setValidationErrors(prev => {
+        if (!prev.username) return prev;
+        const newErrors = { ...prev };
+        delete newErrors.username;
+        return newErrors;
+      });
     }
     
     return () => {
@@ -416,6 +415,78 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGoogleSignIn = async (retries = 2) => {
+    try {
+      // Load Google Identity Services
+      if (!(window as any).google) {
+        await new Promise<void>((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://accounts.google.com/gsi/client';
+          s.async = true;
+          s.defer = true;
+          s.onload = () => resolve();
+          s.onerror = (err) => {
+            console.error('Failed to load Google Identity Services script:', err);
+            reject(new Error('NETWORK_ERROR'));
+          };
+          document.head.appendChild(s);
+        });
+      }
+
+      // Initialize Google Sign-In
+      (window as any).google.accounts.id.initialize({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
+        callback: async (response: any) => {
+          try {
+            const idToken = response?.credential;
+            if (!idToken) throw new Error('No id_token');
+            
+            // Prevent multiple rapid clicks
+            const now = Date.now();
+            const lastClick = (window as any).lastGoogleSignInClick || 0;
+            if (now - lastClick < 1000) return;
+            (window as any).lastGoogleSignInClick = now;
+
+            const res = await api.auth.oauthGoogle(idToken);
+            if (res?.success) {
+              setAuthTokens(res.accessToken, res.refreshToken);
+              toast.success('Signed in with Google');
+              router.push('/social');
+            } else {
+              // Handle specific error cases
+              let errorMessage = res?.message || 'Google sign-in failed';
+              if (res?.message?.includes('audience mismatch') || res?.debug?.receivedAud) {
+                errorMessage = 'Google authentication configuration issue. Please contact support.';
+              } else if (res?.status === 400) {
+                errorMessage = res?.message || 'Invalid Google token. Please try again.';
+              } else if (res?.status === 504) {
+                errorMessage = 'Google verification service timeout. Please check your connection.';
+              }
+              throw new Error(errorMessage);
+            }
+          } catch (err: any) {
+            toast.error(err.message || 'Google sign-in failed');
+          }
+        },
+      });
+      
+      (window as any).google.accounts.id.prompt();
+    } catch (err: any) {
+      if (err.message === 'NETWORK_ERROR' && retries > 0) {
+        console.log(`Retrying Google script load... (${retries} retries left)`);
+        await new Promise(r => setTimeout(r, 2000));
+        return handleGoogleSignIn(retries - 1);
+      }
+      
+      console.error('Google sign-in error:', err);
+      if (err.message === 'NETWORK_ERROR') {
+        toast.error('Network error loading Google Sign-In. Please check your connection or ad-blocker.');
+      } else {
+        toast.error(err.message || 'Google sign-in failed');
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <Box
@@ -483,8 +554,6 @@ export default function RegisterPage() {
           }}
         />
 
-        {/* Left removed: align with Login page simplified layout */}
-
         {/* Right Side - Registration Form */}
         <Box
           sx={{
@@ -496,7 +565,8 @@ export default function RegisterPage() {
             position: 'relative',
             zIndex: 1,
           }}
->          {/* Subtle animated gradient blobs behind card */}
+        >
+          {/* Subtle animated gradient blobs behind card */}
           <Box
             sx={{
               position: 'absolute',
@@ -506,49 +576,6 @@ export default function RegisterPage() {
               overflow: 'hidden'
             }}
           >
-            {/* md-only background elements inspired by login */}
-            <Box
-              sx={{
-                display: { xs: 'none', md: 'block', lg: 'none' },
-                position: 'absolute',
-                top: '6%',
-                left: '6%',
-                width: 48,
-                height: 48,
-                borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(4px)',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-              }}
-            />
-            <Box
-              sx={{
-                display: { xs: 'none', md: 'block', lg: 'none' },
-                position: 'absolute',
-                top: '14%',
-                right: '10%',
-                width: 56,
-                height: 56,
-                borderRadius: 2,
-                background: 'rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(4px)',
-                transform: 'rotate(8deg)',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-              }}
-            />
-            <Box
-              sx={{
-                display: { xs: 'none', md: 'block', lg: 'none' },
-                position: 'absolute',
-                top: '9%',
-                right: '24%',
-                width: 24,
-                height: 24,
-                borderRadius: '50%',
-                background: alpha(theme.palette.error.main, 0.9),
-                boxShadow: '0 2px 6px rgba(211,47,47,0.25)',
-              }}
-            />
             <Box
               sx={{
                 position: 'absolute',
@@ -657,8 +684,6 @@ export default function RegisterPage() {
                     </Typography>
                   </Alert>
                 )}
-
-
 
                 {/* Form */}
                 <form onSubmit={handleSubmit}>
@@ -852,13 +877,7 @@ export default function RegisterPage() {
                         },
                       }}
                     />
-                    {validationErrors.terms && (
-                      <Alert severity="error" sx={{ mt: 1 }}>
-                        {validationErrors.terms[0]}
-                      </Alert>
-                    )}
 
-                    {/* Submit Button */}
                     <Button
                       type="submit"
                       fullWidth
@@ -894,64 +913,9 @@ export default function RegisterPage() {
                         fullWidth
                         variant="outlined"
                         size="medium"
-                        onClick={async (e) => {
+                        onClick={(e) => {
                           e.preventDefault();
-                          try {
-                            // Load Google Identity Services
-                            // @ts-ignore
-                            if (!window.google) {
-                              await new Promise<void>((resolve, reject) => {
-                                const s = document.createElement('script');
-                                s.src = 'https://accounts.google.com/gsi/client';
-                                s.async = true;
-                                s.defer = true;
-                                s.onload = () => resolve();
-                                s.onerror = () => reject(new Error('Failed to load Google script'));
-                                document.head.appendChild(s);
-                              });
-                            }
-                            // @ts-ignore
-                            window.google.accounts.id.initialize({
-                              client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
-                              callback: async (response: any) => {
-                                try {
-                                  const idToken = response?.credential;
-                                  if (!idToken) throw new Error('No id_token');
-                                  const res = await api.auth.oauthGoogle(idToken);
-                                  if (res?.success) {
-                                    setAuthTokens(res.accessToken, res.refreshToken);
-                                    toast.success('Signed in with Google');
-                                    router.push('/social');
-                                  } else {
-                                    // Handle specific error cases
-                                    let errorMessage = res?.message || 'Google sign-in failed';
-                                    
-                                    // Handle audience mismatch specifically
-                                    if (res?.message?.includes('audience mismatch') || res?.debug?.receivedAud) {
-                                      console.error('Audience mismatch details:', res.debug);
-                                      errorMessage = 'Google authentication configuration issue. Please contact support.';
-                                    } else if (res?.status === 400) {
-                                      errorMessage = res?.message || 'Invalid Google token. Please try again.';
-                                    } else if (res?.status === 401) {
-                                      errorMessage = res?.message || 'Authentication failed. Please try again.';
-                                    } else if (res?.status === 504) {
-                                      errorMessage = 'Google verification service timeout. Please check your connection and try again.';
-                                    } else if (res?.status >= 500) {
-                                      errorMessage = 'Server error during Google authentication. Please try again later.';
-                                    }
-                                    
-                                    throw new Error(errorMessage);
-                                  }
-                                } catch (err: any) {
-                                  toast.error(err.message || 'Google sign-in failed');
-                                }
-                              },
-                            });
-                            // @ts-ignore
-                            window.google.accounts.id.prompt();
-                          } catch (err: any) {
-                            toast.error(err.message || 'Google sign-in failed');
-                          }
+                          handleGoogleSignIn();
                         }}
                         startIcon={<Box sx={{ width: 18, height: 18, borderRadius: '3px', bgcolor: '#fff', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)' }} />}
                         sx={{
@@ -973,7 +937,6 @@ export default function RegisterPage() {
                         onClick={async (e) => {
                           e.preventDefault();
                           try {
-                            // Load Apple JS if needed
                             if (!document.getElementById('apple-signin-js')) {
                               await new Promise<void>((resolve, reject) => {
                                 const s = document.createElement('script');
@@ -1024,7 +987,6 @@ export default function RegisterPage() {
                       </Button>
                     </Stack>
 
-                    {/* Divider */}
                     <Divider sx={{ my: 2 }}>
                       <Chip 
                         label="Already have an account?" 
@@ -1040,7 +1002,6 @@ export default function RegisterPage() {
                       />
                     </Divider>
 
-                    {/* Sign In caption link */}
                     <Box sx={{ textAlign: 'center' }}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                         Already have an account?{' '}

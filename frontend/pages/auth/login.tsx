@@ -117,7 +117,7 @@ export default function LoginPage() {
   useEffect(() => {
     let isMounted = true;
     
-    const initializeGoogleSignIn = async () => {
+    const initializeGoogleSignIn = async (retries = 2) => {
       try {
         // Load Google Identity Services
         console.log('Checking if Google Identity Services is loaded:', !!(window as any).google);
@@ -132,14 +132,12 @@ export default function LoginPage() {
               console.log('Google Identity Services script loaded successfully');
               resolve();
             };
-            s.onerror = () => {
-              console.error('Failed to load Google Identity Services script');
-              reject(new Error('Failed to load Google script'));
+            s.onerror = (err) => {
+              console.error('Failed to load Google Identity Services script:', err);
+              reject(new Error('NETWORK_ERROR'));
             };
             document.head.appendChild(s);
           });
-        } else {
-          console.log('Google Identity Services already loaded');
         }
 
         // Only proceed if component is still mounted
@@ -227,8 +225,20 @@ export default function LoginPage() {
           }
         });
       } catch (err: any) {
+        if (err.message === 'NETWORK_ERROR' && retries > 0) {
+          console.log(`Retrying Google script load... (${retries} retries left)`);
+          // Wait 2 seconds before retrying
+          await new Promise(r => setTimeout(r, 2000));
+          return initializeGoogleSignIn(retries - 1);
+        }
+        
         console.error('Google sign-in initialization error:', err);
-        toast.error(err.message || 'Failed to initialize Google Sign-In');
+        // Only show toast if it's a terminal error and not just a silent fail
+        if (err.message === 'NETWORK_ERROR') {
+          toast.error('Network error loading Google Sign-In. Please check your connection or ad-blocker.');
+        } else {
+          toast.error(err.message || 'Failed to initialize Google Sign-In');
+        }
       }
     };
 
@@ -550,437 +560,241 @@ export default function LoginPage() {
               }}
             />
           </Box>
-          <Fade in={true} timeout={800}>
-            <Container maxWidth="sm" sx={{ transform: 'scale(0.9)', transformOrigin: 'center center' }}>
-              <Card
-                elevation={8}
-                sx={{
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  bgcolor: alpha(theme.palette.background.paper, 0.9),
-                  backdropFilter: 'blur(20px)',
-                  maxWidth: 480,
-                  mx: 'auto',
-                  my: 1.5,
-                  boxShadow: '0 12px 28px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05)',
-                  transition: 'transform 0.3s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                  },
-                  position: 'relative',
-                  // Subtle gradient border effect
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    inset: 0,
-                    padding: '1px',
-                    borderRadius: 12,
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.5)}, ${alpha(theme.palette.secondary.main, 0.5)})`,
-                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    WebkitMaskComposite: 'xor',
-                    pointerEvents: 'none',
-                  },
-                }}
-              >
-                {/* Decorative Top Bar */}
-                <Box
+          <Container maxWidth="sm" sx={{ transform: 'scale(0.95)', transformOrigin: 'center center' }}>
+            {/* Expired Session Notice */}
+            <Fade in={showExpiredNotice}>
+              <Box sx={{ mb: 2 }}>
+                <Alert
+                  severity="info"
+                  variant="filled"
+                  onClose={() => setShowExpiredNotice(false)}
                   sx={{
-                    height: 6,
-                    width: '100%',
-                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
+                    borderRadius: 2,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    '& .MuiAlert-message': { fontWeight: 500 }
                   }}
-                />
+                >
+                  Your session has expired. Please sign in again to continue.
+                </Alert>
+              </Box>
+            </Fade>
 
-                <CardContent sx={{ p: { xs: 2.5, sm: 4 } }}>
-                  {/* Header */}
-                  <Box sx={{ textAlign: 'center', mb: 3 }}>
+            <Card
+              elevation={10}
+              sx={{
+                borderRadius: 4,
+                overflow: 'hidden',
+                bgcolor: alpha(theme.palette.background.paper, 0.85),
+                backdropFilter: 'blur(20px)',
+                maxWidth: 460,
+                mx: 'auto',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 4,
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                }
+              }}
+            >
+              <CardContent sx={{ p: { xs: 3, sm: 5 } }}>
+                {/* Header */}
+                <Box sx={{ textAlign: 'center', mb: 4 }}>
+                  <Zoom in={true} style={{ transitionDelay: '100ms' }}>
                     <Avatar
                       sx={{
                         width: 64,
                         height: 64,
                         mx: 'auto',
-                        mb: 1.2,
-                        bgcolor: 'transparent',
-                        border: `2px solid ${alpha(theme.palette.primary.main, 0.4)}`,
+                        mb: 2,
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
                         color: theme.palette.primary.main,
-                        boxShadow: '0 6px 18px rgba(0, 0, 0, 0.1)',
+                        border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                       }}
                     >
-                      <LoginIcon sx={{ fontSize: 30 }} />
+                      <LoginIcon sx={{ fontSize: 32 }} />
                     </Avatar>
-                    <Typography variant="h4" component="h1" gutterBottom fontWeight={900} sx={{ letterSpacing: -0.3 }}>
-                      Sign in to Vetora
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>
-                      Welcome back — let’s get you to your feed
-                    </Typography>
-                    
-                    {/* PWA Install Button - Only show on mobile devices when installable */}
-                    <PWAInstallButton />
-                  </Box>
+                  </Zoom>
+                  <Typography variant="h4" component="h1" gutterBottom fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
+                    Welcome back
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Sign in to your account to continue
+                  </Typography>
+                </Box>
 
-                  {/* Session expired banner */}
-                  {showExpiredNotice && (
-                    <Zoom in={true}>
-                      <Alert
-                        severity="warning"
-                        variant="outlined"
-                        onClose={() => { setShowExpiredNotice(false); removeExpiredFromUrl(); }}
-                        sx={{
-                          mb: 2,
-                          py: 0.5,
-                          borderRadius: 1.5,
-                          fontSize: '0.8rem',
-                          boxShadow: '0 3px 8px rgba(237, 108, 2, 0.15)'
-                        }}
-                      >
-                        Your session expired, please log in again.
-                      </Alert>
-                    </Zoom>
-                  )}
+                {/* Error Alert */}
+                {error && (
+                  <Fade in={!!error}>
+                    <Alert
+                      severity="error"
+                      sx={{
+                        mb: 3,
+                        borderRadius: 2,
+                        '& .MuiAlert-message': { width: '100%' }
+                      }}
+                    >
+                      {error}
+                    </Alert>
+                  </Fade>
+                )}
 
-                  {/* Error Alert */}
-                  {error && (
-                    <Zoom in={!!error}>
-                      <Alert
-                        severity="error"
-                        variant="outlined"
-                        sx={{
-                          mb: 2,
-                          py: 0.5,
-                          borderRadius: 1.5,
-                          fontSize: '0.8rem',
-                          boxShadow: '0 3px 8px rgba(211, 47, 47, 0.15)'
-                        }}
-                      >
-                        {error}
-                      </Alert>
-                    </Zoom>
-                  )}
+                {/* Login Form */}
+                <form onSubmit={handleSubmit}>
+                  <Stack spacing={2.5}>
+                    <TextField
+                      fullWidth
+                      label="Email or Username"
+                      variant="outlined"
+                      autoComplete="username"
+                      value={formData.email}
+                      onChange={handleInputChange('email')}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AccountCircle color="action" fontSize="small" />
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
+                    />
 
-
-
-                  {/* Form */}
-                  <form onSubmit={handleSubmit}>
-                    <Stack spacing={2.5}>
-                      {/* Identifier Field (Email or Username) */}
-                      <TextField
-                        fullWidth
-                        label="Email or Username"
-                        placeholder="your@email.com or username"
-                        autoComplete="username"
-                        helperText="You can sign in with either email or username"
-                        value={formData.email}
-                        onChange={handleInputChange('email')}
-                        variant="outlined"
-                        size="small"
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <AccountCircle color="primary" sx={{ fontSize: 20 }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: 2,
-                            backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                            },
-                            '&.Mui-focused': {
-                              backgroundColor: alpha(theme.palette.background.paper, 1),
-                              boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
-                            },
-                          },
-                          '& .MuiInputLabel-root': {
-                            fontSize: '0.9rem',
-                          },
-                        }}
-                      />
-
-                      {/* Password Field */}
-                      <TextField
-                        fullWidth
-                        label="Password"
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete="current-password"
-                        value={formData.password}
-                        onChange={handleInputChange('password')}
-                        variant="outlined"
-                        size="small"
-                        error={Boolean(error)}
-                        helperText={
-                          error ? 'Check caps lock and try your email or username' : undefined
-                        }
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Lock color="primary" sx={{ fontSize: 20 }} />
-                            </InputAdornment>
-                          ),
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                onClick={() => setShowPassword(!showPassword)}
-                                edge="end"
-                                size="small"
-                                sx={{ color: theme.palette.primary.main }}
-                              >
-                                {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: 2,
-                            backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                            },
-                            '&.Mui-focused': {
-                              backgroundColor: alpha(theme.palette.background.paper, 1),
-                              boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
-                            },
-                          },
-                          '& .MuiInputLabel-root': {
-                            fontSize: '0.9rem',
-                          },
-                        }}
-                      />
-
-                      {/* Remember Me and Forgot Password */}
-                      <Box sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        mt: 0.5
-                      }}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={rememberMe}
-                              onChange={(e) => setRememberMe(e.target.checked)}
-                              color="primary"
+                    <TextField
+                      fullWidth
+                      label="Password"
+                      type={showPassword ? 'text' : 'password'}
+                      variant="outlined"
+                      autoComplete="current-password"
+                      value={formData.password}
+                      onChange={handleInputChange('password')}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Lock color="action" fontSize="small" />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowPassword(!showPassword)}
+                              edge="end"
                               size="small"
-                              sx={{
-                                '&.Mui-checked': {
-                                  color: theme.palette.primary.main
-                                }
-                              }}
-                            />
-                          }
-                          label={
-                            <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
-                              Remember me
-                            </Typography>
-                          }
-                        />
-                        <Link href="/auth/forgot-password" style={{ textDecoration: 'none' }}>
-                          <Typography
-                            variant="caption"
-                            color="primary"
-                            sx={{
-                              fontWeight: 600,
-                              fontSize: '0.8rem',
-                              transition: 'all 0.2s',
-                              '&:hover': {
-                                color: theme.palette.primary.dark,
-                                textDecoration: 'underline',
-                              },
-                            }}
-                          >
-                            Forgot password?
-                          </Typography>
-                        </Link>
-                      </Box>
-
-                      {/* Submit Button */}
-                      <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        size="medium"
-                        disabled={isSubmitting}
-                        endIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : <ArrowForward sx={{ fontSize: 18 }} />}
-                        sx={{
-                          mt: 1.5,
-                          py: 1.2,
-                          borderRadius: 2,
-                          textTransform: 'none',
-                          fontSize: '0.95rem',
-                          fontWeight: 800,
-                          letterSpacing: 0.2,
-                          background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                          backgroundSize: '200% 100%',
-                          boxShadow: `0 10px 24px ${alpha(theme.palette.primary.main, 0.35)}`,
-                          transition: 'all 0.35s ease',
-                          '&:hover': {
-                            boxShadow: `0 14px 28px ${alpha(theme.palette.primary.main, 0.45)}`,
-                            transform: 'translateY(-2px)',
-                            backgroundPosition: '100% 0',
-                          },
-                        }}
-                      >
-                        {isSubmitting ? 'Signing in...' : 'Sign In'}
-                      </Button>
-
-                      {/* Social Sign-in */}
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} sx={{ mt: 1 }}>
-                        <Box sx={{ width: '100%' }}>
-                          <div id="google-signin-button" style={{ width: '100%', display: 'flex', justifyContent: 'center' }} />
-                        </Box>
-                        <Button
-                          fullWidth
-                          variant="outlined"
-                          size="medium"
-                          onClick={async (e) => {
-                            e.preventDefault();
-                            try {
-                              // Load Apple JS if needed
-                              if (!document.getElementById('apple-signin-js')) {
-                                await new Promise<void>((resolve, reject) => {
-                                  const s = document.createElement('script');
-                                  s.id = 'apple-signin-js';
-                                  s.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
-                                  s.onload = () => resolve();
-                                  s.onerror = () => reject(new Error('Failed to load Apple script'));
-                                  document.head.appendChild(s);
-                                });
-                              }
-                              // @ts-ignore
-                              if (!window.AppleID) throw new Error('AppleID not available');
-                              // @ts-ignore
-                              window.AppleID.auth.init({
-                                clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID,
-                                scope: 'name email',
-                                redirectURI: window.location.origin,
-                                usePopup: true,
-                              });
-                              // @ts-ignore
-                              const result = await window.AppleID.auth.signIn();
-                              const identityToken = result?.authorization?.id_token;
-                              if (!identityToken) throw new Error('No identityToken');
-                              const res = await api.auth.oauthApple(identityToken);
-                              if (res?.success) {
-                                setAuthTokens(res.accessToken, res.refreshToken);
-                                toast.success('Signed in with Apple');
-                                router.push('/social');
-                              } else {
-                                throw new Error(res?.message || 'Apple sign-in failed');
-                              }
-                            } catch (err: any) {
-                              toast.error(err.message || 'Apple sign-in failed');
-                            }
-                          }}
-                          startIcon={<Box sx={{ width: 18, height: 18, borderRadius: '3px', bgcolor: '#000' }} />}
-                          sx={{
-                            py: 1,
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontSize: '0.85rem',
-                            fontWeight: 700,
-                            borderColor: alpha(theme.palette.text.primary, 0.2),
-                            '&:hover': { bgcolor: alpha(theme.palette.text.primary, 0.04) },
-                          }}
-                        >
-                          Continue with Apple
-                        </Button>
-                      </Stack>
-
-                      {/* Biometric Authentication */}
-                      {biometricAvailable && (
-                        <>
-                          <Divider sx={{ my: 2 }}>
-                            <Chip
-                              label="or"
-                              size="small"
-                              sx={{
-                                px: 0.8,
-                                height: 20,
-                                fontSize: '0.7rem',
-                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                                color: theme.palette.primary.main,
-                                fontWeight: 600
-                              }}
-                            />
-                          </Divider>
-
-                          <Button
-                            fullWidth
-                            variant="outlined"
-                            size="medium"
-                            disabled={biometricLoading || isSubmitting}
-                            onClick={handleBiometricLogin}
-                            startIcon={biometricLoading ? <CircularProgress size={16} /> : <Fingerprint sx={{ fontSize: 18 }} />}
-                            sx={{
-                              py: 1,
-                              borderRadius: 2,
-                              textTransform: 'none',
-                              fontSize: '0.85rem',
-                              fontWeight: 600,
-                              borderWidth: 1.5,
-                              borderColor: theme.palette.success.main,
-                              color: theme.palette.success.main,
-                              transition: 'all 0.3s',
-                              '&:hover': {
-                                borderColor: theme.palette.success.dark,
-                                bgcolor: alpha(theme.palette.success.main, 0.08),
-                                transform: 'translateY(-2px)',
-                              },
-                            }}
-                          >
-                            {biometricLoading ? 'Authenticating...' : 'Sign in with Biometrics'}
-                          </Button>
-                        </>
-                      )}
-
-                      {/* Divider */}
-                      <Divider sx={{ my: 2 }}>
-                        <Chip
-                          label="New to Vetora?"
-                          size="small"
-                          sx={{
-                            px: 0.8,
-                            height: 20,
-                            fontSize: '0.7rem',
-                            backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                            color: theme.palette.secondary.main,
-                            fontWeight: 600
-                          }}
-                        />
-                      </Divider>
-
-                      {/* Sign Up Link */}
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                          Don&apos;t have an account?{' '}
-                          <Link href="/auth/register" style={{ textDecoration: 'none' }}>
-                            <Box
-                              component="span"
-                              sx={{
-                                color: theme.palette.secondary.main,
-                                fontSize: '0.8rem',
-                                fontWeight: 700,
-                                transition: 'all 0.2s',
-                                '&:hover': {
-                                  color: theme.palette.secondary.dark,
-                                  textDecoration: 'underline',
-                                },
-                              }}
                             >
-                              Create account
-                            </Box>
-                          </Link>
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
+                    />
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            size="small"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                          />
+                        }
+                        label={<Typography variant="body2">Remember me</Typography>}
+                      />
+                      <Link href="/auth/forgot-password" style={{ textDecoration: 'none' }}>
+                        <Typography variant="body2" color="primary" fontWeight={600} sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                          Forgot password?
                         </Typography>
-                      </Box>
-                    </Stack>
-                  </form>
-                </CardContent>
-              </Card>
-            </Container>
-          </Fade>
+                      </Link>
+                    </Box>
+
+                    <Button
+                      type="submit"
+                      fullWidth
+                      variant="contained"
+                      size="large"
+                      disabled={isSubmitting}
+                      endIcon={!isSubmitting && <ArrowForward />}
+                      sx={{
+                        py: 1.5,
+                        borderRadius: 2.5,
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+                        transition: 'all 0.3s',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.4)}`,
+                        }
+                      }}
+                    >
+                      {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+                    </Button>
+                  </Stack>
+                </form>
+
+                {/* Biometric Login */}
+                {biometricAvailable && (
+                  <Box sx={{ mt: 2 }}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      size="large"
+                      onClick={handleBiometricLogin}
+                      disabled={biometricLoading}
+                      startIcon={!biometricLoading && <Fingerprint />}
+                      sx={{
+                        py: 1.5,
+                        borderRadius: 2.5,
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        borderWidth: 2,
+                        '&:hover': { borderWidth: 2 }
+                      }}
+                    >
+                      {biometricLoading ? <CircularProgress size={24} /> : 'Sign in with Biometrics'}
+                    </Button>
+                  </Box>
+                )}
+
+                {/* Divider */}
+                <Divider sx={{ my: 4 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
+                    OR
+                  </Typography>
+                </Divider>
+
+                {/* Social Logins */}
+                <Stack spacing={2}>
+                  <Box id="google-signin-button" sx={{ minHeight: 40, width: '100%', display: 'flex', justifyContent: 'center' }} />
+                  
+                  {/* PWA Install Button removed from here, replaced by PWAInstallButton in footer or header if needed */}
+                </Stack>
+
+                {/* Footer Links */}
+                <Box sx={{ mt: 5, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Don&apos;t have an account?{' '}
+                    <Link href="/auth/register" style={{ textDecoration: 'none' }}>
+                      <Typography component="span" variant="body2" color="primary" fontWeight={700} sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                        Create an account
+                      </Typography>
+                    </Link>
+                  </Typography>
+                </Box>
+                
+                {/* PWA Install Button integrated here */}
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+                  <PWAInstallButton />
+                </Box>
+              </CardContent>
+            </Card>
+          </Container>
         </Box>
       </Box>
     </>
