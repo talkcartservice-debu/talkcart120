@@ -10,12 +10,20 @@ Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Crede
 ### 2. Configure Authorized JavaScript Origins
 Add the following origins based on your environment:
 
-**Your Current Configuration:**
+**Recommended Local Development Origins:**
+- `http://localhost:3000`
 - `http://localhost:4000`
+- `http://localhost:4100`
+- `http://127.0.0.1:3000`
+- `http://127.0.0.1:4000`
+- `http://127.0.0.1:4100`
+
+**Production Origins:**
 - `https://vetora.vercel.app`
+- `https://yourdomain.com`
 
 **IMPORTANT: Check All Access Domains**
-If you're still getting "no registered origin" errors, you might be accessing the application from a domain that isn't registered. Common domains that need to be added:
+If you're still getting "origin_mismatch" errors, you might be accessing the application from a domain that isn't registered. Common domains that need to be added:
 - `http://localhost:3000` (if using port 3000)
 - `http://localhost:4100` (if using port 4100)
 - `http://localhost:8000` (if accessing backend directly)

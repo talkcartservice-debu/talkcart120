@@ -40,6 +40,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { checkBiometricSupport, authenticateBiometric } from '@/lib/biometric';
 import { setAuthTokens } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { GOOGLE_CLIENT_ID } from '@/config/index';
 import toast from 'react-hot-toast';
 import PWAInstallButton from '@/components/common/PWAInstallButton'; // Replace the hook import
 
@@ -143,11 +144,20 @@ export default function LoginPage() {
         // Only proceed if component is still mounted
         if (!isMounted) return;
 
-        console.log('Initializing Google OAuth with client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
+        console.log('Initializing Google OAuth:', {
+          clientId: GOOGLE_CLIENT_ID,
+          origin: typeof window !== 'undefined' ? window.location.origin : 'unknown',
+          port: typeof window !== 'undefined' ? window.location.port : 'unknown'
+        });
+
+        if (!GOOGLE_CLIENT_ID) {
+          console.error('Google Client ID is missing from environment variables');
+          return;
+        }
 
         // Initialize Google Sign-In
         (window as any).google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
+          client_id: GOOGLE_CLIENT_ID,
           callback: async (response: any) => {
             try {
               console.log('Google OAuth callback received:', response);
@@ -772,6 +782,18 @@ export default function LoginPage() {
                 {/* Social Logins */}
                 <Stack spacing={2}>
                   <Box id="google-signin-button" sx={{ minHeight: 40, width: '100%', display: 'flex', justifyContent: 'center' }} />
+                  
+                  {/* OAuth Troubleshooting Help (Development only) */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <Box sx={{ mt: 1, textAlign: 'center' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                        Getting &quot;origin_mismatch&quot;?
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', display: 'block', wordBreak: 'break-all', opacity: 0.8 }}>
+                        Register this origin: <strong>{typeof window !== 'undefined' ? window.location.origin : '...'}</strong>
+                      </Typography>
+                    </Box>
+                  )}
                   
                   {/* PWA Install Button removed from here, replaced by PWAInstallButton in footer or header if needed */}
                 </Stack>

@@ -3,6 +3,8 @@
 export const API_URL = typeof window !== 'undefined' ? '/api' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api');
 
 // Authentication Configuration
+export const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+export const APPLE_CLIENT_ID = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || '';
 export const AUTH_TOKEN_KEY = 'token';
 export const AUTH_REFRESH_TOKEN_KEY = 'refreshToken';
 export const AUTH_USER_KEY = 'user';

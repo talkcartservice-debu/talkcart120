@@ -23,6 +23,10 @@ export const AUTH_REFRESH_TOKEN_KEY = 'refreshToken';
 export const APP_NAME = 'Vetora';
 export const APP_DESCRIPTION = 'Web3 vetora app combining social networking, marketplace, streaming, DAO governance, and messaging';
 
+// OAuth configuration
+export const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+export const APPLE_CLIENT_ID = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || '';
+
 // UI assets and fallbacks
 export const DEFAULT_AVATAR_URL = process.env.NEXT_PUBLIC_DEFAULT_AVATAR_URL || '/images/default-avatar.png';
 
@@ -80,6 +84,8 @@ const config = {
   AUTH_REFRESH_TOKEN_KEY,
   APP_NAME,
   APP_DESCRIPTION,
+  GOOGLE_CLIENT_ID,
+  APPLE_CLIENT_ID,
   FEATURES,
   DEFAULT_PAGE_SIZE,
   SEARCH_DEBOUNCE_MS,
