@@ -6,6 +6,7 @@ const { User } = require('../models');
 const { validateSettings } = require('../middleware/settingsValidation');
 const { biometricSecurityStack } = require('../middleware/biometricSecurity');
 const axios = require('axios');
+const emailService = require('../services/emailService');
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -2170,10 +2171,34 @@ router.post('/forgot-password', async (req, res) => {
     user.resetPasswordExpiry = resetTokenExpiry;
     await user.save();
 
-    // TODO: Implement actual email sending here
-    // For now, just log the reset token (in production, send via email)
-    console.log(`Password reset token for ${email}: ${resetToken}`);
-    console.log(`Reset link: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`);
+    // Send reset email
+    try {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4000';
+      const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
+      
+      const emailMessage = `You are receiving this email because you (or someone else) have requested the reset of the password for your account.
+      
+Please click on the following link, or paste this into your browser to complete the process:
+      
+${resetLink}
+      
+If you did not request this, please ignore this email and your password will remain unchanged.
+      
+This link will expire in 24 hours.`;
+
+      await emailService.sendEmail({
+        to: user.email,
+        subject: 'Vetora Password Reset Request',
+        message: emailMessage,
+        user: user
+      });
+      
+      console.log(`📧 Password reset email sent to ${email}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send reset email:', emailError.message);
+      // We don't return an error to the user here to avoid revealing if an email exists
+      // and because the token is already saved, they might try again or we might have logged it
+    }
 
     res.status(200).json({
       success: true,
@@ -2182,6 +2207,47 @@ router.post('/forgot-password', async (req, res) => {
 
   } catch (error) {
     console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error. Please try again later.',
+    });
+  }
+});
+
+// @route   GET /api/auth/validate-reset-token/:token
+// @desc    Validate reset token before showing reset form
+// @access  Public
+router.get('/validate-reset-token/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reset token is required',
+      });
+    }
+
+    // Find user with valid reset token
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset token',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Reset token is valid',
+    });
+
+  } catch (error) {
+    console.error('Validate reset token error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error. Please try again later.',

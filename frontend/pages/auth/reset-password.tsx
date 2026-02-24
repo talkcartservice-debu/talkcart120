@@ -88,13 +88,32 @@ export default function ResetPasswordPage() {
 
   // Validate token on load
   useEffect(() => {
-    if (token) {
-      // You could add token validation here
-      setTokenValid(true);
-    } else {
-      setTokenValid(false);
+    const validateToken = async () => {
+      if (!token) {
+        setTokenValid(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/auth/validate-reset-token/${token}`);
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          setTokenValid(true);
+        } else {
+          setTokenValid(false);
+        }
+      } catch (error) {
+        console.error('Token validation failed:', error);
+        // Default to false on network error during validation
+        setTokenValid(false);
+      }
+    };
+
+    if (router.isReady) {
+      validateToken();
     }
-  }, [token]);
+  }, [token, router.isReady]);
 
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
