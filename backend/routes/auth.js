@@ -8,6 +8,8 @@ const { biometricSecurityStack } = require('../middleware/biometricSecurity');
 const axios = require('axios');
 const emailService = require('../services/emailService');
 
+console.log('✅ AUTH ROUTES LOADED: Current version with FRONTEND_URL 4000 support');
+
 // Health check endpoint
 router.get('/health', (req, res) => {
   res.json({
@@ -2175,6 +2177,9 @@ router.post('/forgot-password', async (req, res) => {
     try {
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4000';
       const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
+      
+      console.log(`🔗 Password reset link generated: ${resetLink}`);
+      console.log(`📧 Sending reset email to ${user.email} using frontendUrl: ${frontendUrl}`);
       
       const emailMessage = `You are receiving this email because you (or someone else) have requested the reset of the password for your account.
       
