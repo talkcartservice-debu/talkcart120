@@ -11,22 +11,31 @@ const connectDB = async () => {
     const MONGODB_URI = process.env.MONGODB_URI || config.database.uri || 'mongodb://localhost:27017/vetora';
     
     // Log the actual URI being used (without credentials)
-    console.log('🔧 Database: Using MONGODB_URI:', MONGODB_URI.replace(/\/\/.*@/, '//****:****@'));
+    const sanitizedURI = MONGODB_URI.replace(/\/\/.*@/, '//****:****@');
+    console.log('🔧 Database: Using MONGODB_URI:', sanitizedURI);
     console.log('🔧 Database: Full MONGODB_URI length:', MONGODB_URI.length);
     console.log('🔧 Database: MONGODB_URI starts with:', MONGODB_URI.substring(0, Math.min(50, MONGODB_URI.length)) + (MONGODB_URI.length > 50 ? '...' : ''));
     
     // Debug the URI components
     if (MONGODB_URI) {
-      console.log('🔧 Database: URI contains mongodb://', MONGODB_URI.includes('mongodb://'));
-      console.log('🔧 Database: URI contains mongodb+srv://', MONGODB_URI.includes('mongodb+srv://'));
+      console.log('🔧 Database: URI scheme:', MONGODB_URI.split(':')[0]);
+      console.log('🔧 Database: URI has +srv:', MONGODB_URI.includes('+srv'));
+      console.log('🔧 Database: URI has credentials separator (@):', MONGODB_URI.includes('@'));
+      console.log('🔧 Database: URI has query parameters (?):', MONGODB_URI.includes('?'));
       
-      // Check for special characters
-      console.log('🔧 Database: URI contains quotes:', MONGODB_URI.includes('"') || MONGODB_URI.includes("'"));
-      console.log('🔧 Database: URI contains encoded quotes:', MONGODB_URI.includes('%22'));
+      // Check for hidden whitespace or control characters
+      const hasWhitespace = /\s/.test(MONGODB_URI);
+      console.log('🔧 Database: URI has whitespace:', hasWhitespace);
+      if (hasWhitespace) {
+        console.warn('⚠️ WARNING: MONGODB_URI contains whitespace characters!');
+      }
       
-      // Show first and last characters
-      console.log('🔧 Database: First 10 chars:', MONGODB_URI.substring(0, 10));
-      console.log('🔧 Database: Last 10 chars:', MONGODB_URI.substring(MONGODB_URI.length - 10));
+      // Check for quotes that might be accidentally included in env vars
+      const hasQuotes = MONGODB_URI.includes('"') || MONGODB_URI.includes("'");
+      console.log('🔧 Database: URI has quotes:', hasQuotes);
+      if (hasQuotes) {
+        console.warn('⚠️ WARNING: MONGODB_URI contains quote characters!');
+      }
     }
     
     // Validate MongoDB URI format
@@ -118,10 +127,11 @@ const connectDB = async () => {
     if (process.env.NODE_ENV === 'production' || error.name === 'MongooseServerSelectionError') {
       console.error('🔧 MONGODB CONNECTION TROUBLESHOOTING:');
       console.error('   1. IP WHITELIST (Most Common): In MongoDB Atlas, go to "Network Access" and add "0.0.0.0/0"');
-      console.error('      Render/hosting IPs change, so you must allow access from anywhere.');
-      console.error('   2. MONGODB_URI: Ensure it is correctly set in Render environment variables.');
-      console.error('   3. DATABASE USER: Ensure the user exists and has "readWriteAnyDatabase" or equivalent roles.');
-      console.error('   4. PASSWORD ENCODING: If your password has special characters, ensure they are URL-encoded.');
+      console.error('      Wait 1-2 minutes for the changes to apply in Atlas before restarting Render.');
+      console.error('   2. RENDER ENV VARS: Ensure MONGODB_URI is set in "Environment" tab of your Render service.');
+      console.error('      Make sure there are no spaces or quotes around the URI.');
+      console.error('   3. PASSWORD: If your password has special characters (like !), ensure they are URL-encoded.');
+      console.error('      In your case, "!!" should be "%21%21"');
     } else {
       console.error('Check your MONGODB_URI in the .env file');
     }
