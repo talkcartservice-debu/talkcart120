@@ -313,7 +313,7 @@ class ApiService {
       // User-friendly error messages based on status codes
       let userFriendlyMessage = errorMessage;
       if (response.status === 404) {
-        userFriendlyMessage = 'No result found';
+        // userFriendlyMessage = 'No result found';
       } else if (response.status === 500) {
         userFriendlyMessage = 'An internal server error occurred. Please try again later.';
       } else if (response.status === 403) {

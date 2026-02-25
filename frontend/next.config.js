@@ -46,8 +46,9 @@ const nextConfig = {
       ],
       afterFiles: [
         // All /api routes go to backend EXCEPT those specifically handled by Next.js in pages/api/
+        // Using a more specific pattern to ensure it doesn't conflict with other internal Next.js paths
         {
-          source: '/api/:path*',
+          source: '/api/:path((?!image-proxy).*)',
           destination: `${BACKEND_URL}/api/:path*`,
         },
         // Proxy HLS video segments to backend
