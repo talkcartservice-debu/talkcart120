@@ -783,18 +783,6 @@ export default function LoginPage() {
                 <Stack spacing={2}>
                   <Box id="google-signin-button" sx={{ minHeight: 40, width: '100%', display: 'flex', justifyContent: 'center' }} />
                   
-                  {/* OAuth Troubleshooting Help (Development only) */}
-                  {process.env.NODE_ENV === 'development' && (
-                    <Box sx={{ mt: 1, textAlign: 'center' }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                        Getting &quot;origin_mismatch&quot;?
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', display: 'block', wordBreak: 'break-all', opacity: 0.8 }}>
-                        Register this origin: <strong>{typeof window !== 'undefined' ? window.location.origin : '...'}</strong>
-                      </Typography>
-                    </Box>
-                  )}
-                  
                   {/* PWA Install Button removed from here, replaced by PWAInstallButton in footer or header if needed */}
                 </Stack>
 
