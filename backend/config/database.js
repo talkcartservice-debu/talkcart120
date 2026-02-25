@@ -19,8 +19,6 @@ const connectDB = async () => {
     if (MONGODB_URI) {
       console.log('🔧 Database: URI contains mongodb://', MONGODB_URI.includes('mongodb://'));
       console.log('🔧 Database: URI contains mongodb+srv://', MONGODB_URI.includes('mongodb+srv://'));
-      console.log('🔧 Database: URI contains cluster0.oguqwli.mongodb.net', MONGODB_URI.includes('cluster0.oguqwli.mongodb.net'));
-      console.log('🔧 Database: URI contains vetoraservice', MONGODB_URI.includes('vetoraservice'));
       
       // Check for special characters
       console.log('🔧 Database: URI contains quotes:', MONGODB_URI.includes('"') || MONGODB_URI.includes("'"));
@@ -117,12 +115,13 @@ const connectDB = async () => {
     console.error('Please ensure MongoDB is running and accessible');
     
     // Provide specific guidance based on environment
-    if (process.env.NODE_ENV === 'production') {
-      console.error('🔧 PRODUCTION DEPLOYMENT:');
-      console.error('   1. Make sure MONGODB_URI is set in Render environment variables');
-      console.error('   2. Ensure the MongoDB URI points to a cloud service (not localhost)');
-      console.error('   3. Verify MongoDB credentials are correct');
-      console.error('   4. Check that your MongoDB service is accessible from Render');
+    if (process.env.NODE_ENV === 'production' || error.name === 'MongooseServerSelectionError') {
+      console.error('🔧 MONGODB CONNECTION TROUBLESHOOTING:');
+      console.error('   1. IP WHITELIST (Most Common): In MongoDB Atlas, go to "Network Access" and add "0.0.0.0/0"');
+      console.error('      Render/hosting IPs change, so you must allow access from anywhere.');
+      console.error('   2. MONGODB_URI: Ensure it is correctly set in Render environment variables.');
+      console.error('   3. DATABASE USER: Ensure the user exists and has "readWriteAnyDatabase" or equivalent roles.');
+      console.error('   4. PASSWORD ENCODING: If your password has special characters, ensure they are URL-encoded.');
     } else {
       console.error('Check your MONGODB_URI in the .env file');
     }
