@@ -8,7 +8,34 @@ const connectDB = async () => {
     console.log('🔧 Process env MONGODB_URI length:', process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0);
     console.log('🔧 Process env NODE_ENV:', process.env.NODE_ENV);
     console.log('🔧 Process env keys (first 10):', Object.keys(process.env).slice(0, 10).join(', '));
-    const MONGODB_URI = process.env.MONGODB_URI || config.database.uri || 'mongodb://localhost:27017/vetora';
+    let MONGODB_URI = process.env.MONGODB_URI || config.database.uri || 'mongodb://localhost:27017/vetora';
+    
+    // Automatically encode special characters in the password if they exist
+    if (MONGODB_URI.includes('://') && MONGODB_URI.includes('@')) {
+      try {
+        const urlParts = MONGODB_URI.split('://');
+        const scheme = urlParts[0];
+        const remainder = urlParts[1];
+        
+        const credentialsPart = remainder.split('@')[0];
+        const connectionPart = remainder.split('@')[1];
+        
+        if (credentialsPart.includes(':')) {
+          const [username, ...passwordParts] = credentialsPart.split(':');
+          const password = passwordParts.join(':');
+          
+          // Only encode if it's not already encoded (doesn't contain %)
+          // and contains special characters that need encoding
+          if (!password.includes('%') && /[^a-zA-Z0-9]/.test(password)) {
+            console.log('🔧 Database: Automatically encoding special characters in password');
+            const encodedPassword = encodeURIComponent(password);
+            MONGODB_URI = `${scheme}://${username}:${encodedPassword}@${connectionPart}`;
+          }
+        }
+      } catch (e) {
+        console.warn('⚠️ Warning: Failed to automatically encode password in MONGODB_URI', e.message);
+      }
+    }
     
     // Log the actual URI being used (without credentials)
     const sanitizedURI = MONGODB_URI.replace(/\/\/.*@/, '//****:****@');
