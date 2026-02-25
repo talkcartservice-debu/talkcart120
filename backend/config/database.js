@@ -124,14 +124,27 @@ const connectDB = async () => {
     console.error('Please ensure MongoDB is running and accessible');
     
     // Provide specific guidance based on environment
-    if (process.env.NODE_ENV === 'production' || error.name === 'MongooseServerSelectionError') {
+    if (process.env.NODE_ENV === 'production' || 
+        error.name === 'MongooseServerSelectionError' || 
+        error.name === 'MongoServerError' ||
+        error.code === 8000) {
+      
       console.error('🔧 MONGODB CONNECTION TROUBLESHOOTING:');
-      console.error('   1. IP WHITELIST (Most Common): In MongoDB Atlas, go to "Network Access" and add "0.0.0.0/0"');
-      console.error('      Wait 1-2 minutes for the changes to apply in Atlas before restarting Render.');
-      console.error('   2. RENDER ENV VARS: Ensure MONGODB_URI is set in "Environment" tab of your Render service.');
-      console.error('      Make sure there are no spaces or quotes around the URI.');
-      console.error('   3. PASSWORD: If your password has special characters (like !), ensure they are URL-encoded.');
-      console.error('      In your case, "!!" should be "%21%21"');
+      
+      if (error.code === 8000 || error.message.includes('Authentication failed')) {
+        console.error('   ❌ AUTHENTICATION FAILED (Code 8000):');
+        console.error('   1. USERNAME/PASSWORD: Verify your username and password in MongoDB Atlas.');
+        console.error('   2. SPECIAL CHARACTERS: If your password has "!", it MUST be "%21" in the URI.');
+        console.error('      Example: Mirror!!2024123 -> Mirror%21%212024123');
+        console.error('   3. RENDER CONFIG: Check Render -> Environment. Ensure MONGODB_URI has NO quotes or spaces.');
+        console.error('   4. DB USER ROLES: Ensure your Atlas user has "Read and write to any database" permissions.');
+      } else if (error.name === 'MongooseServerSelectionError') {
+        console.error('   ❌ NETWORK/IP WHITELIST ISSUE:');
+        console.error('   1. IP WHITELIST: In MongoDB Atlas, go to "Network Access" and add "0.0.0.0/0".');
+        console.error('   2. FIREWALL: Ensure no firewall is blocking outgoing connections on port 27017.');
+      }
+      
+      console.error('   💡 TIP: Try to connect using MongoDB Compass with the same URI to verify it works.');
     } else {
       console.error('Check your MONGODB_URI in the .env file');
     }
