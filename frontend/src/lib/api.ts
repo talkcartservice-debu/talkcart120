@@ -249,8 +249,20 @@ class ApiService {
     const contentType = response.headers.get('content-type');
     let data: any;
     if (contentType && !contentType.includes('application/json')) {
-      // For non-JSON responses, return the response directly
-      data = response;
+      // For non-JSON responses, try to get some text for debugging
+      try {
+        const clonedResponse = response.clone();
+        const text = await clonedResponse.text();
+        data = {
+          _isResponse: true,
+          status: response.status,
+          statusText: response.statusText,
+          contentType,
+          preview: text.substring(0, 500)
+        };
+      } catch (e) {
+        data = response;
+      }
     } else {
       data = await this.safeJsonParse(response);
     }

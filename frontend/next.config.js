@@ -32,7 +32,12 @@ const nextConfig = {
   // API proxy configuration for development
   async rewrites() {
     // Use environment variable for backend URL, with fallback to localhost for development
-    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+    let BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+    
+    // Ensure BACKEND_URL does not have a trailing slash to avoid double slashes in paths
+    if (BACKEND_URL.endsWith('/')) {
+      BACKEND_URL = BACKEND_URL.slice(0, -1);
+    }
     
     return {
       beforeFiles: [
@@ -40,13 +45,12 @@ const nextConfig = {
         // (no rewrites needed, they'll be handled by pages/api/)
       ],
       afterFiles: [
-        // All /api routes go to backend EXCEPT those in pages/api/
-        // Note: image-proxy.ts is a Next.js API route, not proxied
+        // All /api routes go to backend EXCEPT those specifically handled by Next.js in pages/api/
         {
-          source: '/api/:path((?!image-proxy).*)',
+          source: '/api/:path*',
           destination: `${BACKEND_URL}/api/:path*`,
         },
-        // Proxy HLS video segments to backend in development
+        // Proxy HLS video segments to backend
         {
           source: '/hls/:path*',
           destination: `${BACKEND_URL}/hls/:path*`,
@@ -56,12 +60,12 @@ const nextConfig = {
           source: '/cloudinary/:path*',
           destination: 'https://res.cloudinary.com/:path*',
         },
-        // Proxy local uploads to avoid CORS issues - frontend on port 4000, backend on port 8000
+        // Proxy local uploads to avoid CORS issues
         {
           source: '/uploads/:path*',
           destination: `${BACKEND_URL}/uploads/:path*`,
         },
-        // Optional: proxy socket.io path if any component uses relative path
+        // Proxy socket.io
         {
           source: '/socket.io/:path*',
           destination: `${BACKEND_URL}/socket.io/:path*`,

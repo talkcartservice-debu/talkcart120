@@ -451,43 +451,39 @@ async function createUniqueUsername(base) {
 // @access  Public
 router.post('/oauth/google', async (req, res) => {
   try {
-    console.log('Google OAuth request received');
+    console.log('--------------------------------------------------');
+    console.log('GOOGLE OAUTH REQUEST RECEIVED');
+    console.log('Method:', req.method);
+    console.log('URL:', req.originalUrl);
+    console.log('Body keys:', Object.keys(req.body || {}));
+    console.log('--------------------------------------------------');
+    
     const { idToken } = req.body || {};
-    console.log('ID Token provided:', !!idToken);
     
     if (!idToken) {
+      console.warn('Google OAuth: Missing idToken');
       return res.status(400).json({ success: false, message: 'Missing idToken' });
     }
 
     // Verify id_token via Google tokeninfo
     const verifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`;
-    console.log('Verifying token with URL:', verifyUrl);
+    console.log('Verifying Google token...');
     
     try {
       const { data } = await axios.get(verifyUrl, { timeout: 5000 });
-      console.log('Google token data received:', data ? 'YES' : 'NO');
       
-      // Log comparison data
-      console.log('Audience comparison:');
-      console.log('  Token audience (data.aud):', data?.aud);
-      console.log('  Expected client ID (GOOGLE_CLIENT_ID):', GOOGLE_CLIENT_ID);
-      console.log('  Match:', data?.aud === GOOGLE_CLIENT_ID);
-
-      // Expect audience to match our client id
       if (!data) {
+        console.error('Google OAuth: No data received from verification service');
         return res.status(401).json({ success: false, message: 'Invalid Google token (no data received)' });
       }
       
       // More flexible audience verification - check if it's one of our valid client IDs
       const validAudiences = [GOOGLE_CLIENT_ID];
       
-      // If we have multiple client IDs in the future, add them here
-      // validAudiences.push('additional-client-id.apps.googleusercontent.com');
-      
       if (!validAudiences.includes(data.aud)) {
-        console.error('Audience mismatch detected:');
+        console.error('Google OAuth: Audience mismatch detected');
         console.error('  Token audience:', data.aud);
-        console.error('  Expected audiences:', validAudiences);
+        console.error('  Expected audience:', GOOGLE_CLIENT_ID);
         return res.status(401).json({ 
           success: false, 
           message: 'Invalid Google token (audience mismatch)',
@@ -498,64 +494,75 @@ router.post('/oauth/google', async (req, res) => {
         });
       }
       
-      // Continue with the rest of the OAuth flow...
       const googleId = data.sub;
       const email = (data.email || '').toLowerCase();
       const displayName = data.name || (email ? email.split('@')[0] : undefined);
 
       if (!googleId) {
+        console.error('Google OAuth: Invalid payload (missing sub)');
         return res.status(400).json({ success: false, message: 'Invalid Google token payload' });
       }
 
-      // Upsert user
+      // Find or create user
       let user = await User.findOne({ googleId });
       if (!user && email) {
         user = await User.findOne({ email });
       }
 
       if (!user) {
+        console.log(`Google OAuth: Creating new user for email: ${email}`);
         const username = await createUniqueUsername(displayName || `google_${googleId.slice(-6)}`);
         user = new User({
           username,
           displayName: displayName || username,
           email: email || `${username}@users.noreply.vetora.local`,
-          password: Math.random().toString(36).slice(2), // will be hashed, not used for social
+          password: Math.random().toString(36).slice(2),
           isVerified: true,
           googleId,
         });
         await user.save();
-      } else if (!user.googleId) {
-        user.googleId = googleId;
-        if (email && !user.email) user.email = email;
-        await user.save();
+      } else {
+        console.log(`Google OAuth: Existing user found: ${user.username}`);
+        if (!user.googleId) {
+          user.googleId = googleId;
+          if (email && !user.email) user.email = email;
+          await user.save();
+        }
       }
 
       const accessToken = generateAccessToken(user._id);
       const refreshToken = generateRefreshToken(user._id);
       const { password: _pw, ...userWithoutPassword } = user.toObject();
 
+      console.log(`Google OAuth: Successful login for ${user.username}`);
       return res.json({ success: true, accessToken, refreshToken, user: userWithoutPassword });
     } catch (verificationError) {
-      console.error('Google OAuth verification error:', verificationError?.response?.data || verificationError.message || verificationError);
+      console.error('Google OAuth verification error:', verificationError?.response?.data || verificationError.message);
       
-      // Handle specific error cases
       if (verificationError?.response?.status === 400) {
         return res.status(400).json({ success: false, message: 'Invalid Google token' });
       }
       
       if (verificationError?.code === 'ECONNABORTED' || verificationError?.message?.includes('timeout')) {
-        return res.status(504).json({ success: false, message: 'Google verification service timeout. Please try again.' });
+        return res.status(504).json({ success: false, message: 'Google verification service timeout' });
       }
       
-      return res.status(502).json({ success: false, message: 'Failed to verify Google token. Please try again.' });
+      return res.status(502).json({ success: false, message: 'Failed to verify Google token' });
     }
-
-
   } catch (error) {
-    console.error('Google OAuth error:', error?.response?.data || error.message || error);
-    return res.status(401).json({ success: false, message: 'Google authentication failed' });
+    console.error('Google OAuth internal error:', error.message);
+    return res.status(500).json({ success: false, message: 'Internal server error during Google authentication' });
   }
 });
+
+// Alias for easier access
+router.post('/google', async (req, res) => {
+  console.log('Redirecting /google to /oauth/google');
+  // Forward to the main handler
+  req.url = '/oauth/google';
+  router.handle(req, res, () => {});
+});
+
 
 // @route   POST /api/auth/oauth/apple
 // @desc    Authenticate via Apple JS (identityToken)
