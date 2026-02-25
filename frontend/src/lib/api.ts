@@ -268,8 +268,19 @@ class ApiService {
     }
 
     if (!response.ok) {
-      console.error(`API Error: ${response.status} ${response.statusText}`, { url, status: response.status, data });
-      // For non-JSON error responses, create a generic error
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'server-side';
+      console.error(`API Error: ${response.status} ${response.statusText}`, { 
+        url, 
+        status: response.status, 
+        data,
+        origin,
+        API_URL 
+      });
+      
+      // If we have a response preview (non-JSON), log it explicitly for easier debugging in hosted environments
+      if (data && typeof data === 'object' && (data as any)._isResponse && (data as any).preview) {
+        console.error('Response Preview (404/Error):', (data as any).preview);
+      }
       if (data instanceof Response) {
         const errorData = { message: `Request failed with status ${response.status}` };
         // Defensive check to ensure errorData is never undefined
@@ -428,13 +439,30 @@ class ApiService {
 
     oauthGoogle: async (idToken: string) => {
       try {
-        const response = await this.request(`${API_URL}/auth/oauth/google`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
-        }, TIMEOUTS.AUTH_REQUEST);
+        console.log('Attempting Google OAuth with primary endpoint: /auth/oauth/google');
+        try {
+          const response = await this.request(`${API_URL}/auth/oauth/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken }),
+          }, TIMEOUTS.AUTH_REQUEST);
 
-        return response;
+          return response;
+        } catch (primaryError: any) {
+          // If primary endpoint fails with 404, try the alias endpoint
+          if (primaryError instanceof HttpError && primaryError.status === 404) {
+            console.warn('Primary OAuth endpoint returned 404, trying alias endpoint: /auth/google');
+            const aliasResponse = await this.request(`${API_URL}/auth/google`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idToken }),
+            }, TIMEOUTS.AUTH_REQUEST);
+            
+            return aliasResponse;
+          }
+          // If it's not a 404, rethrow the original error
+          throw primaryError;
+        }
       } catch (error: any) {
         console.error('Google OAuth API error:', error);
         

@@ -446,10 +446,8 @@ async function createUniqueUsername(base) {
   return candidate;
 }
 
-// @route   POST /api/auth/oauth/google
-// @desc    Authenticate via Google One Tap (id_token)
-// @access  Public
-router.post('/oauth/google', async (req, res) => {
+// Google OAuth handler function
+const handleGoogleOAuth = async (req, res) => {
   try {
     console.log('--------------------------------------------------');
     console.log('GOOGLE OAUTH REQUEST RECEIVED');
@@ -553,15 +551,15 @@ router.post('/oauth/google', async (req, res) => {
     console.error('Google OAuth internal error:', error.message);
     return res.status(500).json({ success: false, message: 'Internal server error during Google authentication' });
   }
-});
+};
+
+// @route   POST /api/auth/oauth/google
+// @desc    Authenticate via Google One Tap (id_token)
+// @access  Public
+router.post('/oauth/google', handleGoogleOAuth);
 
 // Alias for easier access
-router.post('/google', async (req, res) => {
-  console.log('Redirecting /google to /oauth/google');
-  // Forward to the main handler
-  req.url = '/oauth/google';
-  router.handle(req, res, () => {});
-});
+router.post('/google', handleGoogleOAuth);
 
 
 // @route   POST /api/auth/oauth/apple
