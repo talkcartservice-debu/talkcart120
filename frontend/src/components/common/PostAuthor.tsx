@@ -53,10 +53,10 @@ const PostAuthor: React.FC<PostAuthorProps> = ({
     }
   })();
 
-  // Safely handle author properties
+  // Safely handle author properties with proper fallbacks
   const safeAuthor = author || {};
-  const authorAvatar = safeAuthor.avatar || '';
-  const authorDisplayName = safeAuthor.displayName || 'Unknown User';
+  const authorAvatar = safeAuthor.avatar || safeAuthor.profile?.avatar || '';
+  const authorDisplayName = safeAuthor.displayName || safeAuthor.name || safeAuthor.username || 'Unknown User';
   const authorUsername = safeAuthor.username || 'unknown';
   const authorIsVerified = safeAuthor.isVerified || false;
 

@@ -71,6 +71,7 @@ const SocialPage: React.FC = () => {
   const [linkPostId, setLinkPostId] = useState<string | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [commentingPostId, setCommentingPostId] = useState<string | null>(null);
   const [userStats, setUserStats] = useState({
     postCount: 0,
     followerCount: 0,
@@ -229,8 +230,8 @@ const SocialPage: React.FC = () => {
   };
 
   const handleCommentClick = (postId: string) => {
-    // Navigate to post detail page for commenting
-    router.push(`/post/${postId}`);
+    // Open comment section inline instead of navigating to separate page
+    setCommentingPostId(postId);
   };
 
   const handleSharePost = (postId: string) => {
@@ -292,6 +293,7 @@ const SocialPage: React.FC = () => {
           <PostCard
             key={post.id}
             post={post}
+            expandedCommentsPostId={commentingPostId}
             onLike={async (postId: string) => {
               await likePost(postId);
             }}
@@ -303,8 +305,8 @@ const SocialPage: React.FC = () => {
               setShareDialogOpen(true);
             }}
             onComment={(postId: string) => {
-              // Navigate to post detail page for commenting
-              router.push(`/post/${postId}`);
+              // Open comment section inline instead of navigating
+              setCommentingPostId(commentingPostId === postId ? null : postId);
             }}
           />
         );

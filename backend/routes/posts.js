@@ -539,16 +539,30 @@ router.get('/', async (req, res) => {
             isActive: true 
           });
           
+          // Ensure author data is properly structured
+          let authorData = null;
+          if (post.author) {
+            authorData = {
+              id: post.author._id || post.author.id,
+              username: post.author.username || 'unknown',
+              displayName: post.author.displayName || post.author.username || 'Unknown User',
+              avatar: post.author.avatar || '',
+              isVerified: post.author.isVerified || false,
+              bio: post.author.bio || '',
+              role: post.author.role || 'user',
+              followerCount: post.author.followerCount || 0,
+              location: post.author.location || '',
+              // Legacy field for backward compatibility
+              name: post.author.displayName || post.author.username || 'Unknown User',
+            };
+          }
+          
           return {
             ...post,
             id: post._id, // Add id field for compatibility
-            authorId: post.author?._id, // Add authorId for compatibility (null-safe)
-            // Transform author to match frontend interface
-            author: post.author ? {
-              ...post.author,
-              id: post.author._id,
-              name: post.author.displayName || post.author.username,
-            } : null,
+            authorId: post.author?._id || post.author?.id, // Add authorId for compatibility
+            // Use structured author data
+            author: authorData,
             // Ensure hashtags is always an array
             hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
             // Transform arrays to counts
@@ -885,15 +899,29 @@ router.get('/public', async (req, res) => {
             isActive: true 
           });
           
+          // Ensure author data is properly structured
+          let authorData = null;
+          if (post.author) {
+            authorData = {
+              id: post.author._id || post.author.id,
+              username: post.author.username || 'unknown',
+              displayName: post.author.displayName || post.author.username || 'Unknown User',
+              avatar: post.author.avatar || '',
+              isVerified: post.author.isVerified || false,
+              bio: post.author.bio || '',
+              role: post.author.role || 'user',
+              followerCount: post.author.followerCount || 0,
+              location: post.author.location || '',
+              // Legacy field for backward compatibility
+              name: post.author.displayName || post.author.username || 'Unknown User',
+            };
+          }
+          
           return {
             ...post,
             id: post._id,
-            authorId: post.author._id,
-            author: {
-              ...post.author,
-              id: post.author._id,
-              name: post.author.displayName || post.author.username,
-            },
+            authorId: post.author?._id || post.author?.id,
+            author: authorData,
             // Ensure hashtags is always an array
             hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
             likeCount: Array.isArray(post.likes) ? post.likes.length : 0,
@@ -967,15 +995,29 @@ router.get('/trending', async (req, res) => {
             isActive: true 
           });
           
+          // Ensure author data is properly structured
+          let authorData = null;
+          if (post.author) {
+            authorData = {
+              id: post.author._id || post.author.id,
+              username: post.author.username || 'unknown',
+              displayName: post.author.displayName || post.author.username || 'Unknown User',
+              avatar: post.author.avatar || '',
+              isVerified: post.author.isVerified || false,
+              bio: post.author.bio || '',
+              role: post.author.role || 'user',
+              followerCount: post.author.followerCount || 0,
+              location: post.author.location || '',
+              // Legacy field for backward compatibility
+              name: post.author.displayName || post.author.username || 'Unknown User',
+            };
+          }
+          
           return {
             ...post,
             id: post._id,
-            authorId: post.author._id,
-            author: {
-              ...post.author,
-              id: post.author._id,
-              name: post.author.displayName || post.author.username,
-            },
+            authorId: post.author?._id || post.author?.id,
+            author: authorData,
             // Ensure hashtags is always an array
             hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
             likeCount: Array.isArray(post.likes) ? post.likes.length : 0,
@@ -1199,15 +1241,29 @@ router.get('/:postId', async (req, res) => {
       isActive: true 
     });
 
+    // Ensure author data is properly structured
+    let authorData = null;
+    if (post.author) {
+      authorData = {
+        id: post.author._id || post.author.id,
+        username: post.author.username || 'unknown',
+        displayName: post.author.displayName || post.author.username || 'Unknown User',
+        avatar: post.author.avatar || '',
+        isVerified: post.author.isVerified || false,
+        bio: post.author.bio || '',
+        role: post.author.role || 'user',
+        followerCount: post.author.followerCount || 0,
+        location: post.author.location || '',
+        // Legacy field for backward compatibility
+        name: post.author.displayName || post.author.username || 'Unknown User',
+      };
+    }
+
     const postWithCounts = {
       ...post,
       id: post._id,
-      authorId: post.author._id,
-      author: {
-        ...post.author,
-        id: post.author._id,
-        name: post.author.displayName || post.author.username,
-      },
+      authorId: post.author?._id || post.author?.id,
+      author: authorData,
       likeCount: Array.isArray(post.likes) ? post.likes.length : 0,
       commentCount: commentCount,
       shareCount: Array.isArray(post.shares) ? post.shares.length : 0,
@@ -2690,15 +2746,29 @@ router.get('/user/:username', async (req, res) => {
             isActive: true 
           });
           
+          // Ensure author data is properly structured
+          let authorData = null;
+          if (post.author) {
+            authorData = {
+              id: post.author._id || post.author.id,
+              username: post.author.username || 'unknown',
+              displayName: post.author.displayName || post.author.username || 'Unknown User',
+              avatar: post.author.avatar || '',
+              isVerified: post.author.isVerified || false,
+              bio: post.author.bio || '',
+              role: post.author.role || 'user',
+              followerCount: post.author.followerCount || 0,
+              location: post.author.location || '',
+              // Legacy field for backward compatibility
+              name: post.author.displayName || post.author.username || 'Unknown User',
+            };
+          }
+          
           return {
             ...post,
             id: post._id,
-            authorId: post.author._id,
-            author: {
-              ...post.author,
-              id: post.author._id,
-              name: post.author.displayName || post.author.username,
-            },
+            authorId: post.author?._id || post.author?.id,
+            author: authorData,
             hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
             likeCount: Array.isArray(post.likes) ? post.likes.length : 0,
             commentCount: commentCount,
