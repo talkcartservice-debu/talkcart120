@@ -1787,20 +1787,38 @@ const MessagesPage: React.FC = () => {
                     </Box>
                   </Paper>
                 )}
-                <IconButton 
-                  onClick={() => imageInputRef.current?.click()} 
-                  disabled={uploadingMedia}
-                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
-                >
-                  <Paperclip size={isMobile ? 14 : 20} />
-                </IconButton>
-                <IconButton 
-                  onClick={() => videoInputRef.current?.click()} 
-                  disabled={uploadingMedia}
-                  sx={{ p: { xs: 0.75, sm: 1 }, minWidth: { xs: 36, sm: 40 } }}
-                >
-                  <Image size={isMobile ? 14 : 20} />
-                </IconButton>
+                <Tooltip title="Attach file">
+                  <IconButton 
+                    onClick={() => imageInputRef.current?.click()} 
+                    disabled={uploadingMedia}
+                    sx={{ 
+                      p: { xs: 0.75, sm: 1 }, 
+                      minWidth: { xs: 36, sm: 40 },
+                      color: uploadingMedia ? 'action.disabled' : 'text.secondary',
+                      '&:hover:not(:disabled)': {
+                        backgroundColor: alpha(theme.palette.action.hover, 0.08)
+                      }
+                    }}
+                  >
+                    <Paperclip size={isMobile ? 14 : 20} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Add image/video">
+                  <IconButton 
+                    onClick={() => videoInputRef.current?.click()} 
+                    disabled={uploadingMedia}
+                    sx={{ 
+                      p: { xs: 0.75, sm: 1 }, 
+                      minWidth: { xs: 36, sm: 40 },
+                      color: uploadingMedia ? 'action.disabled' : 'text.secondary',
+                      '&:hover:not(:disabled)': {
+                        backgroundColor: alpha(theme.palette.action.hover, 0.08)
+                      }
+                    }}
+                  >
+                    <Image size={isMobile ? 14 : 20} />
+                  </IconButton>
+                </Tooltip>
                 {uploadingMedia && (
                   <Box sx={{ width: { xs: 100, sm: 120 }, mx: 1 }}>
                     <Box sx={{ fontSize: { xs: 10, sm: 12 }, color: 'text.secondary', mb: 0.5 }}>Uploading {uploadProgress}%</Box>
@@ -1890,18 +1908,20 @@ const MessagesPage: React.FC = () => {
                       py: { xs: 0.5, sm: 0.75 },
                       px: { xs: 1, sm: 1.5 },
                       backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.3) : 'white',
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.5)}`,
                       transition: 'all 0.2s ease-in-out',
                       '&:hover': {
-                        backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.5) : alpha(theme.palette.grey[50], 0.8)
+                        backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.5) : alpha(theme.palette.grey[50], 0.8),
+                        borderColor: alpha(theme.palette.primary.main, 0.3)
                       },
                       '&.Mui-focused': {
                         backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.7) : 'white',
-                        boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`
+                        boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.15)}`,
+                        borderColor: theme.palette.primary.main
                       }
                     },
                     minHeight: { xs: 36, sm: 40 },
                     flex: { xs: '1 1 auto', sm: 1 },
-                    // Better mobile input experience
                     inputProps: {
                       style: {
                         padding: isMobile ? '8px 12px' : '12px 16px'
@@ -1909,69 +1929,87 @@ const MessagesPage: React.FC = () => {
                     }
                   }}
                 />
-                <IconButton 
-                  onClick={() => (isRecording ? stopRecording() : startRecording())} 
-                  disabled={uploadingMedia}
-                  sx={{ 
-                    p: { xs: 0.75, sm: 1 }, 
-                    minWidth: { xs: 36, sm: 40 },
-                    backgroundColor: isRecording ? alpha(theme.palette.error.main, 0.1) : 'transparent',
-                    '&:hover': {
-                      backgroundColor: isRecording ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.action.hover, 0.04)
-                    },
-                    // Better touch targets for mobile
-                    '& .MuiTouchRipple-root': {
-                      display: { xs: 'block', sm: 'block' }
-                    }
-                  }}
-                >
-                  <Badge color="error" variant={isRecording ? 'dot' : 'standard'} overlap="circular">
-                    <Mic 
-                      size={isMobile ? 14 : 20} 
-                      color={isRecording ? theme.palette.error.main : undefined}
-                      style={{ animation: isRecording ? 'pulse 1.5s infinite' : 'none' }}
-                    />
-                  </Badge>
-                  <style>{`
-                    @keyframes pulse {
-                      0% { opacity: 1; }
-                      50% { opacity: 0.5; }
-                      100% { opacity: 1; }
-                    }
-                  `}</style>
-                </IconButton>
-                <IconButton
-                  onClick={() => setShowEmojiPicker(v => !v)}
-                  sx={{ 
-                    p: { xs: 0.75, sm: 1 }, 
-                    minWidth: { xs: 36, sm: 40 },
-                    // Better touch targets for mobile
-                    '& .MuiTouchRipple-root': {
-                      display: { xs: 'block', sm: 'block' }
-                    }
-                  }}
-                >
-                  <Smile size={isMobile ? 14 : 20} />
-                </IconButton>
-                <IconButton
-                  color="primary"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleSendMessage();
-                  }}
-                  disabled={!newMessage.trim() || sending}
-                  sx={{ 
-                    p: { xs: 0.75, sm: 1 }, 
-                    minWidth: { xs: 36, sm: 40 },
-                    // Better touch targets for mobile
-                    '& .MuiTouchRipple-root': {
-                      display: { xs: 'block', sm: 'block' }
-                    }
-                  }}
-                >
-                  {sending ? <CircularProgress size={isMobile ? 14 : 20} /> : <Send size={isMobile ? 14 : 20} />}
-                </IconButton>
+                <Tooltip title={isRecording ? "Stop recording" : "Record voice message"}>
+                  <IconButton 
+                    onClick={() => (isRecording ? stopRecording() : startRecording())} 
+                    disabled={uploadingMedia}
+                    sx={{ 
+                      p: { xs: 0.75, sm: 1 }, 
+                      minWidth: { xs: 36, sm: 40 },
+                      backgroundColor: isRecording ? alpha(theme.palette.error.main, 0.12) : 'transparent',
+                      color: isRecording ? theme.palette.error.main : 'text.secondary',
+                      '&:hover:not(:disabled)': {
+                        backgroundColor: isRecording ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.action.hover, 0.08)
+                      },
+                      '& .MuiTouchRipple-root': {
+                        display: { xs: 'block', sm: 'block' }
+                      }
+                    }}
+                  >
+                    <Badge color="error" variant={isRecording ? 'dot' : 'standard'} overlap="circular">
+                      <Mic 
+                        size={isMobile ? 14 : 20} 
+                        style={{ animation: isRecording ? 'pulse 1.5s infinite' : 'none' }}
+                      />
+                    </Badge>
+                    <style>{`
+                      @keyframes pulse {
+                        0% { opacity: 1; }
+                        50% { opacity: 0.5; }
+                        100% { opacity: 1; }
+                      }
+                    `}</style>
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Add emoji">
+                  <IconButton
+                    onClick={() => setShowEmojiPicker(v => !v)}
+                    sx={{ 
+                      p: { xs: 0.75, sm: 1 }, 
+                      minWidth: { xs: 36, sm: 40 },
+                      color: showEmojiPicker ? 'primary.main' : 'text.secondary',
+                      backgroundColor: showEmojiPicker ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.action.hover, 0.08)
+                      },
+                      '& .MuiTouchRipple-root': {
+                        display: { xs: 'block', sm: 'block' }
+                      }
+                    }}
+                  >
+                    <Smile size={isMobile ? 14 : 20} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Send message (Ctrl+Enter)">
+                  <span>
+                    <IconButton
+                      color="primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleSendMessage();
+                      }}
+                      disabled={!newMessage.trim() || sending}
+                      sx={{ 
+                        p: { xs: 0.75, sm: 1 }, 
+                        minWidth: { xs: 36, sm: 40 },
+                        backgroundColor: !newMessage.trim() || sending ? 'transparent' : alpha(theme.palette.primary.main, 0.08),
+                        '&:hover:not(:disabled)': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.15)
+                        },
+                        '&:disabled': {
+                          opacity: 0.5
+                        },
+                        transition: 'all 0.2s ease-in-out',
+                        '& .MuiTouchRipple-root': {
+                          display: { xs: 'block', sm: 'block' }
+                        }
+                      }}
+                    >
+                      {sending ? <CircularProgress size={isMobile ? 14 : 20} /> : <Send size={isMobile ? 14 : 20} />}
+                    </IconButton>
+                  </span>
+                </Tooltip>
               </Box>
               </form>
             </Box>
