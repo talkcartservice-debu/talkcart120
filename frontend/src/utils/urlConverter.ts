@@ -1,3 +1,5 @@
+import { SOCKET_URL } from '@/config/index';
+
 /**
  * URL Converter Utility
  * 
@@ -29,11 +31,6 @@ export const convertToProxyUrl = (url: string): string => {
     url.includes('file_1760168733155_lfhjq4ik7ht') ||
     url.includes('file_1760263843073_w13593s5t8l') ||
     url.includes('file_1760276276250_3pqeekj048s')
-    // Remove file_1760163879851_tt3fdqqim9 as it appears to be a valid file
-    // url.includes('file_1760163879851_tt3fdqqim9') ||
-    // Add pattern to detect truncated URLs that end with partial file names
-    // But be more specific to avoid false positives
-    // (url.includes('file_') && url.length < 100 && !url.includes('.'))
   ) {
     console.log('Known missing file detected, returning placeholder:', url);
     return '/images/placeholder-image-new.png';
@@ -45,8 +42,12 @@ export const convertToProxyUrl = (url: string): string => {
     return url;
   }
   
-  // Convert localhost:8000 URLs to relative paths to use the Next.js proxy
-  if (url.includes('localhost:8000/uploads/')) {
+  // Convert backend URLs to relative paths to use the Next.js proxy
+  // Use SOCKET_URL as the base backend URL if available
+  const backendBaseUrl = SOCKET_URL || 'http://localhost:8000';
+  const cleanBackendBaseUrl = backendBaseUrl.endsWith('/') ? backendBaseUrl.slice(0, -1) : backendBaseUrl;
+
+  if (url.includes('/uploads/') && (url.includes('localhost:8000') || url.includes(cleanBackendBaseUrl.replace('https://', '').replace('http://', '')))) {
     // Extract the path after /uploads/
     try {
       const path = url.split('/uploads/')[1];
@@ -54,7 +55,7 @@ export const convertToProxyUrl = (url: string): string => {
       console.log('✅ Proxied backend upload URL:', cleanPath);
       return cleanPath;
     } catch (e) {
-      console.error('Failed to parse localhost URL:', url, e);
+      console.error('Failed to parse backend URL:', url, e);
       // Fallback to URL as is
       return url;
     }

@@ -52,6 +52,7 @@ class Config {
       env: process.env.NODE_ENV || 'development',
       port: parseInt(process.env.PORT) || 8000,
       host: process.env.HOST || '0.0.0.0',
+      backendUrl: process.env.BACKEND_URL || 'http://localhost:8000',
       isDevelopment: process.env.NODE_ENV === 'development',
       isProduction: process.env.NODE_ENV === 'production',
       isTest: process.env.NODE_ENV === 'test'

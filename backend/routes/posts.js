@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const config = require('../config/config');
 const { Post, User, Comment, Follow, Share, Notification } = require('../models');
 const { authenticateToken } = require('./auth');
 const { getVideoThumbnail } = require('../config/cloudinary');
@@ -1321,8 +1322,9 @@ router.post('/', authenticateToken, async (req, res) => {
         // Validate URL format
         const url = media.secure_url || media.url;
         if (url && typeof url === 'string') {
-          // Check for localhost URLs that might indicate local files not properly uploaded
-          if (url.includes('localhost:8000/uploads/') && !url.includes('cloudinary.com')) {
+          // Check for localhost or configured backend URLs that might indicate local files not properly uploaded
+          const backendUrl = config.server.backendUrl;
+          if ((url.includes('localhost:8000/uploads/') || (backendUrl && url.includes(`${backendUrl}/uploads/`))) && !url.includes('cloudinary.com')) {
             // This might be a local file, which is okay for development but should be checked
             console.warn(`Media item ${i + 1} appears to be a local file: ${url}`);
           }
