@@ -2102,83 +2102,7 @@ router.post('/:postId/view', async (req, res) => {
   }
 });
 
-// @route   POST /api/posts/:postId/comments
-// @desc    Add a comment to a post
-// @access  Private
-router.post('/:postId/comments', authenticateToken, async (req, res) => {
-  try {
-    console.log('POST /api/posts/:postId/comments - Request received');
-    const { postId } = req.params;
-    const { text } = req.body;
-    const userId = req.user.id || req.user.userId;
 
-    // Find the post
-    const post = await Post.findById(postId);
-    if (!post || !post.isActive) {
-      return res.status(404).json({
-        success: false,
-        error: 'Post not found',
-      });
-    }
-
-    let shareResult;
-    
-    // Create share using appropriate Share model method
-    if (platform === 'internal') {
-      shareResult = await Share.createSimpleShare(postId, userId);
-    } else {
-      // For external shares (copy link, social media, etc.)
-      const metadata = {
-        ipAddress: req.ip,
-        userAgent: req.get('User-Agent'),
-        referrer: req.get('Referer')
-      };
-      shareResult = await Share.createExternalShare(postId, userId, platform, metadata);
-    }
-
-    // Update post share count
-    const updatedPost = await Post.findByIdAndUpdate(postId, {
-      $inc: { shareCount: 1 }
-    }, { new: true });
-
-    // Emit share update via WebSocket if available
-    const io = req.app.get('io');
-    if (io) {
-      io.emit('post-share-updated', {
-        postId: postId,
-        shareCount: updatedPost.shareCount || 1,
-        userId: userId,
-        type: 'share_update',
-        action: 'share',
-        platform: platform,
-        timestamp: new Date().toISOString()
-      });
-      
-      // Also emit general post update
-      io.emit('post-updated', {
-        postId: postId,
-        type: 'share',
-        shareCount: updatedPost.shareCount || 1,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    res.json({
-      success: true,
-      data: {
-        shareCount: updatedPost.shareCount || 1,
-      },
-      message: 'Post shared successfully',
-    });
-  } catch (error) {
-    console.error('Share post error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to share post',
-      message: error.message,
-    });
-  }
-});
 
 // @route   POST /api/posts/:postId/share/followers
 // @desc    Share a post with all followers
@@ -2497,8 +2421,8 @@ router.post('/:postId/comments', authenticateToken, async (req, res) => {
           const commentAuthor = await User.findById(userId).select('username displayName avatar').lean();
           const post = await Post.findById(postId).select('author').lean();
           
-          // Don't send notification to self
-          if (post && post.author.toString() !== userId.toString()) {
+          // Don't send notification to self, and check if post has author
+          if (post && post.author && post.author.toString() !== userId.toString()) {
             await NotificationService.createCommentNotification(
               userId,
               post.author.toString(),

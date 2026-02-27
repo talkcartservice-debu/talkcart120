@@ -232,7 +232,12 @@ class Config {
 
     // Default origins based on environment
     if (this.server.isProduction) {
-      return ['https://vetora.app', 'https://www.vetora.app'];
+      return [
+        'https://vetora.app',
+        'https://www.vetora.app',
+        'https://vetora.vercel.app',
+        'https://vetora-k0knp7h83-talkcartservice-debus-projects.vercel.app'
+      ];
     }
 
     return [
