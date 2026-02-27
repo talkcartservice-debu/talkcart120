@@ -3,114 +3,146 @@ const CACHE_NAME = 'vetora-v1.0.0';
 const urlsToCache = [
   '/',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-  '/maskable_icon.png'
 ];
 
-// Install event - cache static assets
+// Install event - cache static assets (non-critical)
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
+  
+  // Skip waiting to activate the new service worker immediately
+  self.skipWaiting();
   
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Service Worker: Caching app shell');
-        return cache.addAll(urlsToCache);
+        // Cache only critical files; icons can fail without breaking the app
+        return Promise.allSettled(
+          urlsToCache.map(url => 
+            cache.add(url).catch(err => {
+              console.warn(`Failed to cache ${url}:`, err);
+              return Promise.resolve();
+            })
+          )
+        );
       })
       .catch((error) => {
-        console.error('Service Worker: CacheaddAll failed:', error);
+        console.error('Service Worker: Cache open failed:', error);
+        // Don't fail installation if caching fails
+        return Promise.resolve();
       })
   );
 });
 
 // Fetch event - serve from cache or network
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests and API calls
+  // Skip non-GET requests
   if (event.request.method !== 'GET') {
     return;
   }
 
-  // Skip API requests (don't cache dynamic data)
-  if (event.request.url.includes('/api/') || 
-      event.request.url.includes('/socket.io') ||
-      event.request.url.includes('localhost')) {
-    return;
+  // Skip API requests and dynamic content (don't cache)
+  const url = event.request.url;
+  if (url.includes('/api/') || 
+      url.includes('/socket.io') ||
+      url.includes('_next/data')) {
+    return; // Let these requests go directly to network
   }
 
   event.respondWith(
     caches.match(event.request)
-      .then((response) => {
+      .then((cachedResponse) => {
         // Return cached version if available
-        if (response) {
-          return response;
+        if (cachedResponse) {
+          return cachedResponse;
         }
 
         // Otherwise fetch from network
         return fetch(event.request)
           .then((networkResponse) => {
             // Check if we received a valid response
-            if (!networkResponse) {
-              throw new Error('No network response');
-            }
-            
-            if (networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+            if (!networkResponse || !networkResponse.ok) {
               return networkResponse;
             }
-
-            // Clone the response to store in cache
-            const responseToCache = networkResponse.clone();
-
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
+            
+            // Only cache successful responses for documents
+            if (event.request.destination === 'document' && networkResponse.status === 200) {
+              // Clone and cache the response
+              const responseToCache = networkResponse.clone();
+              caches.open(CACHE_NAME)
+                .then((cache) => {
+                  cache.put(event.request, responseToCache).catch(err => {
+                    console.warn('Failed to cache response:', err);
+                  });
+                })
+                .catch(err => {
+                  console.warn('Failed to open cache:', err);
+                });
+            }
 
             return networkResponse;
           })
-          .catch(err => {
-            console.error('Fetch error:', err);
-            throw err; // Forward to the main catch block
-          });
-      })
-      .catch((error) => {
-        console.error('Service Worker: Fetch failed:', error);
-        
-        // If both cache and network fail, return fallback for essential resources
-        if (event.request.destination === 'document') {
-          return caches.match('/').then(fallback => {
-            return fallback || new Response('Network error occurred', {
-              status: 408,
+          .catch((err) => {
+            console.warn('Fetch failed, returning cached or error response:', err);
+            
+            // If network fails and it's a document request, try to return homepage from cache
+            if (event.request.destination === 'document') {
+              return caches.match('/').catch(err => {
+                console.warn('Failed to get cached homepage:', err);
+                // Return a minimal HTML response so the page can load
+                return new Response('<!DOCTYPE html><html><body><h1>Loading...</h1></body></html>', {
+                  status: 200,
+                  headers: { 'Content-Type': 'text/html' }
+                });
+              });
+            }
+            
+            // For other resources, return a generic error response
+            return new Response('Resource unavailable', {
+              status: 503,
               headers: { 'Content-Type': 'text/plain' }
             });
           });
-        }
+      })
+      .catch((error) => {
+        console.error('Service Worker: Request handling failed:', error);
         
-        // Return a basic error response instead of undefined to avoid 
-        // "TypeError: Failed to convert value to 'Response'"
-        return new Response('Network error occurred', {
-          status: 408,
+        // Return a minimal response to prevent crashes
+        return new Response('Service unavailable', {
+          status: 503,
           headers: { 'Content-Type': 'text/plain' }
         });
       })
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches and claim all clients
 self.addEventListener('activate', (event) => {
   console.log('Service Worker: Activating...');
   
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Deleting old cache', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Claim all clients immediately so new service worker takes effect
+      self.clients.claim(),
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('Service Worker: Deleting old cache', cacheName);
+              return caches.delete(cacheName).catch(err => {
+                console.warn('Failed to delete cache:', err);
+                return Promise.resolve();
+              });
+            }
+            return Promise.resolve();
+          })
+        );
+      }).catch(err => {
+        console.warn('Service Worker: Cache cleanup failed:', err);
+        return Promise.resolve();
+      })
+    ])
   );
 });
 
