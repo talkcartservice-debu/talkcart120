@@ -1,4 +1,4 @@
-import { SOCKET_URL } from '@/config/index';
+import { BACKEND_URL } from '@/config/index';
 
 /**
  * URL Converter Utility
@@ -43,11 +43,18 @@ export const convertToProxyUrl = (url: string): string => {
   }
   
   // Convert backend URLs to relative paths to use the Next.js proxy
-  // Use SOCKET_URL as the base backend URL if available
-  const backendBaseUrl = SOCKET_URL || 'http://localhost:8000';
+  // Use BACKEND_URL as the base backend URL
+  const backendBaseUrl = BACKEND_URL || 'http://localhost:8000';
   const cleanBackendBaseUrl = backendBaseUrl.endsWith('/') ? backendBaseUrl.slice(0, -1) : backendBaseUrl;
+  
+  // Create a domain-only version for matching (strips http://, https://, ws://, wss://)
+  const backendDomain = cleanBackendBaseUrl
+    .replace('https://', '')
+    .replace('http://', '')
+    .replace('wss://', '')
+    .replace('ws://', '');
 
-  if (url.includes('/uploads/') && (url.includes('localhost:8000') || url.includes(cleanBackendBaseUrl.replace('https://', '').replace('http://', '')))) {
+  if (url.includes('/uploads/') && (url.includes('localhost:8000') || (backendDomain && url.includes(backendDomain)))) {
     // Extract the path after /uploads/
     try {
       const path = url.split('/uploads/')[1];
