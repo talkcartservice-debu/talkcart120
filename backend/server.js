@@ -951,7 +951,10 @@ const initializeApp = async () => {
     // Log actual environment variables for debugging
     console.log('🔧 NODE_ENV:', process.env.NODE_ENV);
     console.log('🔧 MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
-    console.log('🔧 MONGODB_URI value:', process.env.MONGODB_URI || 'NOT SET');
+    if (process.env.MONGODB_URI) {
+      const sanitizedUri = process.env.MONGODB_URI.replace(/\/\/.*@/, '//****:****@');
+      console.log('🔧 MONGODB_URI (sanitized):', sanitizedUri);
+    }
     console.log('🔧 MONGODB_URI length:', process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0);
     console.log('🔧 PORT:', process.env.PORT);
     console.log('🔧 HOST:', process.env.HOST);

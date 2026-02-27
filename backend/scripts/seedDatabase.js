@@ -1,16 +1,7 @@
 const mongoose = require('mongoose');
 const { User, Post, Comment } = require('../models');
+const connectDB = require('../config/database');
 require('dotenv').config();
-
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('🍃 MongoDB Connected for database initialization');
-  } catch (error) {
-    console.error('❌ MongoDB connection failed:', error);
-    process.exit(1);
-  }
-};
 
 const initializeDatabase = async () => {
   console.log('🚀 Initializing database collections...');

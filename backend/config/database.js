@@ -10,6 +10,23 @@ const connectDB = async () => {
     console.log('🔧 Process env keys (first 10):', Object.keys(process.env).slice(0, 10).join(', '));
     let MONGODB_URI = process.env.MONGODB_URI || config.database.uri || 'mongodb://localhost:27017/vetora';
     
+    // Sanitize MONGODB_URI: remove leading/trailing whitespace and quotes
+    if (typeof MONGODB_URI === 'string') {
+      const originalURI = MONGODB_URI;
+      MONGODB_URI = MONGODB_URI.trim();
+      
+      // Remove leading/trailing quotes if present
+      if ((MONGODB_URI.startsWith('"') && MONGODB_URI.endsWith('"')) || 
+          (MONGODB_URI.startsWith("'") && MONGODB_URI.endsWith("'"))) {
+        console.log('🔧 Database: Removing quotes from MONGODB_URI');
+        MONGODB_URI = MONGODB_URI.substring(1, MONGODB_URI.length - 1);
+      }
+
+      if (originalURI !== MONGODB_URI) {
+        console.log('🔧 Database: Sanity check performed on MONGODB_URI');
+      }
+    }
+    
     // Automatically encode special characters in the password if they exist
     if (MONGODB_URI.includes('://') && MONGODB_URI.includes('@')) {
       try {
@@ -17,16 +34,18 @@ const connectDB = async () => {
         const scheme = urlParts[0];
         const remainder = urlParts[1];
         
-        const credentialsPart = remainder.split('@')[0];
-        const connectionPart = remainder.split('@')[1];
+        const lastAtIndex = remainder.lastIndexOf('@');
+        const credentialsPart = remainder.substring(0, lastAtIndex);
+        const connectionPart = remainder.substring(lastAtIndex + 1);
         
         if (credentialsPart.includes(':')) {
-          const [username, ...passwordParts] = credentialsPart.split(':');
-          const password = passwordParts.join(':');
+          const firstColonIndex = credentialsPart.indexOf(':');
+          const username = credentialsPart.substring(0, firstColonIndex);
+          const password = credentialsPart.substring(firstColonIndex + 1);
           
           // Only encode if it's not already encoded (doesn't contain %)
           // and contains special characters that need encoding
-          if (!password.includes('%') && /[^a-zA-Z0-9]/.test(password)) {
+          if (password && !password.includes('%') && /[^a-zA-Z0-9]/.test(password)) {
             console.log('🔧 Database: Automatically encoding special characters in password');
             const encodedPassword = encodeURIComponent(password);
             MONGODB_URI = `${scheme}://${username}:${encodedPassword}@${connectionPart}`;
@@ -160,18 +179,20 @@ const connectDB = async () => {
       
       if (error.code === 8000 || error.message.includes('Authentication failed')) {
         console.error('   ❌ AUTHENTICATION FAILED (Code 8000):');
-        console.error('   1. USERNAME/PASSWORD: Verify your username and password in MongoDB Atlas.');
-        console.error('   2. SPECIAL CHARACTERS: If your password has "!", it MUST be "%21" in the URI.');
-        console.error('      Example: Mirror!!2024123 -> Mirror%21%212024123');
-        console.error('   3. RENDER CONFIG: Check Render -> Environment. Ensure MONGODB_URI has NO quotes or spaces.');
-        console.error('   4. DB USER ROLES: Ensure your Atlas user has "Read and write to any database" permissions.');
-      } else if (error.name === 'MongooseServerSelectionError') {
+        console.error('   1. USERNAME/PASSWORD: Double check username "nshticedrck" and password in MongoDB Atlas.');
+        console.error('   2. SPECIAL CHARACTERS: If your password has "@", ":", "/", "?", or "%", it MUST be URL encoded.');
+        console.error('   3. RENDER CONFIG: Go to Render -> Dashboard -> Your Service -> Environment.');
+        console.error('      Ensure MONGODB_URI is exactly the string from Atlas, WITHOUT any quotes around it.');
+        console.error('   4. DB USER ROLES: In Atlas, go to "Database Access". Ensure "nshticedrck" has "Read and write to any database" or "atlasAdmin" permissions.');
+        console.error('   5. DATABASE NAME: Verify "nshtis_org_2026_02" exists in your Atlas cluster.');
+      } else if (error.name === 'MongooseServerSelectionError' || error.message.includes('Server selection timed out')) {
         console.error('   ❌ NETWORK/IP WHITELIST ISSUE:');
-        console.error('   1. IP WHITELIST: In MongoDB Atlas, go to "Network Access" and add "0.0.0.0/0".');
-        console.error('   2. FIREWALL: Ensure no firewall is blocking outgoing connections on port 27017.');
+        console.error('   1. IP WHITELIST: In Atlas -> Network Access, you MUST add "0.0.0.0/0" to allow Render to connect.');
+        console.error('   2. RENDER OUTBOUND: Render\'s IP addresses change, so "Allow access from anywhere" is required.');
       }
       
-      console.error('   💡 TIP: Try to connect using MongoDB Compass with the same URI to verify it works.');
+      console.error('   💡 TIP: Copy your MONGODB_URI and try connecting with MongoDB Compass on your local machine first.');
+      console.error('      If it works locally but fails on Render, it is almost certainly an IP Whitelist (0.0.0.0/0) issue.');
     } else {
       console.error('Check your MONGODB_URI in the .env file');
     }

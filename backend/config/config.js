@@ -60,8 +60,18 @@ class Config {
 
   // Database Configuration
   get database() {
+    let uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/vetora';
+    
+    // Sanitize URI: remove potential quotes and whitespace
+    if (typeof uri === 'string') {
+      uri = uri.trim();
+      if ((uri.startsWith('"') && uri.endsWith('"')) || (uri.startsWith("'") && uri.endsWith("'"))) {
+        uri = uri.substring(1, uri.length - 1);
+      }
+    }
+
     return {
-      uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/vetora',
+      uri: uri,
       options: {
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 30000, // 30 seconds timeout for server selection

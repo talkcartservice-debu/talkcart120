@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+const connectDB = require('../config/database');
 require('dotenv').config();
 
 const resetDatabase = async () => {
   try {
     console.log('🔄 Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGODB_URI);
+    await connectDB();
     console.log('✅ Connected to MongoDB');
 
     console.log('🗑️ Dropping all collections...');
