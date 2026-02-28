@@ -141,18 +141,21 @@ const MyDashboard: React.FC = () => {
   const fetchOrders = React.useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, orders: true }));
+      console.log('Fetching orders from: api.orders.getAll');
       const response: any = await api.orders.getAll({ page: 1, limit: 10 });
+      console.log('Orders response:', response);
       
       if (response.success) {
         setOrders(response.data.orders || []);
       } else {
+        console.error('Orders API error:', response.error);
         setError(response.error || 'Failed to load orders');
       }
     } catch (err: any) {
       // Don't set error if it's an abort error due to navigation
       if (err.name !== 'AbortError' && !err.message?.includes('Abort')) {
-        console.error('Error fetching orders:', err);
-        setError(err.message || 'Failed to load orders');
+        console.error('Fetch orders exception:', err);
+        setError(`Orders fetch error: ${err.message || 'Unknown error'}`);
       }
     } finally {
       setLoading(prev => ({ ...prev, orders: false }));
@@ -162,7 +165,9 @@ const MyDashboard: React.FC = () => {
   const fetchWishlist = React.useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, wishlist: true }));
+      console.log('Fetching wishlist from: api.marketplace.getWishlist');
       const response: any = await api.marketplace.getWishlist();
+      console.log('Wishlist response:', response);
       
       if (response.success) {
         // Extract vendorId from product.vendor.id or product.vendorId
@@ -180,13 +185,14 @@ const MyDashboard: React.FC = () => {
         });
         setWishlistItems(wishlistWithVendorId);
       } else {
+        console.error('Wishlist API error:', response.error);
         setError(response.error || 'Failed to load wishlist');
       }
     } catch (err: any) {
       // Don't set error if it's an abort error due to navigation
       if (err.name !== 'AbortError' && !err.message?.includes('Abort')) {
-        console.error('Error fetching wishlist:', err);
-        setError(err.message || 'Failed to load wishlist');
+        console.error('Fetch wishlist exception:', err);
+        setError(`Wishlist fetch error: ${err.message || 'Unknown error'}`);
       }
     } finally {
       setLoading(prev => ({ ...prev, wishlist: false }));
@@ -440,7 +446,15 @@ const MyDashboard: React.FC = () => {
           onChange={(e, newValue) => setActiveTab(newValue)}
           variant="scrollable"
           scrollButtons="auto"
-          sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
+          allowScrollButtonsMobile
+          sx={{ 
+            mb: 3, 
+            borderBottom: 1, 
+            borderColor: 'divider',
+            '& .MuiTabs-scrollButtons': {
+              '&.Mui-disabled': { opacity: 0.3 },
+            },
+          }}
         >
           <Tab icon={<ShoppingCart />} iconPosition="start" label="My Orders" />
           <Tab icon={<Heart size={18} />} iconPosition="start" label="Wishlist" />
@@ -622,8 +636,8 @@ const MyDashboard: React.FC = () => {
                                 src={imageUrl}
                                 alt={item.product.name}
                                 sx={{
-                                  width: { xs: '100%', sm: 80 },
-                                  height: { xs: 150, sm: 80 },
+                                  width: { xs: '100%', sm: 100 },
+                                  height: { xs: 200, sm: 100 },
                                   objectFit: 'cover',
                                   borderRadius: 1,
                                 }}
@@ -632,11 +646,11 @@ const MyDashboard: React.FC = () => {
                                   target.src = '/images/placeholder-image.png';
                                 }}
                               />
-                              <Box sx={{ flexGrow: 1 }}>
-                                <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5 }}>
+                              <Box sx={{ flexGrow: 1, width: '100%' }}>
+                                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.5 }}>
                                   {item.product.name}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                <Typography variant="body1" color="primary" fontWeight={600} sx={{ mb: 1 }}>
                                   {item.product.price} {item.product.currency}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
@@ -646,11 +660,11 @@ const MyDashboard: React.FC = () => {
                             </Box>
                           </CardContent>
                           <Box sx={{ p: 2, pt: 0, mt: 'auto' }}>
-                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            <Box sx={{ display: 'flex', gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
                               <Button
                                 size="small"
                                 variant="outlined"
-                                sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
+                                fullWidth
                                 onClick={() => handleViewProduct(item.productId)}
                               >
                                 View
@@ -658,7 +672,7 @@ const MyDashboard: React.FC = () => {
                               <Button
                                 size="small"
                                 variant="contained"
-                                sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
+                                fullWidth
                                 onClick={() => handleRemoveFromWishlist(item.productId)}
                               >
                                 Remove
@@ -667,7 +681,7 @@ const MyDashboard: React.FC = () => {
                                 <Button
                                   size="small"
                                   variant="outlined"
-                                  sx={{ flex: { xs: '1 1 auto', sm: '1 1 auto', md: '0 0 auto' } }}
+                                  fullWidth
                                   onClick={() => handleStartChatbotConversation(
                                     item.product.vendorId!, 
                                     item.productId, 
