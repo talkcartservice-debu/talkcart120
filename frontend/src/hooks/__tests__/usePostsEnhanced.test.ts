@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePostsEnhanced } from '../usePostsEnhanced';
 
 // Mock the api module
@@ -63,12 +63,12 @@ describe('usePostsEnhanced', () => {
     const { api } = require('@/lib/api');
     api.posts.getAll.mockResolvedValue(mockApiResponse);
 
-    const { result, waitForNextUpdate } = renderHook(() => usePostsEnhanced());
+    const { result } = renderHook(() => usePostsEnhanced());
 
     expect(result.current.loading).toBe(true);
     expect(result.current.posts).toEqual([]);
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.loading).toBe(false);
     expect(result.current.posts).toEqual(mockPosts);
@@ -84,11 +84,11 @@ describe('usePostsEnhanced', () => {
     const { api } = require('@/lib/api');
     api.posts.getAll.mockRejectedValue(new Error('Failed to fetch'));
 
-    const { result, waitForNextUpdate } = renderHook(() => usePostsEnhanced());
+    const { result } = renderHook(() => usePostsEnhanced());
 
     expect(result.current.loading).toBe(true);
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe('Failed to fetch posts. Please try again.');
@@ -99,7 +99,7 @@ describe('usePostsEnhanced', () => {
     const { api } = require('@/lib/api');
     api.posts.getBookmarkedPosts.mockResolvedValue(mockApiResponse);
 
-    const { result, waitForNextUpdate } = renderHook(() => usePostsEnhanced());
+    const { result } = renderHook(() => usePostsEnhanced());
 
     await act(async () => {
       await result.current.fetchBookmarkedPosts('user123');
@@ -114,31 +114,32 @@ describe('usePostsEnhanced', () => {
     const { api } = require('@/lib/api');
     api.posts.getAll.mockResolvedValue(mockApiResponse);
 
-    const { result, waitForNextUpdate } = renderHook(() => usePostsEnhanced());
+    const { result } = renderHook(() => usePostsEnhanced());
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
     // Test like post
     act(() => {
       result.current.likePost('1');
     });
 
-    expect(result.current.posts[0].isLiked).toBe(true);
-    expect(result.current.posts[0].likeCount).toBe(6);
+    expect(result.current.posts[0]!.isLiked).toBe(true);
+    expect(result.current.posts[0]!.likeCount).toBe(6);
 
     // Test bookmark post
     act(() => {
       result.current.bookmarkPost('1');
     });
 
-    expect(result.current.posts[0].isBookmarked).toBe(true);
+    expect(result.current.posts[0]!.isBookmarked).toBe(true);
 
     // Test share post
     act(() => {
       result.current.sharePost('1');
     });
 
-    expect(result.current.posts[0].shareCount).toBe(2);
+    expect(result.current.posts[0]!.likeCount).toBe(6);
+    expect(result.current.posts[0]!.shareCount).toBe(2);
   });
 
   it('should load more posts', async () => {
@@ -169,10 +170,10 @@ describe('usePostsEnhanced', () => {
         },
       });
 
-    const { result, waitForNextUpdate } = renderHook(() => usePostsEnhanced({ limit: 1 }));
+    const { result } = renderHook(() => usePostsEnhanced({ limit: 1 }));
 
     // Wait for first page
-    await waitForNextUpdate();
+    await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.posts).toEqual([mockPosts[0]]);
     expect(result.current.hasMore).toBe(true);
 
@@ -181,7 +182,7 @@ describe('usePostsEnhanced', () => {
       result.current.loadMore();
     });
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.posts).toEqual(mockPosts);
     expect(result.current.hasMore).toBe(false);
   });
@@ -190,9 +191,9 @@ describe('usePostsEnhanced', () => {
     const { api } = require('@/lib/api');
     api.posts.getAll.mockResolvedValue(mockApiResponse);
 
-    const { result, waitForNextUpdate } = renderHook(() => usePostsEnhanced());
+    const { result } = renderHook(() => usePostsEnhanced());
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
     const initialPosts = result.current.posts;
 
@@ -200,7 +201,7 @@ describe('usePostsEnhanced', () => {
       result.current.refresh();
     });
 
-    await waitForNextUpdate();
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
     // Should have fetched posts again
     expect(api.posts.getAll).toHaveBeenCalledTimes(2);

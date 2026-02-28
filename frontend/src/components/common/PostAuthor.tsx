@@ -11,6 +11,10 @@ interface PostAuthorProps {
     displayName: string;
     avatar?: string;
     isVerified?: boolean;
+    profile?: {
+      avatar?: string;
+    };
+    name?: string;
   };
   createdAt: string;
   size?: 'small' | 'medium' | 'large';
