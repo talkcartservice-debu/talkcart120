@@ -98,7 +98,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           flexGrow: 1,
           bgcolor: 'background.default',
           minHeight: '120vh',
-          marginLeft: sidebarOpen ? `${sidebarWidth}px` : 0,
+          marginLeft: 0,
           marginTop: shouldShowTopBar ? '64px' : 0,
           transition: theme.transitions.create(['margin'], {
             easing: theme.transitions.easing.sharp,

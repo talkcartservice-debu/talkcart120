@@ -2,17 +2,22 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-// Ensure the base URL doesn't end with '/api' or '/api/' to prevent double '/api/api' paths
-const normalizedBaseUrl = API_BASE_URL.endsWith('/api/') 
-  ? API_BASE_URL.slice(0, -5) // Remove trailing '/api/'
-  : API_BASE_URL.endsWith('/api') 
-    ? API_BASE_URL.slice(0, -4) // Remove trailing '/api'
-    : API_BASE_URL;
+// Use relative URL in browser to take advantage of Next.js proxy
+const BROWSER_BASE = '/api/chatbot';
+const SERVER_BASE = (() => {
+    // Ensure the base URL doesn't end with '/api' or '/api/' to prevent double '/api/api' paths
+    const normalizedBase = API_BASE_URL.endsWith('/api/') 
+      ? API_BASE_URL.slice(0, -5) 
+      : API_BASE_URL.endsWith('/api') 
+        ? API_BASE_URL.slice(0, -4) 
+        : API_BASE_URL;
+    return `${normalizedBase}/api/chatbot`;
+})();
 
 // Create axios instance with default config
 const apiClient = axios.create({
-    baseURL: `${normalizedBaseUrl}/api/chatbot`,
-    timeout: 0, // No timeout
+    baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+    timeout: 60000, // 60 seconds timeout
 });
 
 // Add auth token to requests with enhanced debugging and error handling
@@ -298,7 +303,7 @@ export const getConversations = async (options: {
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await apiClient.get(`/conversations?${params.toString()}`);
+        const response = await apiClient.get(`conversations?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Get chatbot conversations error:', error);
@@ -320,7 +325,7 @@ export const searchVendors = async (options: {
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await apiClient.get(`/search/vendors?${params.toString()}`);
+        const response = await apiClient.get(`search/vendors?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search vendors error:', error);
@@ -342,7 +347,7 @@ export const searchCustomers = async (options: {
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await apiClient.get(`/search/customers?${params.toString()}`);
+        const response = await apiClient.get(`search/customers?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search customers error:', error);
@@ -357,7 +362,7 @@ export const createConversation = async (
     data: CreateConversationRequest
 ): Promise<CreateConversationResponse> => {
     try {
-        const response = await apiClient.post('/conversations', data);
+        const response = await apiClient.post('conversations', data);
         return response.data;
     } catch (error: any) {
         console.error('Create chatbot conversation error:', error);
@@ -375,7 +380,7 @@ export const getConversation = async (conversationId: string): Promise<{ success
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await apiClient.get(`/conversations/${conversationId}`);
+        const response = await apiClient.get(`conversations/${conversationId}`);
         return response.data;
     } catch (error: any) {
         console.error('Get chatbot conversation error:', error);
@@ -413,7 +418,7 @@ export const getMessages = async (conversationId: string, options: {
         if (options.page) params.append('page', options.page.toString());
         if (options.before) params.append('before', options.before);
 
-        const response = await apiClient.get(`/conversations/${conversationId}/messages?${params.toString()}`);
+        const response = await apiClient.get(`conversations/${conversationId}/messages?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Get chatbot messages error:', error);
@@ -646,7 +651,7 @@ export const getVendorAdminConversation = async (): Promise<GetVendorAdminConver
             };
         }
         
-        const response = await apiClient.get('/conversations/vendor-admin');
+        const response = await apiClient.get('conversations/vendor-admin');
         return response.data;
     } catch (error: any) {
         console.error('Get vendor-admin conversation error:', error);
@@ -706,7 +711,7 @@ export const createVendorAdminConversation = async (): Promise<CreateVendorAdmin
             };
         }
         
-        const response = await apiClient.post('/conversations/vendor-admin');
+        const response = await apiClient.post('conversations/vendor-admin');
         return response.data;
     } catch (error: any) {
         console.error('Create vendor-admin conversation error:', error);

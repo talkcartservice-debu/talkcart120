@@ -126,7 +126,7 @@ export const getConversations = async (options: {
     if (options.limit) params.append('limit', options.limit.toString());
     if (options.page) params.append('page', options.page.toString());
 
-    const url = `/conversations?${params.toString()}`;
+    const url = `conversations?${params.toString()}`;
 
     // Improved retry logic for transient errors/timeouts
     let attempt = 0;
@@ -224,7 +224,7 @@ export const getConversation = async (id: string): Promise<GetConversationRespon
     while (attempt <= maxRetries) {
         try {
             console.log(`Attempting to fetch conversation ${id} (attempt ${attempt + 1}/${maxRetries + 1})`);
-            const response = await longTimeoutApi.get(`/conversations/${id}`);
+            const response = await longTimeoutApi.get(`conversations/${id}`);
             
             // Check if response is valid
             if (!response || !response.data) {

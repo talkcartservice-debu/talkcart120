@@ -255,8 +255,8 @@ const OrderDetailsPage: React.FC = () => {
   const activeStep = statusSteps.findIndex(step => step.status === order.status);
 
   return (
-    <Layout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Layout maxWidth="lg">
+      <Box sx={{ py: 4 }}>
         <Box sx={{ mb: 3 }}>
           <Button
             component={Link}
@@ -277,7 +277,15 @@ const OrderDetailsPage: React.FC = () => {
             Back to Orders
           </Button>
           
-          <Typography variant="h3" component="h1" fontWeight={800} sx={{ mb: 1 }}>
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            fontWeight={800} 
+            sx={{ 
+              mb: 1,
+              fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' }
+            }}
+          >
             Order Details
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
@@ -327,14 +335,20 @@ const OrderDetailsPage: React.FC = () => {
                 <List>
                   {order.items.map((item, index) => (
                     <React.Fragment key={`${item.productId}-${index}`}>
-                      <ListItem sx={{ px: 0, py: 2 }}>
+                      <ListItem sx={{ 
+                        px: 0, 
+                        py: 2,
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: { xs: 'flex-start', sm: 'center' },
+                        gap: { xs: 2, sm: 0 }
+                      }}>
                         <ListItemAvatar>
                           <Avatar 
                             variant="rounded" 
                             sx={{ 
                               bgcolor: theme.palette.primary.main,
-                              width: 70,
-                              height: 70,
+                              width: { xs: 60, sm: 70 },
+                              height: { xs: 60, sm: 70 },
                               borderRadius: 3
                             }}
                           >
@@ -342,9 +356,10 @@ const OrderDetailsPage: React.FC = () => {
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
+                          sx={{ ml: { sm: 2 } }}
                           primary={
                             <Box>
-                              <Typography variant="h6" fontWeight={700}>
+                              <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                                 {item.name}
                               </Typography>
                               {item.color && (
@@ -355,7 +370,7 @@ const OrderDetailsPage: React.FC = () => {
                             </Box>
                           }
                           secondary={
-                            <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                            <Typography variant="body1" color="text.secondary" sx={{ mt: 1, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               Qty: {item.quantity} × {formatPrice(item.price, item.currency)} = {formatPrice(item.price * item.quantity, item.currency)}
                             </Typography>
                           }
@@ -368,11 +383,21 @@ const OrderDetailsPage: React.FC = () => {
                 
                 <Divider sx={{ my: 3, borderColor: alpha(theme.palette.primary.main, 0.2) }} />
                 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderRadius: 3, backgroundColor: alpha(theme.palette.primary.main, 0.1) }}>
-                  <Typography variant="h5" fontWeight={700}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  justifyContent: 'space-between', 
+                  alignItems: { xs: 'flex-start', sm: 'center' }, 
+                  p: 2, 
+                  gap: { xs: 1, sm: 0 },
+                  borderRadius: 3, 
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1) 
+                }}>
+                  <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                     Order Total
                   </Typography>
                   <Typography variant="h4" color="primary" fontWeight={800} sx={{
+                    fontSize: { xs: '1.75rem', sm: '2.125rem' },
                     background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -621,7 +646,7 @@ const OrderDetailsPage: React.FC = () => {
             </Card>
           </Grid>
         </Grid>
-      </Container>
+      </Box>
     </Layout>
   );
 };

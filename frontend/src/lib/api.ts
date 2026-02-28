@@ -137,7 +137,16 @@ class ApiService {
 
   // Unified request method with auto-refresh on 401
   private async request<T>(url: string, init: RequestInit = {}, timeout: number = TIMEOUTS.API_REQUEST): Promise<T> {
-    console.log(`API Request: ${init.method || 'GET'} ${url}`);
+    // Ensure the URL is correctly formatted with API_URL if it's an relative endpoint
+    let fullUrl = url;
+    if (!url.startsWith('http') && !url.startsWith('/api') && !url.startsWith('api/')) {
+        const cleanEndpoint = url.startsWith('/') ? url.slice(1) : url;
+        fullUrl = `${API_URL}/${cleanEndpoint}`;
+    } else if (url.startsWith('api/')) {
+        fullUrl = `${API_URL}/${url.slice(4)}`;
+    }
+    
+    console.log(`API Request: ${init.method || 'GET'} ${fullUrl}`);
     const method = (init.method || 'GET').toUpperCase();
     let response: Response;
     let attempt = 0;
@@ -149,12 +158,12 @@ class ApiService {
     // Backoff: +5s per retry, max 2x the original timeout
     // Do not retry non-timeout HTTP errors
     // Increase retries for auth requests since they can be more complex
-    const isAuthRequest = url.includes('/auth');
+    const isAuthRequest = fullUrl.includes('/auth');
     const maxRetriesForThisRequest = isAuthRequest ? 3 : maxRetries; // Allow more retries for auth requests
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
-        response = await this.fetchWithTimeout(url, init, currentTimeout);
+        response = await this.fetchWithTimeout(fullUrl, init, currentTimeout);
         break;
       } catch (err: any) {
         const isTimeout = (err?.name === 'AbortError') || (typeof err?.message === 'string' && err.message.toLowerCase().includes('timeout'));
@@ -163,7 +172,7 @@ class ApiService {
           attempt += 1;
           // Increase timeout for retries to allow for slower responses
           currentTimeout = Math.min(currentTimeout + 5000, TIMEOUTS.API_REQUEST * 2);
-          console.warn(`API transient error (${isTimeout ? 'timeout' : 'network'}), retrying ${attempt}/${maxRetriesForThisRequest} in-flight for ${url}`);
+          console.warn(`API transient error (${isTimeout ? 'timeout' : 'network'}), retrying ${attempt}/${maxRetriesForThisRequest} in-flight for ${fullUrl}`);
           // Add a small delay before retrying to allow network to recover
           await new Promise(resolve => setTimeout(resolve, attempt * 1000)); // 1s, 2s, 3s etc
           continue;
@@ -191,7 +200,7 @@ class ApiService {
       const token = localStorage.getItem('token');
       if (token) headers.set('Authorization', `Bearer ${token}`);
 
-      const retryResponse = await this.fetchWithTimeout(url, { ...init, headers }, timeout);
+      const retryResponse = await this.fetchWithTimeout(fullUrl, { ...init, headers }, timeout);
       
       // Check content type before parsing
       const contentType = retryResponse.headers.get('content-type');
@@ -811,7 +820,7 @@ class ApiService {
           }
         });
       }
-      return this.request(`${API_URL}/marketplace/orders?${queryParams}`, {
+      return this.request(`${API_URL}/orders?${queryParams}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       }, TIMEOUTS.API_REQUEST);

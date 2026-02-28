@@ -527,179 +527,64 @@ const VendorDashboardContent: React.FC = () => {
             action={
               <Box sx={{ 
                 display: 'flex', 
-                gap: { xs: 0.5, sm: 1, md: 1.5 },
-                flexDirection: { xs: 'column', sm: 'row' },
-                alignItems: { xs: 'stretch', sm: 'center' },
-                flexWrap: { xs: 'wrap', sm: 'wrap' },
-                width: '100%',
-                justifyContent: { xs: 'stretch', sm: 'flex-start' }
+                gap: { xs: 1, sm: 1 },
+                flexWrap: 'wrap',
+                justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                mt: { xs: 1, sm: 0 }
               }}>
                 <Button
                   variant="outlined"
+                  size="small"
                   startIcon={<ShoppingBag size={16} />}
                   onClick={() => router.push('/marketplace/my-dashboard')}
-                  sx={{ 
-                    minWidth: { xs: '100%', sm: 120, md: 140 },
-                    mb: { xs: 0.5, sm: 0.5, md: 0 },
-                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                    py: { xs: 0.75, sm: 1 },
-                    px: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
+                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    My
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Dashboard
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Dashboard
-                  </Box>
+                  My Dashboard
                 </Button>
                 <Button
                   variant="outlined"
+                  size="small"
                   startIcon={<Store size={16} />}
                   onClick={handleVendorStore}
-                  sx={{ 
-                    minWidth: { xs: '100%', sm: 120, md: 140 },
-                    mb: { xs: 0.5, sm: 0.5, md: 0 },
-                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                    py: { xs: 0.75, sm: 1 },
-                    px: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
+                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Vendor
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Store
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Store
-                  </Box>
+                  Store Settings
                 </Button>
                 <Button
                   variant="outlined"
+                  size="small"
                   startIcon={<Settings size={16} />}
                   onClick={handlePaymentSettings}
-                  sx={{ 
-                    minWidth: { xs: '100%', sm: 120, md: 140 },
-                    mb: { xs: 0.5, sm: 0.5, md: 0 },
-                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                    py: { xs: 0.75, sm: 1 },
-                    px: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
+                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Payment
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Settings
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Payments
-                  </Box>
+                  Payments
                 </Button>
                 <Button
                   variant="outlined"
+                  size="small"
                   startIcon={<SupportAgentIcon fontSize="small" />}
                   onClick={() => router.push('/marketplace/vendor-admin-chat')}
-                  sx={{ 
-                    minWidth: { xs: '100%', sm: 120, md: 140 },
-                    mb: { xs: 0.5, sm: 0.5, md: 0 },
-                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                    py: { xs: 0.75, sm: 1 },
-                    px: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
+                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Talk to Us
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Talk to Us
-                  </Box>
+                  Talk to Us
                 </Button>
                 <Button
                   variant="contained"
+                  size="small"
                   startIcon={<Plus size={16} />}
                   onClick={handleCreateProduct}
-                  sx={{ 
-                    minWidth: { xs: '100%', sm: 120, md: 140 },
-                    mb: { xs: 0.5, sm: 0.5, md: 0 },
-                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                    py: { xs: 0.75, sm: 1 },
-                    px: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
+                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Add
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Product
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Add
-                  </Box>
+                  Add Product
                 </Button>
                 <Button
                   variant="outlined"
+                  size="small"
                   startIcon={<ShoppingBag size={16} />}
                   onClick={handleCreateProductPost}
-                  sx={{ 
-                    minWidth: { xs: '100%', sm: 120, md: 140 },
-                    flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                    py: { xs: 0.75, sm: 1 },
-                    px: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
+                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
                 >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Create
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Shoppable
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, mr: 0.5, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Post
-                  </Box>
-                  <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' } }}>
-                    Shoppable
-                  </Box>
+                  Shoppable Post
                 </Button>
               </Box>
             }

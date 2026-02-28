@@ -215,7 +215,7 @@ const MarketplaceDashboard: React.FC = () => {
       console.log('Wishlist response:', response);
       
       if (response.success) {
-        setWishlistItems(response.data.data || []);
+        setWishlistItems(response.data.wishlist || []);
       } else {
         setError(response.error || 'Failed to load wishlist');
       }
@@ -388,8 +388,8 @@ const MarketplaceDashboard: React.FC = () => {
   }
 
   return (
-    <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Layout maxWidth="xl">
+      <Box sx={{ py: 4 }}>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600, mb: 1 }}>
             Marketplace Dashboard
@@ -475,7 +475,15 @@ const MarketplaceDashboard: React.FC = () => {
                 <List sx={{ bgcolor: 'background.paper', borderRadius: 2, overflow: 'hidden' }}>
                   {orders.map((order, index) => (
                     <React.Fragment key={order.id}>
-                      <ListItem alignItems="flex-start" sx={{ py: 3 }}>
+                      <ListItem 
+                        alignItems="flex-start" 
+                        sx={{ 
+                          py: 3,
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          position: 'relative',
+                          pr: { xs: 2, sm: 8 }
+                        }}
+                      >
                         <ListItemAvatar>
                           <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1) }}>
                             <Package size={20} color={theme.palette.primary.main} />
@@ -483,8 +491,17 @@ const MarketplaceDashboard: React.FC = () => {
                         </ListItemAvatar>
                         <ListItemText
                           primary={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                              <Typography variant="subtitle1" fontWeight={600}>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              alignItems: { xs: 'flex-start', sm: 'center' }, 
+                              gap: 1, 
+                              mb: 0.5,
+                              flexDirection: { xs: 'column', sm: 'row' }
+                            }}>
+                              <Typography variant="subtitle1" fontWeight={600} sx={{ 
+                                wordBreak: 'break-all',
+                                maxWidth: '100%'
+                              }}>
                                 Order #{order.id}
                               </Typography>
                               <Chip
@@ -498,7 +515,7 @@ const MarketplaceDashboard: React.FC = () => {
                           }
                           secondary={
                             <React.Fragment>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
                                 {order.items.length} item{order.items.length !== 1 ? 's' : ''} •{' '}
                                 {formatPrice(order.totalAmount, order.currency)}
                               </Typography>
@@ -511,14 +528,20 @@ const MarketplaceDashboard: React.FC = () => {
                             </React.Fragment>
                           }
                         />
-                        <ListItemSecondaryAction>
+                        <Box sx={{ 
+                          position: { xs: 'static', sm: 'absolute' },
+                          right: { sm: 16 },
+                          top: { sm: '50%' },
+                          transform: { sm: 'translateY(-50%)' },
+                          mt: { xs: 2, sm: 0 }
+                        }}>
                           <IconButton
                             edge="end"
                             onClick={() => router.push(`/marketplace/orders/${order.id}`)}
                           >
                             <Eye size={18} />
                           </IconButton>
-                        </ListItemSecondaryAction>
+                        </Box>
                       </ListItem>
                       {index < orders.length - 1 && <Divider />}
                     </React.Fragment>
@@ -584,12 +607,24 @@ const MarketplaceDashboard: React.FC = () => {
                 <List sx={{ bgcolor: 'background.paper', borderRadius: 2, overflow: 'hidden' }}>
                   {wishlistItems.map((item, index) => (
                     <React.Fragment key={item.id}>
-                      <ListItem alignItems="flex-start" sx={{ py: 2 }}>
+                      <ListItem 
+                        alignItems="flex-start" 
+                        sx={{ 
+                          py: 2,
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          position: 'relative',
+                          pr: { xs: 2, sm: 10 }
+                        }}
+                      >
                         <ListItemAvatar>
                           <Avatar
                             variant="rounded"
                             src={getImageSrc(item.product.images)}
-                            sx={{ width: 60, height: 60 }}
+                            sx={{ 
+                              width: { xs: 80, sm: 60 }, 
+                              height: { xs: 80, sm: 60 },
+                              mb: { xs: 1, sm: 0 }
+                            }}
                           />
                         </ListItemAvatar>
                         <ListItemText
@@ -608,43 +643,50 @@ const MarketplaceDashboard: React.FC = () => {
                               <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                                 by {item.product.vendor.displayName}
                               </Typography>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Typography variant="h6" color="primary" fontWeight={600}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: { xs: 1, sm: 0 } }}>
+                                <Typography variant="h6" color="primary" fontWeight={600} sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                                   {formatPrice(item.product.price, item.product.currency)}
                                 </Typography>
-                                {item.product.isNFT && (
-                                  <Chip label="NFT" size="small" color="primary" />
-                                )}
-                                {item.product.featured && (
-                                  <Chip label="Featured" size="small" color="secondary" />
-                                )}
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                  {item.product.isNFT && (
+                                    <Chip label="NFT" size="small" color="primary" />
+                                  )}
+                                  {item.product.featured && (
+                                    <Chip label="Featured" size="small" color="secondary" />
+                                  )}
+                                </Box>
                               </Box>
                             </React.Fragment>
                           }
                         />
-                        <ListItemSecondaryAction>
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Tooltip title="View product">
-                              <IconButton
-                                size="small"
-                                onClick={() => router.push(`/marketplace/${item.product.id}`)}
-                              >
-                                <Eye size={16} />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Buy now">
-                              <IconButton
-                                size="small"
-                                onClick={() => {
-                                  toast.success('Feature coming soon!');
-                                  // In a real implementation, you would initiate direct purchase here
-                                }}
-                              >
-                                <ShoppingCart size={16} />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </ListItemSecondaryAction>
+                        <Box sx={{ 
+                          position: { xs: 'static', sm: 'absolute' },
+                          right: { sm: 16 },
+                          top: { sm: '50%' },
+                          transform: { sm: 'translateY(-50%)' },
+                          mt: { xs: 1, sm: 0 },
+                          display: 'flex', 
+                          gap: 1 
+                        }}>
+                          <Tooltip title="View product">
+                            <IconButton
+                              size="small"
+                              onClick={() => router.push(`/marketplace/${item.product.id}`)}
+                            >
+                              <Eye size={16} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Buy now">
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                toast.success('Feature coming soon!');
+                              }}
+                            >
+                              <ShoppingCart size={16} />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                       </ListItem>
                       {index < wishlistItems.length - 1 && <Divider />}
                     </React.Fragment>
@@ -710,7 +752,15 @@ const MarketplaceDashboard: React.FC = () => {
                 <List sx={{ bgcolor: 'background.paper', borderRadius: 2, overflow: 'hidden' }}>
                   {payments.map((payment, index) => (
                     <React.Fragment key={payment.id}>
-                      <ListItem alignItems="flex-start" sx={{ py: 2 }}>
+                      <ListItem 
+                        alignItems="flex-start" 
+                        sx={{ 
+                          py: 2,
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          position: 'relative',
+                          pr: { xs: 2, sm: 12 }
+                        }}
+                      >
                         <ListItemAvatar>
                           <Avatar sx={{ bgcolor: alpha(theme.palette.success.main, 0.1) }}>
                             <CreditCard size={20} color={theme.palette.success.main} />
@@ -719,7 +769,13 @@ const MarketplaceDashboard: React.FC = () => {
                         <ListItemText
                           primaryTypographyProps={{ component: 'div' }}
                           primary={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              alignItems: { xs: 'flex-start', sm: 'center' }, 
+                              gap: 1, 
+                              mb: 0.5,
+                              flexDirection: { xs: 'column', sm: 'row' }
+                            }}>
                               <Typography variant="subtitle1" fontWeight={600}>
                                 {payment.method.toUpperCase()} Payment
                               </Typography>
@@ -743,11 +799,18 @@ const MarketplaceDashboard: React.FC = () => {
                             </React.Fragment>
                           }
                         />
-                        <ListItemSecondaryAction>
+                        <Box sx={{ 
+                          position: { xs: 'static', sm: 'absolute' },
+                          right: { sm: 16 },
+                          top: { sm: '50%' },
+                          transform: { sm: 'translateY(-50%)' },
+                          mt: { xs: 2, sm: 0 },
+                          textAlign: { xs: 'left', sm: 'right' }
+                        }}>
                           <Typography variant="h6" fontWeight={600}>
                             {formatPrice(payment.amount, payment.currency)}
                           </Typography>
-                        </ListItemSecondaryAction>
+                        </Box>
                       </ListItem>
                       {index < payments.length - 1 && <Divider />}
                     </React.Fragment>
@@ -764,7 +827,7 @@ const MarketplaceDashboard: React.FC = () => {
             <RecommendedProducts limit={6} title="Recommended For You" />
           </Box>
         )}
-      </Container>
+      </Box>
     </Layout>
   );
 };

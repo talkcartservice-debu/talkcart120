@@ -498,8 +498,8 @@ const MarketplacePage: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Layout maxWidth="xl">
+      <Box sx={{ py: 3 }}>
         {/* Header Section */}
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Box>
@@ -1315,7 +1315,7 @@ const MarketplacePage: React.FC = () => {
             )}
           </Grid>
         </Grid>
-      </Container>
+      </Box>
     </Layout>
   );
 };

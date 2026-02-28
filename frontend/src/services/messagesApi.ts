@@ -125,7 +125,7 @@ export const searchAllMessages = async (
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await longTimeoutApi.get(`/search?${params.toString()}`);
+        const response = await longTimeoutApi.get(`search?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search all messages error:', error);
@@ -220,25 +220,25 @@ export const getMessages = async (
         if (options.page) params.append('page', options.page.toString());
         if (options.before) params.append('before', options.before);
 
-        const response = await longTimeoutApi.get(`/conversations/${conversationId}/messages?${params.toString()}`);
-        return response.data;
-    } catch (error: any) {
-        console.error('Get messages error:', error);
-        
-        // Handle network timeout errors specifically
-        if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
-            console.error('Request timeout when fetching messages:', error.config?.url);
-            throw { success: false, error: 'Request timeout. Please check your network connection and try again.', timeout: true };
-        }
-        
-        // Handle network errors
-        if (!error.response) {
-            console.error('Network error when fetching messages:', error.config?.url);
-            throw { success: false, error: 'Network error. Please check your connection and try again.', networkError: true };
-        }
-        
-        throw error.response?.data || { success: false, error: 'Failed to get messages' };
+        const response = await longTimeoutApi.get(`conversations/${conversationId}/messages?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get messages error:', error);
+    
+    // Handle network timeout errors specifically
+    if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+      console.error('Request timeout when fetching messages:', error.config?.url);
+      throw { success: false, error: 'Request timeout. Please check your network connection and try again.', timeout: true };
     }
+    
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network error when fetching messages:', error.config?.url);
+      throw { success: false, error: 'Network error. Please check your connection and try again.', networkError: true };
+    }
+    
+    throw error.response?.data || { success: false, error: 'Failed to get messages' };
+  }
 };
 
 /**
@@ -302,7 +302,7 @@ export const sendMessage = async (
     );
     
     try {
-        const response = await longTimeoutApi.post(`/conversations/${conversationId}/messages`, data);
+        const response = await longTimeoutApi.post(`conversations/${conversationId}/messages`, data);
         return response.data;
     } catch (error: any) {
         console.error('Send message error:', error);
@@ -333,7 +333,7 @@ export const editMessage = async (
     }
 ): Promise<any> => {
     try {
-        const response = await messageApi.put(`/messages/${messageId}/edit`, data);
+        const response = await messageApi.put(`${messageId}/edit`, data);
         return response.data;
     } catch (error: any) {
         console.error('Edit message error:', error);
@@ -346,7 +346,7 @@ export const editMessage = async (
  */
 export const deleteMessage = async (messageId: string): Promise<any> => {
     try {
-        const response = await messageApi.delete(`/messages/${messageId}`);
+        const response = await messageApi.delete(`${messageId}`);
         return response.data;
     } catch (error: any) {
         console.error('Delete message error:', error);
@@ -365,7 +365,7 @@ export const forwardMessage = async (
     }
 ): Promise<any> => {
     try {
-        const response = await messageApi.post(`/messages/${messageId}/forward`, data);
+        const response = await messageApi.post(`${messageId}/forward`, data);
         return response.data;
     } catch (error: any) {
         console.error('Forward message error:', error);
@@ -433,7 +433,7 @@ export const searchMessages = async (
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await longTimeoutApi.get(`/conversations/${conversationId}/search?${params.toString()}`);
+        const response = await longTimeoutApi.get(`conversations/${conversationId}/search?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search messages error:', error);
@@ -464,7 +464,7 @@ export const addReaction = async (
     }
 ): Promise<any> => {
     try {
-        const response = await messageApi.post(`/messages/${messageId}/reactions`, data);
+        const response = await messageApi.post(`messages/${messageId}/reactions`, data);
         return response.data;
     } catch (error: any) {
         console.error('Add reaction error:', error);
@@ -489,7 +489,7 @@ export const toggleReaction = async (
  */
 export const markMessageAsRead = async (messageId: string): Promise<any> => {
     try {
-        const response = await messageApi.put(`/messages/${messageId}/read`, {});
+        const response = await messageApi.put(`messages/${messageId}/read`, {});
         return response.data;
     } catch (error: any) {
         console.error('Mark message as read error:', error);
@@ -545,7 +545,7 @@ export const markAllAsRead = async (conversationId: string): Promise<any> => {
     );
     
     try {
-        const response = await longTimeoutApi.put(`/conversations/${conversationId}/read`, {});
+        const response = await longTimeoutApi.put(`/api/messages/conversations/${conversationId}/read`, {});
         return response.data;
     } catch (error: any) {
         console.error('Mark all as read error:', error);
@@ -599,7 +599,7 @@ export const createConversation = async (
             };
         
         console.log('Creating conversation with data:', data);
-        const response = await messageApi.post('/conversations', data);
+        const response = await messageApi.post('/api/messages/conversations', data);
         console.log('Conversation creation response:', response.data);
         return response.data;
     } catch (error: any) {
@@ -626,7 +626,7 @@ export const updateConversation = async (
     }
 ): Promise<any> => {
     try {
-        const response = await messageApi.put(`/conversations/${conversationId}`, settings);
+        const response = await messageApi.put(`/api/messages/conversations/${conversationId}`, settings);
         return response.data;
     } catch (error: any) {
         console.error('Update conversation error:', error);
@@ -642,7 +642,7 @@ export const sendTypingIndicator = async (
     isTyping: boolean = true
 ): Promise<any> => {
     try {
-        const response = await messageApi.post(`/conversations/${conversationId}/typing`, { isTyping });
+        const response = await messageApi.post(`/api/messages/conversations/${conversationId}/typing`, { isTyping });
         return response.data;
     } catch (error: any) {
         console.error('Send typing indicator error:', error);
@@ -657,7 +657,7 @@ export const pinMessage = async (
   messageId: string
 ): Promise<any> => {
   try {
-    const response = await messageApi.put(`/messages/${messageId}/pin`, {});
+    const response = await messageApi.put(`/api/messages/messages/${messageId}/pin`, {});
     return response.data;
   } catch (error: any) {
     console.error('Pin message error:', error);
@@ -672,7 +672,7 @@ export const unpinMessage = async (
   messageId: string
 ): Promise<any> => {
   try {
-    const response = await messageApi.put(`/messages/${messageId}/unpin`, {});
+    const response = await messageApi.put(`/api/messages/messages/${messageId}/unpin`, {});
     return response.data;
   } catch (error: any) {
     console.error('Unpin message error:', error);
@@ -687,7 +687,7 @@ export const archiveMessage = async (
   messageId: string
 ): Promise<any> => {
   try {
-    const response = await messageApi.put(`/messages/${messageId}/archive`, {});
+    const response = await messageApi.put(`/api/messages/messages/${messageId}/archive`, {});
     return response.data;
   } catch (error: any) {
     console.error('Archive message error:', error);
@@ -702,7 +702,7 @@ export const unarchiveMessage = async (
   messageId: string
 ): Promise<any> => {
   try {
-    const response = await messageApi.put(`/messages/${messageId}/unarchive`, {});
+    const response = await messageApi.put(`/api/messages/messages/${messageId}/unarchive`, {});
     return response.data;
   } catch (error: any) {
     console.error('Unarchive message error:', error);

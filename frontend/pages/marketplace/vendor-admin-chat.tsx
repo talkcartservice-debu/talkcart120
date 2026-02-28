@@ -401,8 +401,8 @@ const VendorAdminChatPage = () => {
   }
 
   return (
-    <Layout>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+    <Layout maxWidth="lg">
+      <Box sx={{ py: { xs: 2, md: 4 } }}>
         <Box sx={{ 
           mb: 3, 
           display: 'flex', 
@@ -542,7 +542,7 @@ const VendorAdminChatPage = () => {
             </Box>
           </CardContent>
         </Card>
-      </Container>
+      </Box>
     </Layout>
   );
 };

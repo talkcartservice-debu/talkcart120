@@ -424,8 +424,8 @@ const MyDashboard: React.FC = () => {
   }
 
   return (
-    <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Layout maxWidth="xl">
+      <Box sx={{ py: 4 }}>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600, mb: 1 }}>
             My Dashboard
@@ -497,10 +497,23 @@ const MyDashboard: React.FC = () => {
                 <List>
                   {orders.map((order) => (
                     <React.Fragment key={order.id}>
-                      <ListItem alignItems="flex-start">
+                      <ListItem 
+                        alignItems="flex-start"
+                        sx={{ 
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          position: 'relative',
+                          pr: { xs: 2, sm: 16 } // Make room for action button on desktop
+                        }}
+                      >
                         <ListItemText
                           primary={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              alignItems: { xs: 'flex-start', sm: 'center' }, 
+                              gap: 1,
+                              flexDirection: { xs: 'column', sm: 'row' },
+                              mb: 1
+                            }}>
                               <Typography variant="subtitle1" fontWeight={600} component="span">
                                 Order #{order.orderNumber}
                               </Typography>
@@ -515,7 +528,7 @@ const MyDashboard: React.FC = () => {
                           }
                           secondary={
                             <React.Fragment>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }} component="span">
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1, display: 'block' }} component="span">
                                 {new Date(order.createdAt).toLocaleDateString()} • {order.items.length} items
                               </Typography>
                               <Typography variant="body1" fontWeight={600} component="span">
@@ -524,15 +537,23 @@ const MyDashboard: React.FC = () => {
                             </React.Fragment>
                           }
                         />
-                        <ListItemSecondaryAction>
+                        <Box sx={{ 
+                          mt: { xs: 2, sm: 0 },
+                          width: { xs: '100%', sm: 'auto' },
+                          position: { xs: 'static', sm: 'absolute' },
+                          right: { sm: 16 },
+                          top: { sm: '50%' },
+                          transform: { sm: 'translateY(-50%)' }
+                        }}>
                           <Button
                             variant="outlined"
                             size="small"
+                            fullWidth={{ xs: true, sm: false } as any}
                             onClick={() => handleViewOrder(order.id)}
                           >
                             View Details
                           </Button>
-                        </ListItemSecondaryAction>
+                        </Box>
                       </ListItem>
                       {order !== orders[orders.length - 1] && <Divider />}
                     </React.Fragment>
@@ -593,16 +614,16 @@ const MyDashboard: React.FC = () => {
                       
                     return (
                       <Grid item xs={12} sm={6} md={4} key={item.productId}>
-                        <Card elevation={0} sx={{ borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                          <CardContent sx={{ flexGrow: 1 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                        <Card elevation={0} sx={{ borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid', borderColor: 'divider' }}>
+                          <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
                               <Box
                                 component="img"
                                 src={imageUrl}
                                 alt={item.product.name}
                                 sx={{
-                                  width: 80,
-                                  height: 80,
+                                  width: { xs: '100%', sm: 80 },
+                                  height: { xs: 150, sm: 80 },
                                   objectFit: 'cover',
                                   borderRadius: 1,
                                 }}
@@ -618,46 +639,46 @@ const MyDashboard: React.FC = () => {
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                                   {item.product.price} {item.product.currency}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                                   Added: {new Date(item.addedAt).toLocaleDateString()}
                                 </Typography>
                               </Box>
                             </Box>
                           </CardContent>
-                          <CardHeader
-                            sx={{ pt: 0 }}
-                            action={
-                              <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Box sx={{ p: 2, pt: 0, mt: 'auto' }}>
+                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
+                                onClick={() => handleViewProduct(item.productId)}
+                              >
+                                View
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
+                                onClick={() => handleRemoveFromWishlist(item.productId)}
+                              >
+                                Remove
+                              </Button>
+                              {item.product.vendorId && (
                                 <Button
                                   size="small"
                                   variant="outlined"
-                                  onClick={() => handleViewProduct(item.productId)}
+                                  sx={{ flex: { xs: '1 1 auto', sm: '1 1 auto', md: '0 0 auto' } }}
+                                  onClick={() => handleStartChatbotConversation(
+                                    item.product.vendorId!, 
+                                    item.productId, 
+                                    item.product.name
+                                  )}
                                 >
-                                  View
+                                  Chat
                                 </Button>
-                                <Button
-                                  size="small"
-                                  variant="contained"
-                                  onClick={() => handleRemoveFromWishlist(item.productId)}
-                                >
-                                  Remove
-                                </Button>
-                                {item.product.vendorId && (
-                                  <Button
-                                    size="small"
-                                    variant="outlined"
-                                    onClick={() => handleStartChatbotConversation(
-                                      item.product.vendorId!, 
-                                      item.productId, 
-                                      item.product.name
-                                    )}
-                                  >
-                                    Chat
-                                  </Button>
-                                )}
-                              </Box>
-                            }
-                          />
+                              )}
+                            </Box>
+                          </Box>
                         </Card>
                       </Grid>
                     );
@@ -687,7 +708,13 @@ const MyDashboard: React.FC = () => {
             />
             <CardContent>
               {activeConversation ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', height: '60vh' }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  height: { xs: 'calc(100vh - 200px)', sm: '65vh' },
+                  minHeight: { xs: 450, sm: 550 },
+                  maxHeight: { xs: 'calc(100vh - 120px)', sm: '80vh' }
+                }}>
                   {/* Chat header */}
                   <Box sx={{ 
                     display: 'flex', 
@@ -872,8 +899,17 @@ const MyDashboard: React.FC = () => {
                                 primary={vendor?.displayName || vendor?.username}
                                 secondary={conversation.lastMessage?.content || 'No messages yet'}
                                 sx={{
-                                  '& .MuiTypography-root': {
-                                    display: 'inline-block',
+                                  '& .MuiListItemText-primary': {
+                                    fontWeight: 600,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  },
+                                  '& .MuiListItemText-secondary': {
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 1,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
                                   }
                                 }}
                               />
@@ -899,7 +935,13 @@ const MyDashboard: React.FC = () => {
             />
             <CardContent>
               {activeChatbotConversation ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', height: '60vh' }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  height: { xs: 'calc(100vh - 200px)', sm: '65vh' },
+                  minHeight: { xs: 450, sm: 550 },
+                  maxHeight: { xs: 'calc(100vh - 120px)', sm: '80vh' }
+                }}>
                   {/* Chat header */}
                   <Box sx={{ 
                     display: 'flex', 
@@ -1090,8 +1132,15 @@ const MyDashboard: React.FC = () => {
                                 primary={conversation.productName}
                                 secondary={
                                   <React.Fragment>
-                                    <Typography variant="body2" color="text.secondary" component="span">
-                                      {conversation.lastMessage?.content?.substring(0, 30) || 'No messages yet'}
+                                    <Typography variant="body2" color="text.secondary" component="span" sx={{ 
+                                      display: 'inline-block',
+                                      maxWidth: { xs: '120px', sm: '200px', md: '300px' },
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      verticalAlign: 'middle'
+                                    }}>
+                                      {conversation.lastMessage?.content || 'No messages yet'}
                                     </Typography>
                                     {!conversation.isResolved && (
                                       <Chip label="Active" size="small" color="primary" sx={{ ml: 1 }} />
@@ -1099,8 +1148,12 @@ const MyDashboard: React.FC = () => {
                                   </React.Fragment>
                                 }
                                 sx={{
-                                  '& .MuiTypography-root': {
-                                    display: 'inline-block',
+                                  '& .MuiListItemText-primary': {
+                                    fontWeight: 600,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: { xs: '150px', sm: '250px' }
                                   }
                                 }}
                               />
@@ -1124,7 +1177,7 @@ const MyDashboard: React.FC = () => {
         {/* Vendor Selection Dialog */}
         <Dialog open={openVendorDialog} onClose={() => setOpenVendorDialog(false)}>
           <DialogTitle>Select a Vendor to Chat With</DialogTitle>
-          <DialogContent sx={{ minWidth: 400 }}>
+          <DialogContent sx={{ minWidth: { xs: 'auto', sm: 400 }, width: '100%' }}>
             <Autocomplete
               options={vendors}
               getOptionLabel={(option) => option.displayName || option.username}
@@ -1172,7 +1225,7 @@ const MyDashboard: React.FC = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Container>
+      </Box>
     </Layout>
   );
 };
