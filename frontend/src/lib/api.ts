@@ -139,14 +139,25 @@ class ApiService {
   private async request<T>(url: string, init: RequestInit = {}, timeout: number = TIMEOUTS.API_REQUEST): Promise<T> {
     // Ensure the URL is correctly formatted with API_URL if it's an relative endpoint
     let fullUrl = url;
-    if (!url.startsWith('http') && !url.startsWith('/api') && !url.startsWith('api/')) {
-        const cleanEndpoint = url.startsWith('/') ? url.slice(1) : url;
-        fullUrl = `${API_URL}/${cleanEndpoint}`;
-    } else if (url.startsWith('api/')) {
-        fullUrl = `${API_URL}/${url.slice(4)}`;
+    
+    // Check if the URL is absolute
+    if (url.startsWith('http')) {
+      fullUrl = url;
+    } else {
+      // Normalize the path by removing leading slash and 'api/' prefix if present
+      let cleanPath = url;
+      if (cleanPath.startsWith('/')) cleanPath = cleanPath.slice(1);
+      if (cleanPath.startsWith('api/')) cleanPath = cleanPath.slice(4);
+      if (cleanPath.startsWith('/')) cleanPath = cleanPath.slice(1); // Handle cases like '/api/path' -> 'api/path' -> '/path' -> 'path'
+      
+      // Ensure we use the relative /api prefix for the browser proxy
+      fullUrl = `${API_URL}/${cleanPath}`;
     }
     
-    console.log(`API Request: ${init.method || 'GET'} ${fullUrl}`);
+    console.log(`[ApiService] Request: ${init.method || 'GET'} ${fullUrl}`, { 
+      originalUrl: url,
+      apiBase: API_URL
+    });
     const method = (init.method || 'GET').toUpperCase();
     let response: Response;
     let attempt = 0;

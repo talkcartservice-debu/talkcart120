@@ -442,7 +442,7 @@ export const uploadFile = async (
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await apiClient.post(`/conversations/${conversationId}/messages/upload`, formData, {
+        const response = await apiClient.post(`conversations/${conversationId}/messages/upload`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -468,7 +468,7 @@ export const sendMessage = async (
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await apiClient.post(`/conversations/${conversationId}/messages`, data);
+        const response = await apiClient.post(`conversations/${conversationId}/messages`, data);
         return response.data;
     } catch (error: any) {
         console.error('Send chatbot message error:', error);
@@ -490,7 +490,7 @@ export const editMessage = async (
             throw { success: false, error: 'Invalid conversation or message ID' };
         }
         
-        const response = await apiClient.put(`/conversations/${conversationId}/messages/${messageId}`, data);
+        const response = await apiClient.put(`conversations/${conversationId}/messages/${messageId}`, data);
         return response.data;
     } catch (error: any) {
         console.error('Edit chatbot message error:', error);
@@ -511,7 +511,7 @@ export const deleteMessage = async (
             throw { success: false, error: 'Invalid conversation or message ID' };
         }
         
-        const response = await apiClient.delete(`/conversations/${conversationId}/messages/${messageId}`);
+        const response = await apiClient.delete(`conversations/${conversationId}/messages/${messageId}`);
         return response.data;
     } catch (error: any) {
         console.error('Delete chatbot message error:', error);
@@ -533,7 +533,7 @@ export const replyToMessage = async (
             throw { success: false, error: 'Invalid conversation or message ID' };
         }
         
-        const response = await apiClient.post(`/conversations/${conversationId}/messages/${messageId}/reply`, data);
+        const response = await apiClient.post(`conversations/${conversationId}/messages/${messageId}/reply`, data);
         return response.data;
     } catch (error: any) {
         console.error('Reply to chatbot message error:', error);
@@ -568,7 +568,7 @@ export const searchMessages = async (
         if (options.limit) params.append('limit', options.limit.toString());
         if (options.page) params.append('page', options.page.toString());
 
-        const response = await apiClient.get(`/conversations/${conversationId}/search?${params.toString()}`);
+        const response = await apiClient.get(`conversations/${conversationId}/search?${params.toString()}`);
         return response.data;
     } catch (error: any) {
         console.error('Search chatbot messages error:', error);
@@ -589,7 +589,7 @@ export const exportConversation = async (
             throw { success: false, error: 'Invalid conversation ID' };
         }
 
-        const response = await apiClient.get(`/conversations/${conversationId}/export?format=${format}`, {
+        const response = await apiClient.get(`conversations/${conversationId}/export?format=${format}`, {
             responseType: format === 'json' ? 'json' : 'blob'
         });
         
@@ -610,7 +610,7 @@ export const resolveConversation = async (conversationId: string): Promise<{ suc
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await apiClient.put(`/conversations/${conversationId}/resolve`);
+        const response = await apiClient.put(`conversations/${conversationId}/resolve`);
         return response.data;
     } catch (error: any) {
         console.error('Resolve chatbot conversation error:', error);
@@ -628,7 +628,7 @@ export const closeConversation = async (conversationId: string): Promise<{ succe
             throw { success: false, error: 'Invalid conversation ID' };
         }
         
-        const response = await apiClient.delete(`/conversations/${conversationId}`);
+        const response = await apiClient.delete(`conversations/${conversationId}`);
         return response.data;
     } catch (error: any) {
         console.error('Close chatbot conversation error:', error);

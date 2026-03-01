@@ -126,7 +126,9 @@ export const getConversations = async (options: {
     if (options.limit) params.append('limit', options.limit.toString());
     if (options.page) params.append('page', options.page.toString());
 
-    const url = `conversations?${params.toString()}`;
+    // Explicitly prefix with 'conversations' and ensure it's relative to baseURL
+    const endpoint = `conversations?${params.toString()}`;
+    console.log(`[ConversationApi] Fetching from ${longTimeoutApi.defaults.baseURL}/${endpoint}`);
 
     // Improved retry logic for transient errors/timeouts
     let attempt = 0;
@@ -136,7 +138,7 @@ export const getConversations = async (options: {
     while (attempt <= maxRetries) {
         try {
             console.log(`Attempting to fetch conversations (attempt ${attempt + 1}/${maxRetries + 1})`);
-            const response = await longTimeoutApi.get(url);
+            const response = await longTimeoutApi.get(endpoint);
             
             // Check if response is valid
             if (!response || !response.data) {
@@ -221,10 +223,14 @@ export const getConversation = async (id: string): Promise<GetConversationRespon
     const maxRetries = 3;
     let lastError: any = null;
     
+    // Explicitly prefix with 'conversations' and ensure it's relative to baseURL
+    const endpoint = `conversations/${id}`;
+    console.log(`[ConversationApi] Fetching specific conversation from ${longTimeoutApi.defaults.baseURL}/${endpoint}`);
+    
     while (attempt <= maxRetries) {
         try {
             console.log(`Attempting to fetch conversation ${id} (attempt ${attempt + 1}/${maxRetries + 1})`);
-            const response = await longTimeoutApi.get(`conversations/${id}`);
+            const response = await longTimeoutApi.get(endpoint);
             
             // Check if response is valid
             if (!response || !response.data) {
