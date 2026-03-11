@@ -43,6 +43,7 @@ import {
   DialogActions,
   CircularProgress,
   useMediaQuery,
+  Menu,
 } from '@mui/material';
 import {
   Search,
@@ -80,7 +81,7 @@ import {
   Verified,
   Bell,
   Settings,
-  Menu,
+  Menu as MenuIcon,
   X,
   XCircle,
   Truck,
@@ -154,6 +155,18 @@ const VendorDashboardContent: React.FC = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const openMenu = Boolean(anchorEl);
+  
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [vendorTickets, setVendorTickets] = useState<any[]>([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [ticketsError, setTicketsError] = useState<string | null>(null);
@@ -525,67 +538,124 @@ const VendorDashboardContent: React.FC = () => {
           <CardHeader
             title="Your Products"
             action={
-              <Box sx={{ 
-                display: 'flex', 
-                gap: { xs: 1, sm: 1 },
-                flexWrap: 'wrap',
-                justifyContent: { xs: 'flex-start', sm: 'flex-end' },
-                mt: { xs: 1, sm: 0 }
-              }}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<ShoppingBag size={16} />}
-                  onClick={() => router.push('/marketplace/my-dashboard')}
-                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
-                >
-                  My Dashboard
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<Store size={16} />}
-                  onClick={handleVendorStore}
-                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
-                >
-                  Store Settings
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<Settings size={16} />}
-                  onClick={handlePaymentSettings}
-                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
-                >
-                  Payments
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<SupportAgentIcon fontSize="small" />}
-                  onClick={() => router.push('/marketplace/vendor-admin-chat')}
-                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
-                >
-                  Talk to Us
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<Plus size={16} />}
-                  onClick={handleCreateProduct}
-                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
-                >
-                  Add Product
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<ShoppingBag size={16} />}
-                  onClick={handleCreateProductPost}
-                  sx={{ flex: { xs: '1 1 auto', sm: '0 0 auto' } }}
-                >
-                  Shoppable Post
-                </Button>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {isMobile ? (
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<Plus size={16} />}
+                      onClick={handleCreateProduct}
+                      sx={{ borderRadius: 1.5, fontWeight: 700 }}
+                    >
+                      Add
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<ShoppingBag size={16} />}
+                      onClick={handleCreateProductPost}
+                      sx={{ borderRadius: 1.5, fontWeight: 700 }}
+                    >
+                      Post
+                    </Button>
+                    <IconButton 
+                      onClick={handleMenuClick}
+                      size="small"
+                      sx={{ 
+                        bgcolor: alpha(theme.palette.primary.main, 0.05),
+                        color: theme.palette.primary.main,
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.primary.main, 0.2),
+                        borderRadius: 1.5
+                      }}
+                    >
+                      <MenuIcon size={20} />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={openMenu}
+                      onClose={handleMenuClose}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                    >
+                      <MenuItem onClick={() => { router.push('/marketplace/my-dashboard'); handleMenuClose(); }}>
+                        <ShoppingBag size={18} style={{ marginRight: 10 }} /> My Dashboard
+                      </MenuItem>
+                      <MenuItem onClick={() => { handleVendorStore(); handleMenuClose(); }}>
+                        <Store size={18} style={{ marginRight: 10 }} /> Store Settings
+                      </MenuItem>
+                      <MenuItem onClick={() => { handlePaymentSettings(); handleMenuClose(); }}>
+                        <Settings size={18} style={{ marginRight: 10 }} /> Payments
+                      </MenuItem>
+                      <MenuItem onClick={() => { router.push('/marketplace/vendor-admin-chat'); handleMenuClose(); }}>
+                        <SupportAgentIcon fontSize="small" sx={{ mr: 1.25 }} /> Talk to Us
+                      </MenuItem>
+                    </Menu>
+                  </Box>
+                ) : (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: 1,
+                    flexWrap: 'wrap',
+                    justifyContent: 'flex-end'
+                  }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<ShoppingBag size={16} />}
+                      onClick={() => router.push('/marketplace/my-dashboard')}
+                    >
+                      My Dashboard
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Store size={16} />}
+                      onClick={handleVendorStore}
+                    >
+                      Store Settings
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Settings size={16} />}
+                      onClick={handlePaymentSettings}
+                    >
+                      Payments
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<SupportAgentIcon fontSize="small" />}
+                      onClick={() => router.push('/marketplace/vendor-admin-chat')}
+                    >
+                      Talk to Us
+                    </Button>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<Plus size={16} />}
+                      onClick={handleCreateProduct}
+                    >
+                      Add Product
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<ShoppingBag size={16} />}
+                      onClick={handleCreateProductPost}
+                    >
+                      Shoppable Post
+                    </Button>
+                  </Box>
+                )}
               </Box>
             }
             sx={{ 
@@ -603,62 +673,84 @@ const VendorDashboardContent: React.FC = () => {
             <Box sx={{ 
               display: 'flex', 
               flexWrap: 'wrap', 
-              gap: { xs: 1, sm: 2 }, 
+              gap: { xs: 1.5, sm: 2 }, 
               mb: 3,
-              flexDirection: { xs: 'column', sm: 'row' }
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: 'center'
             }}>
-              <TextField
-                size="small"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: <Search size={16} style={{ marginRight: 8 }} />,
-                }}
-                sx={{ 
-                  minWidth: { xs: '100%', sm: 200 },
-                  flex: { xs: 1, sm: 'none' }
-                }}
-              />
+              <Box sx={{ 
+                width: { xs: '100%', sm: 'auto' },
+                flexGrow: { xs: 0, sm: 1 },
+                display: 'flex',
+                gap: 1
+              }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: <Search size={16} style={{ marginRight: 8 }} />,
+                  }}
+                  sx={{ 
+                    minWidth: { sm: 200 }
+                  }}
+                />
+                {isMobile && (
+                  <Button
+                    variant="outlined"
+                    onClick={handleClearFilters}
+                    sx={{ minWidth: '40px', px: 1 }}
+                  >
+                    <FilterX size={18} />
+                  </Button>
+                )}
+              </Box>
               
-              <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 150 }, flex: { xs: 1, sm: 'none' } }}>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={categoryFilter}
-                  label="Category"
-                  onChange={(e) => setCategoryFilter(e.target.value as string)}
+              <Box sx={{ 
+                display: 'flex', 
+                width: { xs: '100%', sm: 'auto' }, 
+                gap: 1.5,
+                flexWrap: { xs: 'nowrap', sm: 'wrap' }
+              }}>
+                <FormControl size="small" sx={{ flex: 1, minWidth: { sm: 150 } }}>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={categoryFilter}
+                    label="Category"
+                    onChange={(e) => setCategoryFilter(e.target.value as string)}
+                  >
+                    <MenuItem value="all">All</MenuItem>
+                    {categories.map(category => (
+                      <MenuItem key={category} value={category}>{category}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                
+                <FormControl size="small" sx={{ flex: 1, minWidth: { sm: 120 } }}>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={statusFilter}
+                    label="Status"
+                    onChange={(e) => setStatusFilter(e.target.value as string)}
+                  >
+                    <MenuItem value="all">All</MenuItem>
+                    <MenuItem value="active">Active</MenuItem>
+                    <MenuItem value="inactive">Inactive</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              
+              {!isMobile && (
+                <Button
+                  variant="outlined"
+                  startIcon={<FilterX size={16} />}
+                  onClick={handleClearFilters}
                 >
-                  <MenuItem value="all">All Categories</MenuItem>
-                  {categories.map(category => (
-                    <MenuItem key={category} value={category}>{category}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              
-              <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 120 }, flex: { xs: 1, sm: 'none' } }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={statusFilter}
-                  label="Status"
-                  onChange={(e) => setStatusFilter(e.target.value as string)}
-                >
-                  <MenuItem value="all">All Status</MenuItem>
-                  <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="inactive">Inactive</MenuItem>
-                </Select>
-              </FormControl>
-              
-              <Button
-                variant="outlined"
-                startIcon={<FilterX size={16} />}
-                onClick={handleClearFilters}
-                sx={{ 
-                  minWidth: { xs: '100%', sm: 'auto' },
-                  flex: { xs: 1, sm: 'none' }
-                }}
-              >
-                Clear Filters
-              </Button>
+                  Clear
+                </Button>
+              )}
             </Box>
             
             {/* Products List */}
@@ -687,36 +779,41 @@ const VendorDashboardContent: React.FC = () => {
                         flexDirection: { xs: 'column', sm: 'row' },
                         alignItems: { xs: 'flex-start', sm: 'center' },
                         gap: { xs: 1.5, sm: 3 },
-                        px: { xs: 0, sm: 2 },
-                        py: { xs: 1.5, sm: 2 }
+                        px: { xs: 1.5, sm: 2 },
+                        py: { xs: 2, sm: 2 },
+                        borderBottom: index < products.length - 1 ? '1px solid' : 'none',
+                        borderColor: 'divider'
                       }}>
                         <ListItemAvatar>
                           <Avatar 
                             src={getImageSrc(product.images)} 
                             variant="rounded"
                             sx={{ 
-                              width: { xs: 50, sm: 80 }, 
-                              height: { xs: 50, sm: 80 },
-                              borderRadius: 1,
-                              flexShrink: 0
+                              width: { xs: 60, sm: 80 }, 
+                              height: { xs: 60, sm: 80 },
+                              borderRadius: 2,
+                              flexShrink: 0,
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                             }}
                           />
                         </ListItemAvatar>
                         <ListItemText
+                          sx={{ m: 0, width: '100%' }}
                           primary={
                             <Typography 
                               variant="h6" 
                               component="div"
                               sx={{ 
-                                fontWeight: 600,
-                                fontSize: { xs: '0.9rem', sm: '1.125rem' }
+                                fontWeight: 700,
+                                fontSize: { xs: '1rem', sm: '1.125rem' },
+                                mb: 0.5
                               }}
                             >
                               {product.name}
                             </Typography>
                           }
                           secondary={
-                            <Box component="div" sx={{ mt: 0.5 }}>
+                            <Box component="div">
                               <Typography 
                                 variant="body2" 
                                 color="text.secondary"
@@ -725,8 +822,9 @@ const VendorDashboardContent: React.FC = () => {
                                   WebkitLineClamp: { xs: 2, sm: 1 },
                                   WebkitBoxOrient: 'vertical',
                                   overflow: 'hidden',
-                                  mb: 0.5,
-                                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                                  mb: 1,
+                                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                                  lineHeight: 1.4
                                 }}
                               >
                                 {product.description}
@@ -734,103 +832,102 @@ const VendorDashboardContent: React.FC = () => {
                               <Box sx={{ 
                                 display: 'flex', 
                                 flexWrap: 'wrap', 
-                                gap: { xs: 0.5, sm: 1 }, 
-                                alignItems: 'center',
-                                mt: 0.5
+                                gap: 0.75, 
+                                alignItems: 'center'
                               }}>
-                                <Box component="span" sx={{ display: 'inline-block', mr: 0.5 }}>
-                                  <Chip 
-                                    label={formatPrice(product.price, product.currency)} 
-                                    size="small" 
-                                    color="primary" 
-                                    variant="outlined"
-                                    sx={{ height: { xs: 20, sm: 24 }, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
-                                  />
-                                </Box>
-                                <Box component="span" sx={{ display: 'inline-block', mr: 0.5 }}>
-                                  <Chip 
-                                    label={`${product.stock} in stock`} 
-                                    size="small" 
-                                    color={product.stock > 0 ? 'success' : 'error'} 
-                                    variant="outlined"
-                                    sx={{ height: { xs: 20, sm: 24 }, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
-                                  />
-                                </Box>
-                                <Box component="span" sx={{ display: 'inline-block', mr: 0.5 }}>
-                                  <Chip 
-                                    label={product.category} 
-                                    size="small" 
-                                    variant="outlined"
-                                    sx={{ height: { xs: 20, sm: 24 }, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
-                                  />
-                                </Box>
-                                <Box component="span" sx={{ display: 'inline-block', mr: 0.5 }}>
-                                  <Chip 
-                                    label={`${product.sales} sold`} 
-                                    size="small" 
-                                    variant="outlined"
-                                    sx={{ height: { xs: 20, sm: 24 }, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
-                                  />
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                  <Star size={12} fill={theme.palette.warning.main} color={theme.palette.warning.main} />
-                                  <Typography variant="caption" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                                    {product.rating.toFixed(1)} ({product.reviewCount})
+                                <Chip 
+                                  label={formatPrice(product.price, product.currency)} 
+                                  size="small" 
+                                  color="primary" 
+                                  sx={{ height: 24, fontWeight: 600 }}
+                                />
+                                <Chip 
+                                  label={`${product.stock} Stock`} 
+                                  size="small" 
+                                  color={product.stock > 0 ? 'success' : 'error'} 
+                                  variant="outlined"
+                                  sx={{ height: 24 }}
+                                />
+                                <Chip 
+                                  label={product.category} 
+                                  size="small" 
+                                  variant="outlined"
+                                  sx={{ height: 24 }}
+                                />
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
+                                  <Star size={14} fill={theme.palette.warning.main} color={theme.palette.warning.main} />
+                                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                    {product.rating.toFixed(1)}
                                   </Typography>
                                 </Box>
                               </Box>
                             </Box>
                           }
                         />
-                        <ListItemSecondaryAction sx={{ 
-                          position: 'relative',
-                          transform: 'none',
-                          top: 'auto',
-                          right: 'auto',
+                        <Box sx={{ 
                           display: 'flex',
                           gap: 1,
-                          mt: { xs: 1, sm: 0 },
-                          alignItems: 'flex-start'
+                          mt: { xs: 2, sm: 0 },
+                          pt: { xs: 1.5, sm: 0 },
+                          borderTop: { xs: '1px solid', sm: 'none' },
+                          borderColor: 'divider',
+                          width: { xs: '100%', sm: 'auto' },
+                          alignItems: 'center',
+                          justifyContent: { xs: 'space-between', sm: 'center' },
+                          flexDirection: { xs: 'row', sm: 'column' }
                         }}>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            gap: 1,
-                            flexDirection: { xs: 'row', sm: 'column' }
-                          }}>
-                            <Tooltip title="Edit product">
-                              <IconButton 
-                                size="small" 
-                                onClick={() => handleEditProduct(product)}
-                                sx={{ p: { xs: 0.5, sm: 0.75 } }}
-                              >
-                                <Edit size={16} />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title={product.isActive ? 'Deactivate product' : 'Activate product'}>
-                              <IconButton 
-                                size="small" 
-                                onClick={() => handleToggleProductStatus(product)}
-                                sx={{ p: { xs: 0.5, sm: 0.75 } }}
-                              >
-                                <Shield size={16} />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete product">
-                              <IconButton 
-                                size="small" 
-                                onClick={() => handleDeleteProduct(product.id)}
-                                disabled={deletingProductId === product.id}
-                                sx={{ p: { xs: 0.5, sm: 0.75 } }}
-                              >
-                                {deletingProductId === product.id ? (
-                                  <CircularProgress size={16} />
-                                ) : (
-                                  <Trash2 size={16} />
-                                )}
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </ListItemSecondaryAction>
+                          <Tooltip title="Edit product">
+                            <IconButton 
+                              size="medium" 
+                              onClick={() => handleEditProduct(product)}
+                              sx={{ 
+                                p: 1,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                borderRadius: 1.5,
+                                bgcolor: alpha(theme.palette.primary.main, 0.02)
+                              }}
+                            >
+                              <Edit size={18} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title={product.isActive ? 'Deactivate product' : 'Activate product'}>
+                            <IconButton 
+                              size="medium" 
+                              onClick={() => handleToggleProductStatus(product)}
+                              sx={{ 
+                                p: 1,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                borderRadius: 1.5,
+                                color: product.isActive ? 'success.main' : 'text.disabled'
+                              }}
+                            >
+                              <Shield size={18} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete product">
+                            <IconButton 
+                              size="medium" 
+                              onClick={() => handleDeleteProduct(product.id)}
+                              disabled={deletingProductId === product.id}
+                              sx={{ 
+                                p: 1,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                borderRadius: 1.5,
+                                color: 'error.main',
+                                bgcolor: alpha(theme.palette.error.main, 0.02)
+                              }}
+                            >
+                              {deletingProductId === product.id ? (
+                                <CircularProgress size={18} />
+                              ) : (
+                                <Trash2 size={18} />
+                              )}
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                       </ListItem>
                       {index < products.length - 1 && <Divider />}
                     </React.Fragment>

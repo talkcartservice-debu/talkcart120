@@ -748,65 +748,67 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
 
   return (
     <Card sx={{ 
-      minHeight: isMobile ? 60 : 80,
+      minHeight: isMobile ? 120 : 180,
       width: '100%',
       maxWidth: '100%',
       margin: 0,
       bgcolor: 'background.paper',
       color: 'text.primary',
-      borderRadius: isMobile ? 0 : 1,
-      boxShadow: isMobile ? 'none' : '0 1px 2px rgba(0,0,0,0.05)',
-      border: isMobile ? 'none' : '1px solid rgba(0,0,0,0.05)',
+      borderRadius: isMobile ? 0 : 2,
+      boxShadow: isMobile ? 'none' : '0 2px 4px rgba(0,0,0,0.05)',
+      border: isMobile ? 'none' : '1px solid rgba(0,0,0,0.08)',
       position: 'relative',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      mb: isMobile ? 1 : 2
     }}>
       {/* Achievement Badge - Show only for achievement posts */}
       {post.isAchievement && (
         <Box sx={{ 
           position: 'absolute', 
-          top: 8, 
-          right: 8, 
+          top: 12, 
+          right: 12, 
           zIndex: 100,
           bgcolor: 'primary.main',
           color: 'white',
-          borderRadius: '12px',
-          px: 1,
-          py: 0.5,
+          borderRadius: '16px',
+          px: 1.5,
+          py: 0.75,
           display: 'flex',
           alignItems: 'center',
-          gap: 0.5
+          gap: 0.75,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
         }}>
           {getAchievementIcon(post.achievementType || 'milestone')}
-          <Typography variant="caption" sx={{ fontWeight: 'bold', fontSize: '0.6rem' }}>
+          <Typography variant="caption" sx={{ fontWeight: 'bold', fontSize: isMobile ? '0.7rem' : '0.75rem' }}>
             {getAchievementTitle(post.achievementType || 'milestone')}
           </Typography>
         </Box>
       )}
       
       {/* Post Header */}
-      <CardContent sx={{ pb: 0.25, pt: isMobile ? 0.25 : 0.5, px: 0.5, flexShrink: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.25 }}>
+      <CardContent sx={{ pb: 1, pt: isMobile ? 1.5 : 2, px: isMobile ? 1.5 : 2, flexShrink: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           <UserAvatar 
             src={post.author?.avatar}
             alt={post.author?.displayName || post.author?.username}
-            size={isMobile ? 14 : 20}
+            size={isMobile ? 36 : 42}
           />
-          <Box sx={{ ml: 0.5, flex: 1 }}>
-            <Typography variant={isMobile ? "caption" : "body2"} fontWeight={600} sx={{ fontSize: isMobile ? '0.65rem' : '0.7rem' }}>
+          <Box sx={{ ml: 1.5, flex: 1 }}>
+            <Typography variant={isMobile ? "subtitle2" : "body1"} fontWeight={700} sx={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>
               {post.author?.displayName || post.author?.username || 'Unknown User'}
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.5rem' : '0.55rem' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: isMobile ? '0.75rem' : '0.8rem' }}>
               {createdLabel}
             </Typography>
           </Box>
           <IconButton 
-            size="small" 
+            size="medium" 
             aria-label="More options" 
-            sx={{ p: 0.1 }}
             onClick={handleMenuClick}
+            sx={{ p: 0.5 }}
           >
-            <MoreVertical size={isMobile ? 8 : 10} />
+            <MoreVertical size={isMobile ? 20 : 22} />
           </IconButton>
           {/* Add Menu component */}
           <Menu
@@ -857,24 +859,24 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
       </CardContent>
 
       {/* Post Media Content - Takes available space */}
-      <Box sx={{ flexGrow: 1, minHeight: isMobile ? 30 : 50 }}>
+      <Box sx={{ flexGrow: 1, minHeight: isMobile ? 250 : 350 }}>
         {post.isAchievement ? (
           // Achievement post content
-          <Box sx={{ p: isMobile ? 0.5 : 2, textAlign: 'center' }}>
+          <Box sx={{ p: isMobile ? 2 : 4, textAlign: 'center', bgcolor: 'primary.soft', borderRadius: 2, m: 2 }}>
             <Box sx={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              mb: 1,
+              mb: 2,
               color: 'primary.main'
             }}>
               {getAchievementIcon(post.achievementType || 'milestone')}
-              <Typography variant="h6" sx={{ ml: 1, fontWeight: 'bold', fontSize: isMobile ? '0.8rem' : '1rem' }}>
+              <Typography variant="h6" sx={{ ml: 1.5, fontWeight: 'bold', fontSize: isMobile ? '1.1rem' : '1.25rem' }}>
                 {post.achievementData?.title || 'Achievement'}
               </Typography>
             </Box>
             {post.achievementData?.description && (
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: isMobile ? '0.7rem' : '0.875rem' }}>
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: isMobile ? '0.9rem' : '1rem' }}>
                 {post.achievementData.description}
               </Typography>
             )}
@@ -883,15 +885,15 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
           <Box sx={{ 
             width: '100%', 
             height: '100%',
-            minHeight: isMobile ? 20 : 30,
+            minHeight: isMobile ? 200 : 300,
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center', 
             bgcolor: 'background.default',
             color: 'text.secondary'
           }}>
-            <ImageIcon size={isMobile ? 6 : 8} />
-            <Typography sx={{ ml: 0.25, fontSize: isMobile ? '0.35rem' : '0.45rem' }}>
+            <ImageIcon size={isMobile ? 32 : 48} />
+            <Typography sx={{ ml: 1, fontSize: isMobile ? '0.875rem' : '1rem' }}>
               No media
             </Typography>
           </Box>
@@ -903,29 +905,27 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
         display: 'flex', 
         alignItems: 'center',
         justifyContent: 'space-around',
-        p: isMobile ? 0.1 : 0.25,
-        gap: isMobile ? 0.1 : 0.25,
+        p: isMobile ? 1 : 1.5,
+        gap: isMobile ? 1 : 2,
         bgcolor: 'background.paper',
-        minHeight: isMobile ? 30 : 40
+        minHeight: isMobile ? 48 : 56,
+        borderTop: '1px solid rgba(0,0,0,0.05)'
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.05 : 0.1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <IconButton 
-            size="small"
+            size="medium"
             onClick={handleLike}
             sx={{ 
               color: liked ? 'error.main' : 'text.secondary',
               animation: likeAnimation ? `${pulse} 0.6s ease` : 'none',
-              minWidth: isMobile ? 16 : 20,
-              minHeight: isMobile ? 16 : 20,
-              padding: isMobile ? 0.05 : 0.1,
               zIndex: 10
             }}
           >
-            <Heart size={isMobile ? 10 : 12} fill={liked ? 'currentColor' : 'none'} />
+            <Heart size={isMobile ? 22 : 24} fill={liked ? 'currentColor' : 'none'} />
           </IconButton>
           {!post.hideLikes && post.likeCount !== undefined && post.likeCount > 0 && (
             <Typography variant="caption" sx={{ 
-              fontSize: isMobile ? '0.5rem' : '0.6rem', 
+              fontSize: isMobile ? '0.85rem' : '0.9rem', 
               fontWeight: 'bold',
               color: 'text.secondary'
             }}>
@@ -934,22 +934,19 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
           )}
         </Box>
         
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.05 : 0.1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <IconButton 
-            size="small"
+            size="medium"
             onClick={handleComment}
             sx={{ 
-              minWidth: isMobile ? 16 : 20,
-              minHeight: isMobile ? 16 : 20,
-              padding: isMobile ? 0.05 : 0.1,
               zIndex: 10
             }}
           >
-            <MessageCircle size={isMobile ? 10 : 12} />
+            <MessageCircle size={isMobile ? 22 : 24} />
           </IconButton>
           {!post.hideComments && post.commentCount !== undefined && post.commentCount > 0 && (
             <Typography variant="caption" sx={{ 
-              fontSize: isMobile ? '0.5rem' : '0.6rem', 
+              fontSize: isMobile ? '0.85rem' : '0.9rem', 
               fontWeight: 'bold',
               color: 'text.secondary'
             }}>
@@ -958,64 +955,47 @@ const PostCard: React.FC<PostCardProps> = ({ post, onBookmark, onLike, onShare, 
           )}
         </Box>
         
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.05 : 0.1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <IconButton 
-            size="small"
+            size="medium"
             onClick={() => {
               console.log('Share button clicked for post:', post.id);
               onShare?.(post);
             }}
             sx={{ 
-              minWidth: isMobile ? 16 : 20,
-              minHeight: isMobile ? 16 : 20,
               position: 'relative',
-              padding: isMobile ? 0.05 : 0.1,
               zIndex: 10
             }}
           >
-            <Share2 size={isMobile ? 10 : 12} />
+            <Share2 size={isMobile ? 22 : 24} />
           </IconButton>
           {post.shareCount !== undefined && post.shareCount > 0 && (
-            <Box
-              sx={{
-                position: 'relative',
-                bgcolor: 'primary.main',
-                color: 'white',
-                borderRadius: '8px',
-                width: isMobile ? 10 : 12,
-                height: isMobile ? 10 : 12,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: isMobile ? '0.4rem' : '0.5rem',
-                fontWeight: 'bold',
-                zIndex: 11
-              }}
-            >
+            <Typography variant="caption" sx={{ 
+              fontSize: isMobile ? '0.85rem' : '0.9rem', 
+              fontWeight: 'bold',
+              color: 'text.secondary'
+            }}>
               {parseNumericValue(post.shareCount)}
-            </Box>
+            </Typography>
           )}
         </Box>
         
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.05 : 0.1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <IconButton 
-            size="small"
+            size="medium"
             onClick={() => {
               console.log('Bookmark button clicked for post:', post.id);
               onBookmark?.(post.id);
             }}
             sx={{ 
-              minWidth: isMobile ? 16 : 20,
-              minHeight: isMobile ? 16 : 20,
-              padding: isMobile ? 0.05 : 0.1,
               zIndex: 10
             }}
           >
-            <Bookmark size={isMobile ? 10 : 12} />
+            <Bookmark size={isMobile ? 22 : 24} />
           </IconButton>
           {post.bookmarkCount !== undefined && post.bookmarkCount > 0 && (
             <Typography variant="caption" sx={{ 
-              fontSize: isMobile ? '0.5rem' : '0.6rem', 
+              fontSize: isMobile ? '0.85rem' : '0.9rem', 
               fontWeight: 'bold',
               color: 'text.secondary'
             }}>

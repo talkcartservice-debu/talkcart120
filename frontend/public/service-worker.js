@@ -43,7 +43,7 @@ self.addEventListener('fetch', (event) => {
 
   // Skip API requests and dynamic content (don't cache)
   const url = event.request.url;
-  if (url.includes('/api/') || 
+  if (url.includes('/api') || 
       url.includes('/socket.io') ||
       url.includes('_next/data')) {
     return; // Let these requests go directly to network

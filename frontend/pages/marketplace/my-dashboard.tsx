@@ -110,6 +110,7 @@ const MyDashboard: React.FC = () => {
     loading: messagesLoading,
     error: messagesError,
     fetchConversations,
+    fetchMessages,
     setActiveConversation,
     openConversation,
     sendMessage,
@@ -431,12 +432,13 @@ const MyDashboard: React.FC = () => {
 
   return (
     <Layout maxWidth="xl">
-      <Box sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1, sm: 2 } }}>
-        <Box sx={{ mb: { xs: 2, sm: 4 } }}>
+      <Box sx={{ py: { xs: 0, sm: 4 }, px: { xs: 0, sm: 2 } }}>
+        <Box sx={{ mb: { xs: 2, sm: 4 }, px: { xs: 2, sm: 0 }, mt: { xs: 2, sm: 0 } }}>
           <Typography variant="h4" component="h1" sx={{ 
-            fontWeight: 600, 
-            mb: 1,
-            fontSize: { xs: '1.75rem', sm: '2.125rem' }
+            fontWeight: 800, 
+            mb: 0.5,
+            fontSize: { xs: '1.75rem', sm: '2.125rem' },
+            letterSpacing: '-0.02em'
           }}>
             My Dashboard
           </Typography>
@@ -452,75 +454,128 @@ const MyDashboard: React.FC = () => {
           scrollButtons="auto"
           allowScrollButtonsMobile
           sx={{ 
-            mb: { xs: 2, sm: 3 }, 
+            mb: { xs: 0, sm: 4 }, 
             borderBottom: 1, 
             borderColor: 'divider',
-            minHeight: { xs: 48, sm: 64 },
+            minHeight: { xs: 56, sm: 64 },
+            bgcolor: { xs: 'background.paper', sm: 'transparent' },
+            position: { xs: 'sticky', sm: 'relative' },
+            top: { xs: 0, sm: 'auto' },
+            zIndex: { xs: 10, sm: 'auto' },
             '& .MuiTabs-scrollButtons': {
               '&.Mui-disabled': { opacity: 0.3 },
             },
             '& .MuiTab-root': {
-              minHeight: { xs: 48, sm: 64 },
-              px: { xs: 1, sm: 2 },
-              fontSize: { xs: '0.8rem', sm: '0.875rem' }
+              minHeight: { xs: 56, sm: 64 },
+              px: { xs: 2, sm: 4 },
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              fontWeight: 700,
+              textTransform: 'none',
+              color: 'text.secondary',
+              '&.Mui-selected': {
+                color: 'primary.main'
+              }
+            },
+            '& .MuiTabs-indicator': {
+              height: 3,
+              borderRadius: '3px 3px 0 0'
             }
           }}
         >
-          <Tab icon={<ShoppingCart size={18} />} iconPosition="start" label="Orders" />
-          <Tab icon={<Heart size={18} />} iconPosition="start" label="Wishlist" />
-          <Tab icon={<MessageCircle size={18} />} iconPosition="start" label="Vendor" />
+          <Tab icon={<ShoppingCart size={20} />} iconPosition="start" label="Orders" />
+          <Tab icon={<Heart size={20} />} iconPosition="start" label="Wishlist" />
+          <Tab icon={<MessageCircle size={20} />} iconPosition="start" label="Vendor Chat" />
           <Tab 
             icon={
               <Badge 
                 badgeContent={chatbotConversations.filter(c => !c.isResolved).length} 
-                color="primary"
+                color="error"
+                sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem', height: 18, minWidth: 18, fontWeight: 800 } }}
               >
-                <MessageCircle size={18} />
+                <MessageCircle size={20} />
               </Badge>
             } 
             iconPosition="start" 
-            label="Product" 
+            label="Product Support" 
           />
         </Tabs>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
+          <Box sx={{ px: { xs: 2, sm: 0 }, my: 2 }}>
+            <Alert 
+              severity="error" 
+              sx={{ borderRadius: 2 }}
+              action={
+                <Button color="inherit" size="small" onClick={() => {
+                  setError(null);
+                  fetchOrders();
+                  fetchWishlist();
+                }}>
+                  Retry
+                </Button>
+              }
+            >
+              {error}
+            </Alert>
+          </Box>
         )}
 
         {/* My Orders Tab */}
         {activeTab === 0 && (
-          <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+          <Paper elevation={0} sx={{ 
+            borderRadius: { xs: 0, sm: 3 }, 
+            overflow: 'hidden', 
+            border: '1px solid', 
+            borderColor: 'divider',
+            borderLeft: { xs: 'none', sm: '1px solid' },
+            borderRight: { xs: 'none', sm: '1px solid' },
+            mx: { xs: 0, sm: 0 },
+            boxShadow: { xs: 'none', sm: '0 4px 20px rgba(0,0,0,0.05)' }
+          }}>
             <CardHeader
               title="Recent Orders"
               subheader="Track your recent purchases"
               sx={{ 
-                p: { xs: 1.5, sm: 2 },
-                '& .MuiCardHeader-title': { fontSize: { xs: '1.1rem', sm: '1.25rem' } },
-                '& .MuiCardHeader-subheader': { fontSize: { xs: '0.75rem', sm: '0.875rem' } }
+                p: { xs: 2, sm: 3 },
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                bgcolor: { xs: 'background.paper', sm: 'transparent' },
+                '& .MuiCardHeader-title': { fontSize: { xs: '1.1rem', sm: '1.25rem' }, fontWeight: 800 },
+                '& .MuiCardHeader-subheader': { fontSize: { xs: '0.8rem', sm: '0.875rem' } }
               }}
             />
-            <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
+            <CardContent sx={{ p: 0 }}>
               {loading.orders ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                  <CircularProgress size={30} />
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                  <CircularProgress size={32} thickness={5} />
                 </Box>
               ) : orders.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <ShoppingCart size={40} color={theme.palette.text.secondary} />
-                  <Typography variant="h6" sx={{ mt: 1, mb: 0.5, fontSize: '1rem' }}>
+                <Box sx={{ textAlign: 'center', py: 10, px: 3 }}>
+                  <Box sx={{ 
+                    width: 80, 
+                    height: 80, 
+                    borderRadius: '50%', 
+                    bgcolor: 'grey.100', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 2
+                  }}>
+                    <ShoppingCart size={40} color={theme.palette.text.secondary} />
+                  </Box>
+                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
                     No orders yet
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Start shopping to see your orders
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 4, maxWidth: 320, mx: 'auto' }}>
+                    You haven&apos;t placed any orders yet. Explore our marketplace to find amazing products!
                   </Typography>
                   <Button
                     variant="contained"
-                    size="small"
                     onClick={() => router.push('/marketplace')}
+                    sx={{ borderRadius: 2.5, px: 4, py: 1.25, fontWeight: 700 }}
                   >
-                    Browse Marketplace
+                    Start Shopping
                   </Button>
                 </Box>
               ) : (
@@ -528,32 +583,41 @@ const MyDashboard: React.FC = () => {
                   {orders.map((order) => (
                     <React.Fragment key={order.id}>
                       <ListItem 
-                        alignItems="flex-start"
                         sx={{ 
                           flexDirection: 'column',
-                          position: 'relative',
-                          px: { xs: 1, sm: 2 },
-                          py: 1.5,
-                          gap: 1
+                          alignItems: 'flex-start',
+                          px: { xs: 2, sm: 3 },
+                          py: { xs: 2.5, sm: 3 },
+                          '&:hover': { bgcolor: 'action.hover' }
                         }}
                       >
                         <Box sx={{ 
                           display: 'flex', 
                           width: '100%',
                           justifyContent: 'space-between',
-                          alignItems: 'center',
-                          mb: 0.5
+                          alignItems: 'flex-start',
+                          mb: 2
                         }}>
-                          <Typography variant="subtitle2" fontWeight={700}>
-                            Order #{order.orderNumber}
-                          </Typography>
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: { xs: '0.95rem', sm: '1.05rem' } }}>
+                              Order #{order.orderNumber}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                              {new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                            </Typography>
+                          </Box>
                           <Chip
                             icon={getStatusIcon(order.status)}
                             label={order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                             size="small"
                             color={getStatusColor(order.status) as any}
-                            variant="outlined"
-                            sx={{ height: 20, '& .MuiChip-label': { px: 1, fontSize: '0.65rem' } }}
+                            sx={{ 
+                              height: 28, 
+                              fontWeight: 700,
+                              fontSize: '0.75rem',
+                              borderRadius: 1.5,
+                              '& .MuiChip-label': { px: 1.5 } 
+                            }}
                           />
                         </Box>
                         
@@ -561,22 +625,34 @@ const MyDashboard: React.FC = () => {
                           display: 'flex', 
                           width: '100%',
                           justifyContent: 'space-between',
-                          alignItems: 'flex-end'
+                          alignItems: 'center',
+                          p: 2,
+                          borderRadius: 2,
+                          bgcolor: 'grey.50',
+                          border: '1px solid',
+                          borderColor: 'grey.100'
                         }}>
                           <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                              {new Date(order.createdAt).toLocaleDateString()} • {order.items.length} items
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
+                              {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
                             </Typography>
-                            <Typography variant="body2" fontWeight={700} color="primary">
-                              {order.totalAmount} {order.currency}
+                            <Typography variant="h6" fontWeight={800} color="primary.main" sx={{ fontSize: '1.1rem' }}>
+                              {order.totalAmount.toLocaleString()} {order.currency}
                             </Typography>
                           </Box>
                           
                           <Button
-                            variant="outlined"
+                            variant="contained"
                             size="small"
                             onClick={() => handleViewOrder(order.id)}
-                            sx={{ py: 0.5, fontSize: '0.75rem' }}
+                            sx={{ 
+                              borderRadius: 2, 
+                              px: 2.5,
+                              fontSize: '0.8rem',
+                              fontWeight: 700,
+                              height: 36,
+                              boxShadow: 'none'
+                            }}
                           >
                             Details
                           </Button>
@@ -593,177 +669,246 @@ const MyDashboard: React.FC = () => {
 
         {/* Wishlist Tab */}
         {activeTab === 1 && (
-          <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-            <CardHeader
-              title="My Wishlist"
-              subheader="Products you&apos;ve saved"
-              sx={{ 
-                p: { xs: 1.5, sm: 2 },
-                '& .MuiCardHeader-title': { fontSize: { xs: '1.1rem', sm: '1.25rem' } },
-                '& .MuiCardHeader-subheader': { fontSize: { xs: '0.75rem', sm: '0.875rem' } }
-              }}
-            />
-            <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
-              {loading.wishlist ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                  <CircularProgress size={30} />
-                </Box>
-              ) : wishlistItems.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Heart size={40} color={theme.palette.text.secondary} />
-                  <Typography variant="h6" sx={{ mt: 1, mb: 0.5, fontSize: '1rem' }}>
-                    Wishlist is empty
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Save products to see them here
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => router.push('/marketplace')}
-                  >
-                    Browse
-                  </Button>
-                </Box>
-              ) : (
-                <Grid container spacing={1.5}>
-                  {wishlistItems.map((item) => {
-                    // Check if this is a known missing file pattern
-                    const mediaUrl = item.product.images[0]?.secure_url || item.product.images[0]?.url;
-                    const isKnownMissingFile = mediaUrl && typeof mediaUrl === 'string' && (
-                      mediaUrl.includes('file_1760168733155_lfhjq4ik7ht') ||
-                      mediaUrl.includes('file_1760163879851_tt3fdqqim9') ||
-                      mediaUrl.includes('file_1760263843073_w13593s5t8l') ||
-                      mediaUrl.includes('file_1760276276250_3pqeekj048s')
-                    );
-                    
-                    if (isKnownMissingFile) return null;
-                    
-                    const imageUrl = proxyCloudinaryUrl(mediaUrl || '/images/placeholder-image.png');
+          <Box sx={{ px: { xs: 0, sm: 0 } }}>
+            <Paper elevation={0} sx={{ 
+              borderRadius: { xs: 0, sm: 3 }, 
+              overflow: 'hidden', 
+              border: '1px solid', 
+              borderColor: 'divider',
+              borderLeft: { xs: 'none', sm: '1px solid' },
+              borderRight: { xs: 'none', sm: '1px solid' },
+              boxShadow: { xs: 'none', sm: '0 4px 20px rgba(0,0,0,0.05)' }
+            }}>
+              <CardHeader
+                title="My Wishlist"
+                subheader="Products you&apos;ve saved"
+                sx={{ 
+                  p: { xs: 2, sm: 3 },
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: { xs: 'background.paper', sm: 'transparent' },
+                  '& .MuiCardHeader-title': { fontSize: { xs: '1.1rem', sm: '1.25rem' }, fontWeight: 800 },
+                  '& .MuiCardHeader-subheader': { fontSize: { xs: '0.8rem', sm: '0.875rem' } }
+                }}
+              />
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                {loading.wishlist ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                    <CircularProgress size={32} thickness={5} />
+                  </Box>
+                ) : wishlistItems.length === 0 ? (
+                  <Box sx={{ textAlign: 'center', py: 10, px: 3 }}>
+                    <Box sx={{ 
+                      width: 80, 
+                      height: 80, 
+                      borderRadius: '50%', 
+                      bgcolor: 'grey.100', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 2
+                    }}>
+                      <Heart size={40} color={theme.palette.text.secondary} />
+                    </Box>
+                    <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
+                      Wishlist is empty
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 4, maxWidth: 320, mx: 'auto' }}>
+                      You haven&apos;t saved any products yet. Tap the heart icon on any product to save it here!
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      onClick={() => router.push('/marketplace')}
+                      sx={{ borderRadius: 2.5, px: 4, py: 1.25, fontWeight: 700 }}
+                    >
+                      Browse Products
+                    </Button>
+                  </Box>
+                ) : (
+                  <Grid container spacing={2}>
+                    {wishlistItems.map((item) => {
+                      // Check if this is a known missing file pattern
+                      const mediaUrl = item.product.images[0]?.secure_url || item.product.images[0]?.url;
+                      const isKnownMissingFile = mediaUrl && typeof mediaUrl === 'string' && (
+                        mediaUrl.includes('file_1760168733155_lfhjq4ik7ht') ||
+                        mediaUrl.includes('file_1760163879851_tt3fdqqim9') ||
+                        mediaUrl.includes('file_1760263843073_w13593s5t8l') ||
+                        mediaUrl.includes('file_1760276276250_3pqeekj048s')
+                      );
                       
-                    return (
-                      <Grid item xs={12} sm={6} md={4} key={item.productId}>
-                        <Card elevation={0} sx={{ 
-                          borderRadius: 2, 
-                          height: '100%', 
-                          display: 'flex', 
-                          flexDirection: 'column', 
-                          border: '1px solid', 
-                          borderColor: 'divider' 
-                        }}>
-                          <CardContent sx={{ p: 1.5, pb: 1, flexGrow: 1 }}>
-                            <Box sx={{ display: 'flex', gap: 1.5 }}>
-                              <Box
-                                component="img"
-                                src={imageUrl}
-                                alt={item.product.name}
-                                sx={{
-                                  width: 80,
-                                  height: 80,
-                                  minWidth: 80,
-                                  objectFit: 'cover',
-                                  borderRadius: 1,
-                                }}
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = '/images/placeholder-image.png';
-                                }}
-                              />
-                              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                <Typography variant="subtitle2" fontWeight={700} noWrap sx={{ fontSize: '0.9rem' }}>
-                                  {item.product.name}
-                                </Typography>
-                                <Typography variant="body2" color="primary" fontWeight={700} sx={{ mt: 0.5 }}>
-                                  {item.product.price} {item.product.currency}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', mt: 0.5 }}>
-                                  {new Date(item.addedAt).toLocaleDateString()}
-                                </Typography>
+                      if (isKnownMissingFile) return null;
+                      
+                      const imageUrl = proxyCloudinaryUrl(mediaUrl || '/images/placeholder-image.png');
+                        
+                      return (
+                        <Grid item xs={12} sm={6} md={4} key={item.productId}>
+                          <Card elevation={0} sx={{ 
+                            borderRadius: 2.5, 
+                            height: '100%', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            border: '1px solid', 
+                            borderColor: 'divider',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              borderColor: 'primary.main',
+                              boxShadow: '0 8px 24px rgba(0,0,0,0.08)'
+                            }
+                          }}>
+                            <CardContent sx={{ p: 2, flexGrow: 1 }}>
+                              <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Box
+                                  component="img"
+                                  src={imageUrl}
+                                  alt={item.product.name}
+                                  sx={{
+                                    width: { xs: 85, sm: 100 },
+                                    height: { xs: 85, sm: 100 },
+                                    minWidth: { xs: 85, sm: 100 },
+                                    borderRadius: 2,
+                                    objectFit: 'cover',
+                                    bgcolor: 'grey.100',
+                                    border: '1px solid',
+                                    borderColor: 'grey.200'
+                                  }}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = '/images/placeholder-image.png';
+                                  }}
+                                />
+                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                  <Typography 
+                                    variant="subtitle1" 
+                                    fontWeight={800} 
+                                    noWrap 
+                                    sx={{ 
+                                      mb: 0.5,
+                                      fontSize: { xs: '0.95rem', sm: '1rem' }
+                                    }}
+                                  >
+                                    {item.product.name}
+                                  </Typography>
+                                  <Typography 
+                                    variant="h6" 
+                                    color="primary.main" 
+                                    fontWeight={800}
+                                    sx={{ mb: 1, fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
+                                  >
+                                    {item.product.price.toLocaleString()} {item.product.currency}
+                                  </Typography>
+                                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      onClick={() => handleViewProduct(item.productId)}
+                                      sx={{ 
+                                        borderRadius: 1.5, 
+                                        fontSize: '0.75rem', 
+                                        fontWeight: 700,
+                                        px: 2,
+                                        height: 32,
+                                        boxShadow: 'none'
+                                      }}
+                                    >
+                                      View
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      color="error"
+                                      onClick={() => handleRemoveFromWishlist(item.productId)}
+                                      sx={{ 
+                                        borderRadius: 1.5, 
+                                        fontSize: '0.75rem', 
+                                        fontWeight: 700,
+                                        px: 2,
+                                        height: 32
+                                      }}
+                                    >
+                                      Remove
+                                    </Button>
+                                  </Box>
+                                </Box>
                               </Box>
-                            </Box>
-                          </CardContent>
-                          <Box sx={{ p: 1, pt: 0, mt: 'auto', display: 'flex', gap: 0.5 }}>
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              fullWidth
-                              onClick={() => handleViewProduct(item.productId)}
-                              sx={{ fontSize: '0.7rem', py: 0.5 }}
-                            >
-                              View
-                            </Button>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              fullWidth
-                              onClick={() => handleRemoveFromWishlist(item.productId)}
-                              sx={{ fontSize: '0.7rem', py: 0.5 }}
-                            >
-                              Remove
-                            </Button>
+                            </CardContent>
                             {item.product.vendorId && (
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                fullWidth
-                                onClick={() => handleStartChatbotConversation(
-                                  item.product.vendorId!, 
-                                  item.productId, 
-                                  item.product.name
-                                )}
-                                sx={{ fontSize: '0.7rem', py: 0.5 }}
-                              >
-                                Chat
-                              </Button>
+                              <Box sx={{ px: 2, pb: 2 }}>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  fullWidth
+                                  color="secondary"
+                                  startIcon={<MessageCircle size={16} />}
+                                  onClick={() => handleStartChatbotConversation(
+                                    item.product.vendorId!, 
+                                    item.productId, 
+                                    item.product.name
+                                  )}
+                                  sx={{ borderRadius: 2, fontSize: '0.8rem', fontWeight: 700, height: 36, boxShadow: 'none' }}
+                                >
+                                  Chat with AI Support
+                                </Button>
+                              </Box>
                             )}
-                          </Box>
-                        </Card>
-                      </Grid>
-                    );
-                  })}
-                </Grid>
-              )}
-            </CardContent>
-          </Paper>
+                          </Card>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+                )}
+              </CardContent>
+            </Paper>
+          </Box>
         )}
 
         {/* Vendor Chat Tab */}
         {activeTab === 2 && (
-          <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Paper elevation={0} sx={{ 
+            borderRadius: { xs: 0, sm: 3 }, 
+            overflow: 'hidden',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderLeft: { xs: 'none', sm: '1px solid' },
+            borderRight: { xs: 'none', sm: '1px solid' },
+            boxShadow: { xs: 'none', sm: '0 4px 20px rgba(0,0,0,0.05)' }
+          }}>
             <CardHeader
               title="Vendor Chat"
-              subheader="Chat with vendors"
+              subheader="Direct messaging with sellers"
               sx={{ 
-                p: { xs: 1.5, sm: 2 },
-                '& .MuiCardHeader-title': { fontSize: { xs: '1.1rem', sm: '1.25rem' } },
-                '& .MuiCardHeader-subheader': { fontSize: { xs: '0.75rem', sm: '0.875rem' } }
+                p: { xs: 2, sm: 3 },
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                bgcolor: { xs: 'background.paper', sm: 'transparent' },
+                '& .MuiCardHeader-title': { fontSize: { xs: '1.1rem', sm: '1.25rem' }, fontWeight: 800 },
+                '& .MuiCardHeader-subheader': { fontSize: { xs: '0.8rem', sm: '0.875rem' } }
               }}
               action={
                 <IconButton
                   color="primary"
                   size="small"
                   onClick={() => setOpenVendorDialog(true)}
-                  sx={{ mt: 0.5 }}
+                  sx={{ bgcolor: 'primary.50', '&:hover': { bgcolor: 'primary.100' } }}
                 >
                   <Plus size={20} />
                 </IconButton>
               }
             />
-            <CardContent sx={{ p: { xs: 0, sm: 2 } }}>
+            <CardContent sx={{ p: 0 }}>
               {activeConversation ? (
                 <Box sx={{ 
                   display: 'flex', 
                   flexDirection: 'column', 
-                  height: { xs: '60vh', sm: '65vh' },
-                  minHeight: { xs: 400, sm: 550 },
-                  maxHeight: { xs: '70vh', sm: '80vh' }
+                  height: { xs: 'calc(100vh - 200px)', sm: '65vh' },
+                  minHeight: { xs: 400, sm: 550 }
                 }}>
                   {/* Chat header */}
                   <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'space-between',
-                    p: { xs: 1, sm: 2 },
+                    p: { xs: 1.5, sm: 2 },
                     borderBottom: 1,
                     borderColor: 'divider',
                     bgcolor: 'grey.50'
@@ -772,22 +917,29 @@ const MyDashboard: React.FC = () => {
                       <Avatar 
                         src={activeConversation.participants.find(p => p.id !== user?.id)?.avatar || ''}
                         alt={activeConversation.participants.find(p => p.id !== user?.id)?.displayName}
-                        sx={{ width: 32, height: 32 }}
+                        sx={{ width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 }, border: '2px solid white', boxShadow: 1 }}
                       />
                       <Box>
-                        <Typography variant="subtitle2" fontWeight={700} noWrap sx={{ maxWidth: { xs: '150px', sm: 'none' } }}>
+                        <Typography variant="subtitle2" fontWeight={800} noWrap sx={{ 
+                          maxWidth: { xs: '160px', sm: '300px' },
+                          fontSize: { xs: '0.9rem', sm: '1rem' }
+                        }}>
                           {activeConversation.participants.find(p => p.id !== user?.id)?.displayName || 
                            activeConversation.participants.find(p => p.id !== user?.id)?.username}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Vendor
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                            Vendor
+                          </Typography>
+                        </Box>
                       </Box>
                     </Box>
                     <Button 
                       size="small" 
+                      variant="outlined"
                       onClick={() => setActiveConversation(null)}
-                      sx={{ fontSize: '0.75rem' }}
+                      sx={{ fontSize: '0.75rem', fontWeight: 700, borderRadius: 1.5 }}
                     >
                       Back
                     </Button>
@@ -797,22 +949,27 @@ const MyDashboard: React.FC = () => {
                   <Box sx={{ 
                     flexGrow: 1, 
                     overflow: 'auto', 
-                    p: { xs: 1, sm: 2 },
+                    p: { xs: 2, sm: 3 },
                     display: 'flex',
                     flexDirection: 'column',
-                    bgcolor: 'grey.50'
+                    bgcolor: 'grey.50',
+                    gap: 2
                   }}>
                     {messagesLoading ? (
                       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                        <CircularProgress size={24} />
+                        <CircularProgress size={28} thickness={5} />
                       </Box>
                     ) : messagesError ? (
-                      <Box sx={{ textAlign: 'center', py: 4 }}>
-                        <Typography color="error" variant="caption">{messagesError}</Typography>
+                      <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
+                        <Typography color="error" variant="body2" fontWeight={600}>{messagesError}</Typography>
+                        <Button size="small" onClick={() => fetchMessages()} sx={{ mt: 1 }}>Retry</Button>
                       </Box>
                     ) : messages.length === 0 ? (
-                      <Box sx={{ textAlign: 'center', py: 4 }}>
-                        <Typography variant="body2" color="text.secondary">No messages yet</Typography>
+                      <Box sx={{ textAlign: 'center', py: 8 }}>
+                        <MessageCircle size={48} color={theme.palette.divider} style={{ marginBottom: 12 }} />
+                        <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                          No messages yet. Send a greeting to start!
+                        </Typography>
                       </Box>
                     ) : (
                       messages.map((message) => (
@@ -821,26 +978,32 @@ const MyDashboard: React.FC = () => {
                           sx={{
                             display: 'flex',
                             justifyContent: message.senderId === user?.id ? 'flex-end' : 'flex-start',
-                            mb: 1
                           }}
                         >
                           <Box
                             sx={{
-                              maxWidth: '85%',
-                              p: { xs: 1, sm: 1.5 },
-                              borderRadius: 2,
+                              maxWidth: { xs: '85%', sm: '70%' },
+                              p: { xs: 1.5, sm: 2 },
+                              borderRadius: message.senderId === user?.id 
+                                ? '16px 16px 4px 16px' 
+                                : '16px 16px 16px 4px',
                               bgcolor: message.senderId === user?.id 
                                 ? 'primary.main' 
                                 : 'background.paper',
                               color: message.senderId === user?.id 
                                 ? 'primary.contrastText' 
                                 : 'text.primary',
-                              boxShadow: message.senderId === user?.id ? 0 : 1,
+                              boxShadow: message.senderId === user?.id ? '0 4px 12px rgba(0,0,0,0.1)' : 1,
                               border: message.senderId === user?.id ? 'none' : '1px solid',
-                              borderColor: 'divider'
+                              borderColor: 'divider',
+                              position: 'relative'
                             }}
                           >
-                            <Typography variant="body2" sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}>
+                            <Typography variant="body2" sx={{ 
+                              fontSize: { xs: '0.9rem', sm: '0.95rem' },
+                              lineHeight: 1.5,
+                              wordBreak: 'break-word'
+                            }}>
                               {message.content}
                             </Typography>
                             <Typography 
@@ -848,9 +1011,10 @@ const MyDashboard: React.FC = () => {
                               sx={{ 
                                 display: 'block', 
                                 textAlign: 'right',
-                                mt: 0.25,
-                                fontSize: '0.65rem',
-                                opacity: 0.7
+                                mt: 0.75,
+                                fontSize: '0.7rem',
+                                fontWeight: 600,
+                                opacity: 0.8
                               }}
                             >
                               {formatMessageTime(message.createdAt)}
@@ -867,104 +1031,144 @@ const MyDashboard: React.FC = () => {
                     component="form" 
                     onSubmit={handleSendMessage}
                     sx={{ 
-                      p: { xs: 1, sm: 2 }, 
+                      p: { xs: 1.5, sm: 2 }, 
                       borderTop: 1, 
                       borderColor: 'divider',
                       display: 'flex',
-                      gap: 1,
-                      bgcolor: 'background.paper'
+                      gap: 1.5,
+                      bgcolor: 'background.paper',
+                      alignItems: 'center'
                     }}
                   >
                     <TextField
                       fullWidth
                       size="small"
-                      placeholder="Message..."
+                      placeholder="Type your message..."
                       value={messageText}
                       onChange={(e) => setMessageText(e.target.value)}
                       multiline
-                      maxRows={2}
-                      sx={{ '& .MuiInputBase-root': { fontSize: '0.875rem' } }}
+                      maxRows={4}
+                      sx={{ 
+                        '& .MuiInputBase-root': { 
+                          fontSize: '0.95rem',
+                          borderRadius: 3,
+                          bgcolor: 'grey.50',
+                          px: 2
+                        } 
+                      }}
                     />
                     <IconButton 
                       type="submit"
                       disabled={!messageText.trim()}
                       color="primary"
-                      size="small"
+                      sx={{ 
+                        bgcolor: messageText.trim() ? 'primary.main' : 'grey.100',
+                        color: messageText.trim() ? 'white' : 'action.disabled',
+                        '&:hover': {
+                          bgcolor: messageText.trim() ? 'primary.dark' : 'grey.200',
+                        },
+                        width: 44,
+                        height: 44,
+                        boxShadow: messageText.trim() ? 2 : 0,
+                        transition: 'all 0.2s'
+                      }}
                     >
                       <Send size={20} />
                     </IconButton>
                   </Box>
                 </Box>
               ) : (
-                <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <MessageCircle size={48} color={theme.palette.text.secondary} />
-                  <Typography variant="h6" sx={{ mb: 1 }}>
-                    Vendor Chat
+                <Box sx={{ textAlign: 'center', py: { xs: 8, sm: 12 }, px: 3 }}>
+                  <Box sx={{ 
+                    width: 100, 
+                    height: 100, 
+                    borderRadius: '50%', 
+                    bgcolor: 'primary.50', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 3
+                  }}>
+                    <MessageCircle size={50} color={theme.palette.primary.main} />
+                  </Box>
+                  <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 800 }}>
+                    Vendor Messaging
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Select a conversation or start a new chat with a vendor
+                  <Typography variant="body1" color="text.secondary" sx={{ mb: 5, maxWidth: 450, mx: 'auto', lineHeight: 1.6 }}>
+                    Connect directly with our verified vendors. Ask about products, shipping, or custom requests.
                   </Typography>
                   <Button
                     variant="contained"
-                    startIcon={<Plus size={18} />}
+                    size="large"
+                    startIcon={<Plus size={20} />}
                     onClick={() => setOpenVendorDialog(true)}
+                    sx={{ borderRadius: 3, px: 5, py: 1.5, fontWeight: 800, fontSize: '1rem' }}
                   >
                     Start New Chat
                   </Button>
                   
                   {/* List of recent conversations */}
                   {conversations.length > 0 && (
-                    <Box sx={{ mt: 4, textAlign: 'left' }}>
-                      <Typography variant="h6" sx={{ mb: 2 }}>
-                        Recent Conversations
+                    <Box sx={{ mt: 8, textAlign: 'left', maxWidth: 650, mx: 'auto' }}>
+                      <Typography variant="subtitle1" sx={{ mb: 2.5, fontWeight: 800, px: 1, letterSpacing: '0.02em', textTransform: 'uppercase', fontSize: '0.75rem', color: 'text.secondary' }}>
+                        Your Recent Conversations
                       </Typography>
-                      <List>
-                        {conversations.map((conversation) => {
+                      <List sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+                        {conversations.map((conversation, index) => {
                           const vendor = conversation.participants.find(p => p.id !== user?.id);
                           return (
-                            <ButtonBase 
-                              key={conversation.id}
-                              onClick={() => {
-                                setActiveConversation(conversation);
-                              }}
-                              sx={{
-                                width: '100%',
-                                borderRadius: 2,
-                                mb: 1,
-                                '&:hover': {
-                                  bgcolor: 'action.hover'
-                                }
-                              }}
-                            >
-                            <ListItem 
-                              sx={{
-                                width: '100%',
-                                borderRadius: 2,
-                              }}
-                            >
-                              <Avatar src={vendor?.avatar || ''} sx={{ mr: 2 }}>
-                                {vendor?.displayName?.[0] || vendor?.username?.[0]}
-                              </Avatar>
-                              <ListItemText
-                                primary={vendor?.displayName || vendor?.username}
-                                secondary={conversation.lastMessage?.content || 'No messages yet'}
+                            <React.Fragment key={conversation.id}>
+                              <ButtonBase 
+                                onClick={() => setActiveConversation(conversation)}
                                 sx={{
-                                  '& .MuiListItemText-primary': {
-                                    fontWeight: 600,
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                  },
-                                  '& .MuiListItemText-secondary': {
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 1,
-                                    WebkitBoxOrient: 'vertical',
-                                    overflow: 'hidden',
-                                  }
+                                  width: '100%',
+                                  textAlign: 'left',
+                                  transition: 'all 0.2s',
+                                  '&:hover': { bgcolor: 'action.hover' }
                                 }}
-                              />
-                            </ListItem>
-                            </ButtonBase>
+                              >
+                                <ListItem sx={{ py: 2, px: { xs: 2, sm: 3 } }}>
+                                  <Badge
+                                    overlap="circular"
+                                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                    variant="dot"
+                                    color={vendor?.isOnline ? "success" : "default"}
+                                    sx={{ mr: 2.5 }}
+                                  >
+                                    <Avatar 
+                                      src={vendor?.avatar || ''} 
+                                      sx={{ width: 52, height: 52, border: '1px solid', borderColor: 'divider', boxShadow: 1 }}
+                                    >
+                                      {vendor?.displayName?.[0] || vendor?.username?.[0]}
+                                    </Avatar>
+                                  </Badge>
+                                  <ListItemText
+                                    primary={
+                                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="subtitle1" fontWeight={800} sx={{ fontSize: '1rem' }}>
+                                          {vendor?.displayName || vendor?.username}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                          {conversation.lastActivity ? formatMessageTime(conversation.lastActivity) : ''}
+                                        </Typography>
+                                      </Box>
+                                    }
+                                    secondary={conversation.lastMessage?.content || 'No messages yet'}
+                                    primaryTypographyProps={{ component: 'div' }}
+                                    secondaryTypographyProps={{ 
+                                      noWrap: true, 
+                                      fontSize: '0.9rem',
+                                      sx: { mt: 0.5, color: conversation.unreadCount > 0 ? 'text.primary' : 'text.secondary', fontWeight: conversation.unreadCount > 0 ? 700 : 400 }
+                                    }}
+                                  />
+                                  {conversation.unreadCount > 0 && (
+                                    <Badge badgeContent={conversation.unreadCount} color="primary" sx={{ ml: 2 }} />
+                                  )}
+                                </ListItem>
+                              </ButtonBase>
+                              {index < conversations.length - 1 && <Divider />}
+                            </React.Fragment>
                           );
                         })}
                       </List>
@@ -978,52 +1182,62 @@ const MyDashboard: React.FC = () => {
 
         {/* Product Chatbot Tab */}
         {activeTab === 3 && (
-          <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Paper elevation={0} sx={{ 
+            borderRadius: { xs: 0, sm: 2 }, 
+            overflow: 'hidden',
+            border: { xs: 'none', sm: '1px solid' },
+            borderColor: 'divider'
+          }}>
             <CardHeader
-              title="Product Chat"
-              subheader="Product inquiries"
+              title="Product Support"
+              subheader="AI-powered product assistance"
               sx={{ 
-                p: { xs: 1.5, sm: 2 },
-                '& .MuiCardHeader-title': { fontSize: { xs: '1.1rem', sm: '1.25rem' } },
+                p: { xs: 1.5, sm: 2.5 },
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                '& .MuiCardHeader-title': { fontSize: { xs: '1rem', sm: '1.25rem' }, fontWeight: 700 },
                 '& .MuiCardHeader-subheader': { fontSize: { xs: '0.75rem', sm: '0.875rem' } }
               }}
             />
-            <CardContent sx={{ p: { xs: 0, sm: 2 } }}>
+            <CardContent sx={{ p: 0 }}>
               {activeChatbotConversation ? (
                 <Box sx={{ 
                   display: 'flex', 
                   flexDirection: 'column', 
-                  height: { xs: '60vh', sm: '65vh' },
-                  minHeight: { xs: 400, sm: 550 },
-                  maxHeight: { xs: '70vh', sm: '80vh' }
+                  height: { xs: 'calc(100vh - 240px)', sm: '65vh' },
+                  minHeight: { xs: 350, sm: 550 }
                 }}>
                   {/* Chat header */}
                   <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'space-between',
-                    p: { xs: 1, sm: 2 },
+                    p: { xs: 1.25, sm: 2 },
                     borderBottom: 1,
                     borderColor: 'divider',
                     bgcolor: 'grey.50'
                   }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Avatar sx={{ width: 32, height: 32 }}>
+                      <Avatar sx={{ width: { xs: 28, sm: 36 }, height: { xs: 28, sm: 36 }, bgcolor: 'secondary.main' }}>
                         {activeChatbotConversation.productName?.[0] || 'P'}
                       </Avatar>
                       <Box>
-                        <Typography variant="subtitle2" fontWeight={700} noWrap sx={{ maxWidth: { xs: '150px', sm: 'none' } }}>
+                        <Typography variant="subtitle2" fontWeight={700} noWrap sx={{ 
+                          maxWidth: { xs: '140px', sm: '300px' },
+                          fontSize: { xs: '0.85rem', sm: '0.95rem' }
+                        }}>
                           {activeChatbotConversation.productName}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Product Inquiry
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                          Product Assistant
                         </Typography>
                       </Box>
                     </Box>
                     <Button 
                       size="small" 
+                      variant="text"
                       onClick={() => setActiveChatbotConversation(null)}
-                      sx={{ fontSize: '0.75rem' }}
+                      sx={{ fontSize: '0.75rem', fontWeight: 600 }}
                     >
                       Back
                     </Button>
@@ -1033,22 +1247,23 @@ const MyDashboard: React.FC = () => {
                   <Box sx={{ 
                     flexGrow: 1, 
                     overflow: 'auto', 
-                    p: { xs: 1, sm: 2 },
+                    p: { xs: 1.5, sm: 2.5 },
                     display: 'flex',
                     flexDirection: 'column',
-                    bgcolor: 'grey.50'
+                    bgcolor: 'grey.50',
+                    gap: 1.5
                   }}>
                     {chatbotLoading.messages ? (
                       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                        <CircularProgress size={24} />
+                        <CircularProgress size={24} thickness={5} color="secondary" />
                       </Box>
                     ) : chatbotError ? (
                       <Box sx={{ textAlign: 'center', py: 4 }}>
                         <Typography color="error" variant="caption">{chatbotError}</Typography>
                       </Box>
                     ) : chatbotMessages.length === 0 ? (
-                      <Box sx={{ textAlign: 'center', py: 4 }}>
-                        <Typography variant="body2" color="text.secondary">No messages yet</Typography>
+                      <Box sx={{ textAlign: 'center', py: 6 }}>
+                        <Typography variant="body2" color="text.secondary">Ask anything about this product</Typography>
                       </Box>
                     ) : (
                       chatbotMessages.map((message) => (
@@ -1057,44 +1272,53 @@ const MyDashboard: React.FC = () => {
                           sx={{
                             display: 'flex',
                             justifyContent: message.senderId === user?.id ? 'flex-end' : 'flex-start',
-                            mb: 1
                           }}
                         >
                           <Box
                             sx={{
-                              maxWidth: '85%',
-                              p: { xs: 1, sm: 1.5 },
-                              borderRadius: 2,
+                              maxWidth: { xs: '88%', sm: '75%' },
+                              p: { xs: 1.25, sm: 1.75 },
+                              borderRadius: 2.5,
                               bgcolor: message.senderId === user?.id 
                                 ? 'primary.main' 
                                 : message.isBotMessage 
-                                  ? 'secondary.light' 
+                                  ? 'secondary.soft' 
                                   : 'background.paper',
                               color: message.senderId === user?.id 
                                 ? 'primary.contrastText' 
                                 : 'text.primary',
-                              boxShadow: message.senderId === user?.id ? 0 : 1,
+                              boxShadow: message.senderId === user?.id ? '0 2px 4px rgba(0,0,0,0.1)' : 1,
                               border: message.senderId === user?.id ? 'none' : '1px solid',
-                              borderColor: 'divider'
+                              borderColor: message.isBotMessage ? 'secondary.light' : 'divider',
+                              position: 'relative'
                             }}
                           >
-                            <Typography variant="body2" sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}>{message.content}</Typography>
+                            <Typography variant="body2" sx={{ 
+                              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                              lineHeight: 1.4,
+                              wordBreak: 'break-word'
+                            }}>
+                              {message.content}
+                            </Typography>
                             <Typography 
                               variant="caption" 
                               sx={{ 
-                                display: 'block', 
-                                textAlign: 'right',
-                                mt: 0.25,
+                                display: 'flex', 
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                mt: 0.5,
                                 fontSize: '0.65rem',
-                                opacity: 0.7
+                                opacity: 0.8
                               }}
                             >
                               {formatMessageTime(message.createdAt)}
                               {message.isBotMessage && (
                                 <Chip 
-                                  label="Bot" 
+                                  label="AI" 
                                   size="small" 
-                                  sx={{ ml: 1, height: 14, fontSize: '0.6rem' }} 
+                                  variant="filled"
+                                  color="secondary"
+                                  sx={{ ml: 1, height: 16, fontSize: '0.55rem', fontWeight: 800 }} 
                                 />
                               )}
                             </Typography>
@@ -1110,119 +1334,108 @@ const MyDashboard: React.FC = () => {
                     component="form" 
                     onSubmit={handleChatbotSendMessage}
                     sx={{ 
-                      p: { xs: 1, sm: 2 }, 
+                      p: { xs: 1.25, sm: 2 }, 
                       borderTop: 1, 
                       borderColor: 'divider',
                       display: 'flex',
                       gap: 1,
-                      bgcolor: 'background.paper'
+                      bgcolor: 'background.paper',
+                      alignItems: 'center'
                     }}
                   >
                     <TextField
                       fullWidth
                       size="small"
-                      placeholder="Ask..."
+                      placeholder="Ask the AI assistant..."
                       value={chatbotMessageText}
                       onChange={(e) => setChatbotMessageText(e.target.value)}
                       multiline
-                      maxRows={2}
+                      maxRows={3}
                       disabled={chatbotLoading.send}
-                      sx={{ '& .MuiInputBase-root': { fontSize: '0.875rem' } }}
+                      sx={{ 
+                        '& .MuiInputBase-root': { 
+                          fontSize: '0.9rem',
+                          borderRadius: 2.5,
+                          bgcolor: 'grey.50'
+                        } 
+                      }}
                     />
                     <IconButton 
                       type="submit"
                       disabled={!chatbotMessageText.trim() || chatbotLoading.send}
-                      color="primary"
-                      size="small"
+                      color="secondary"
+                      sx={{ 
+                        bgcolor: chatbotMessageText.trim() ? 'secondary.main' : 'transparent',
+                        color: chatbotMessageText.trim() ? 'white' : 'action.disabled',
+                        '&:hover': {
+                          bgcolor: chatbotMessageText.trim() ? 'secondary.dark' : 'transparent',
+                        },
+                        width: 40,
+                        height: 40
+                      }}
                     >
-                      {chatbotLoading.send ? <CircularProgress size={18} /> : <Send size={20} />}
+                      {chatbotLoading.send ? <CircularProgress size={18} color="inherit" /> : <Send size={18} />}
                     </IconButton>
                   </Box>
                 </Box>
               ) : (
-                <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <MessageCircle size={48} color={theme.palette.text.secondary} />
-                  <Typography variant="h6" sx={{ mb: 1 }}>
-                    Product Chat
+                <Box sx={{ textAlign: 'center', py: { xs: 6, sm: 10 }, px: 3 }}>
+                  <MessageCircle size={64} color={theme.palette.secondary.main} style={{ opacity: 0.3, marginBottom: 16 }} />
+                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
+                    AI Product Inquiries
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Select a conversation or start a new chat about a product
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
+                    Have questions about a specific item? Our AI assistants can provide instant answers about availability, specs, and more.
                   </Typography>
                   <Button
                     variant="contained"
-                    startIcon={<Plus size={18} />}
+                    color="secondary"
                     onClick={() => router.push('/marketplace')}
+                    sx={{ borderRadius: 2, px: 4, py: 1 }}
                   >
                     Browse Products
                   </Button>
                   
                   {/* List of recent chatbot conversations */}
                   {chatbotConversations.length > 0 && (
-                    <Box sx={{ mt: 4, textAlign: 'left' }}>
-                      <Typography variant="h6" sx={{ mb: 2 }}>
-                        Recent Product Conversations
+                    <Box sx={{ mt: 6, textAlign: 'left', maxWidth: 600, mx: 'auto' }}>
+                      <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 700, px: 1 }}>
+                        Recent Inquiries
                       </Typography>
-                      <List>
-                        {chatbotConversations.map((conversation) => (
-                          <ButtonBase 
-                            key={conversation._id}
-                            onClick={() => {
-                              setActiveChatbotConversation(conversation);
-                            }}
-                            sx={{
-                              width: '100%',
-                              borderRadius: 2,
-                              mb: 1,
-                              '&:hover': {
-                                bgcolor: 'action.hover'
-                              }
-                            }}
-                          >
-                            <ListItem 
+                      <List sx={{ bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                        {chatbotConversations.map((conversation, index) => (
+                          <React.Fragment key={conversation._id}>
+                            <ButtonBase 
+                              onClick={() => setActiveChatbotConversation(conversation)}
                               sx={{
                                 width: '100%',
-                                borderRadius: 2,
+                                textAlign: 'left',
+                                '&:hover': { bgcolor: 'action.hover' }
                               }}
                             >
-                              <Avatar sx={{ mr: 2 }}>
-                                {conversation.productName?.[0] || 'P'}
-                              </Avatar>
-                              <ListItemText
-                                primary={conversation.productName}
-                                secondary={
-                                  <React.Fragment>
-                                    <Typography variant="body2" color="text.secondary" component="span" sx={{ 
-                                      display: 'inline-block',
-                                      maxWidth: { xs: '120px', sm: '200px', md: '300px' },
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      verticalAlign: 'middle'
-                                    }}>
-                                      {conversation.lastMessage?.content || 'No messages yet'}
-                                    </Typography>
-                                    {!conversation.isResolved && (
-                                      <Chip label="Active" size="small" color="primary" sx={{ ml: 1 }} />
-                                    )}
-                                  </React.Fragment>
-                                }
-                                sx={{
-                                  '& .MuiListItemText-primary': {
-                                    fontWeight: 600,
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    maxWidth: { xs: '150px', sm: '250px' }
-                                  }
-                                }}
-                              />
-                              <Chip 
-                                label={conversation.isResolved ? 'Resolved' : 'Active'} 
-                                size="small" 
-                                color={conversation.isResolved ? 'default' : 'primary'} 
-                              />
-                            </ListItem>
-                          </ButtonBase>
+                              <ListItem sx={{ py: 1.5 }}>
+                                <Avatar 
+                                  sx={{ mr: 2, width: 44, height: 44, bgcolor: 'secondary.soft', color: 'secondary.main', border: '1px solid', borderColor: 'secondary.light' }}
+                                >
+                                  {conversation.productName?.[0] || 'P'}
+                                </Avatar>
+                                <ListItemText
+                                  primary={conversation.productName}
+                                  secondary={conversation.lastMessage?.content || 'Click to continue chat'}
+                                  primaryTypographyProps={{ fontWeight: 600, fontSize: '0.95rem' }}
+                                  secondaryTypographyProps={{ 
+                                    noWrap: true, 
+                                    fontSize: '0.85rem',
+                                    sx: { mt: 0.25 }
+                                  }}
+                                />
+                                {!conversation.isResolved && (
+                                  <Chip label="Active" size="small" color="success" variant="outlined" sx={{ height: 20, fontSize: '0.65rem', ml: 1 }} />
+                                )}
+                              </ListItem>
+                            </ButtonBase>
+                            {index < chatbotConversations.length - 1 && <Divider />}
+                          </React.Fragment>
                         ))}
                       </List>
                     </Box>

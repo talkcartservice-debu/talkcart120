@@ -1,6 +1,14 @@
 // API Configuration
 // Use proxy in browser for same-origin requests, direct URL for server-side
-export const API_URL = typeof window !== 'undefined' ? '/api' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api');
+export const API_URL = (() => {
+  if (typeof window !== 'undefined') {
+    // In browser, always use relative /api path to hit the Next.js proxy
+    return '/api';
+  }
+  // Server-side: use the configured backend URL or default
+  return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api');
+})();
+
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
 // Authentication Configuration

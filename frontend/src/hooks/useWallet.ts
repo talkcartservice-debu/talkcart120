@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 
 export interface TokenBalance {
@@ -72,12 +72,34 @@ export const useWallet = (): UseWalletReturn => {
   const isCorrectNetwork = chainId === EXPECTED_CHAIN_ID;
   const hasWallet = typeof window !== 'undefined' && !!window.ethereum;
 
-  // Check if wallet is already connected
-  useEffect(() => {
-    checkConnection();
+  const getBalance = useCallback(async (address: string) => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      try {
+        const balance = await window.ethereum.request({
+          method: 'eth_getBalance',
+          params: [address, 'latest'],
+        });
+        // Convert from wei to ETH
+        const balanceInEth = (parseInt(balance, 16) / Math.pow(10, 18)).toFixed(4);
+        setBalance(balanceInEth);
+      } catch (error) {
+        console.error('Error getting balance:', error);
+      }
+    }
   }, []);
 
-  const checkConnection = async () => {
+  const getChainId = useCallback(async () => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      try {
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        setChainId(parseInt(chainId, 16));
+      } catch (error) {
+        console.error('Error getting chain ID:', error);
+      }
+    }
+  }, []);
+
+  const checkConnection = useCallback(async () => {
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -91,9 +113,14 @@ export const useWallet = (): UseWalletReturn => {
         console.error('Error checking wallet connection:', error);
       }
     }
-  };
+  }, [getBalance, getChainId]);
 
-  const connect = async () => {
+  // Check if wallet is already connected
+  useEffect(() => {
+    checkConnection();
+  }, [checkConnection]);
+
+  const connect = useCallback(async () => {
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -115,44 +142,17 @@ export const useWallet = (): UseWalletReturn => {
     } else {
       toast.error('Please install MetaMask!');
     }
-  };
+  }, [getBalance, getChainId]);
 
-  const disconnect = () => {
+  const disconnect = useCallback(() => {
     setIsConnected(false);
     setAddress(null);
     setBalance(null);
     setChainId(null);
     toast.success('Wallet disconnected');
-  };
+  }, []);
 
-  const getBalance = async (address: string) => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      try {
-        const balance = await window.ethereum.request({
-          method: 'eth_getBalance',
-          params: [address, 'latest'],
-        });
-        // Convert from wei to ETH
-        const balanceInEth = (parseInt(balance, 16) / Math.pow(10, 18)).toFixed(4);
-        setBalance(balanceInEth);
-      } catch (error) {
-        console.error('Error getting balance:', error);
-      }
-    }
-  };
-
-  const getChainId = async () => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      try {
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        setChainId(parseInt(chainId, 16));
-      } catch (error) {
-        console.error('Error getting chain ID:', error);
-      }
-    }
-  };
-
-  const switchToCorrectNetwork = async () => {
+  const switchToCorrectNetwork = useCallback(async () => {
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
         await window.ethereum.request({
@@ -169,7 +169,7 @@ export const useWallet = (): UseWalletReturn => {
         console.error('Error switching network:', error);
       }
     }
-  };
+  }, []);
 
   // Listen for account changes
   useEffect(() => {
@@ -201,7 +201,7 @@ export const useWallet = (): UseWalletReturn => {
     }
     // Return a no-op cleanup function for all code paths
     return () => {};
-  }, []);
+  }, [disconnect, getBalance]);
 
   const estimateGas = async (to: string, amount: string, token?: string): Promise<GasEstimate> => {
     // Mock implementation - in real app, this would call the blockchain

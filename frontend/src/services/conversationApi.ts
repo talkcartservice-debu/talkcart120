@@ -8,10 +8,18 @@ const SERVER_BASE = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000
 // Log the timeout value being used
 console.log('Conversation API timeout configuration:', TIMEOUTS.API_REQUEST);
 
+const getBaseURL = () => {
+    if (typeof window !== 'undefined') {
+        // Ensure we always have /api prefix in browser
+        return '/api/messages';
+    }
+    return SERVER_BASE;
+};
+
 // Create axios instance with default config
 const apiClient = axios.create({
-    baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
-    timeout: 30000, // 30 seconds default timeout
+    baseURL: getBaseURL(),
+    timeout: 30000,
 });
 
 // Log the actual axios instance configuration
@@ -81,7 +89,7 @@ export const getConversations = async (options: {
 } = {}): Promise<GetConversationsResponse> => {
     // Create a temporary axios instance with a longer timeout for this operation
     const longTimeoutApi = axios.create({
-        baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+        baseURL: getBaseURL(),
         timeout: 45000, // 45 seconds timeout for this operation
     });
     
@@ -177,7 +185,7 @@ export const getConversations = async (options: {
 export const getConversation = async (id: string): Promise<GetConversationResponse> => {
     // Create a temporary axios instance with a longer timeout for this operation
     const longTimeoutApi = axios.create({
-        baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+        baseURL: getBaseURL(),
         timeout: 45000, // 45 seconds timeout for this operation
     });
     

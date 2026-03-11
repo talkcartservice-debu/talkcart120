@@ -14,9 +14,16 @@ const SERVER_BASE = (() => {
     return `${normalizedBase}/api/chatbot`;
 })();
 
+const getBaseURL = () => {
+    if (typeof window !== 'undefined') {
+        return '/api/chatbot';
+    }
+    return SERVER_BASE;
+};
+
 // Create axios instance with default config
 const apiClient = axios.create({
-    baseURL: typeof window !== 'undefined' ? BROWSER_BASE : SERVER_BASE,
+    baseURL: getBaseURL(),
     timeout: 60000, // 60 seconds timeout
 });
 

@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import UserAvatar from './UserAvatar';
 
 interface PostAuthorProps {
-  author: {
+  author?: {
     id: string;
     username: string;
     displayName: string;
@@ -58,11 +58,10 @@ const PostAuthor: React.FC<PostAuthorProps> = ({
   })();
 
   // Safely handle author properties with proper fallbacks
-  const safeAuthor = author || {};
-  const authorAvatar = safeAuthor.avatar || safeAuthor.profile?.avatar || '';
-  const authorDisplayName = safeAuthor.displayName || safeAuthor.name || safeAuthor.username || 'Unknown User';
-  const authorUsername = safeAuthor.username || 'unknown';
-  const authorIsVerified = safeAuthor.isVerified || false;
+  const authorAvatar = author?.avatar || author?.profile?.avatar || '';
+  const authorDisplayName = author?.displayName || author?.name || author?.username || 'Unknown User';
+  const authorUsername = author?.username || 'unknown';
+  const authorIsVerified = author?.isVerified || false;
 
   return (
     <Stack direction="row" alignItems="center" spacing={1.5} sx={sx}>

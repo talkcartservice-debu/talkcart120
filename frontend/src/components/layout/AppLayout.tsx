@@ -97,7 +97,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         sx={{
           flexGrow: 1,
           bgcolor: 'background.default',
-          minHeight: '120vh',
+          minHeight: shouldShowTopBar ? 'calc(100vh - 64px)' : '100vh',
           marginLeft: 0,
           marginTop: shouldShowTopBar ? '64px' : 0,
           transition: theme.transitions.create(['margin'], {
@@ -129,8 +129,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             maxWidth={maxWidth}
             disableGutters={disableGutters}
             sx={{
-              py: showNavigation ? 3 : 0,
-              px: disableGutters ? 0 : { xs: 2, sm: 3 },
+              py: showNavigation ? { xs: 1, sm: 3 } : 0,
+              px: disableGutters ? 0 : { xs: 0, sm: 2, md: 3 },
               minHeight: shouldShowTopBar ? 'calc(100vh - 64px)' : '100vh',
             }}
           >

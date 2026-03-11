@@ -154,10 +154,11 @@ class ApiService {
       fullUrl = `${API_URL}/${cleanPath}`;
     }
     
-    console.log(`[ApiService] Request: ${init.method || 'GET'} ${fullUrl}`, { 
-      originalUrl: url,
-      apiBase: API_URL
-    });
+    // Final check to prevent triple slashes or missing slashes
+    if (fullUrl.startsWith('//')) fullUrl = fullUrl.slice(1);
+    if (!fullUrl.startsWith('/') && !fullUrl.startsWith('http')) fullUrl = `/${fullUrl}`;
+    
+    console.log(`[ApiService] Final Request URL: ${fullUrl}`);
     const method = (init.method || 'GET').toUpperCase();
     let response: Response;
     let attempt = 0;
@@ -178,12 +179,16 @@ class ApiService {
         break;
       } catch (err: any) {
         const isTimeout = (err?.name === 'AbortError') || (typeof err?.message === 'string' && err.message.toLowerCase().includes('timeout'));
-        const isNetwork = typeof err?.message === 'string' && err.message.toLowerCase().includes('network');
+        const isNetwork = typeof err?.message === 'string' && (
+          err.message.toLowerCase().includes('network') || 
+          err.message.toLowerCase().includes('failed to fetch') ||
+          err.message.toLowerCase().includes('load failed')
+        );
         if (attempt < maxRetriesForThisRequest && (isTimeout || isNetwork)) {
           attempt += 1;
           // Increase timeout for retries to allow for slower responses
           currentTimeout = Math.min(currentTimeout + 5000, TIMEOUTS.API_REQUEST * 2);
-          console.warn(`API transient error (${isTimeout ? 'timeout' : 'network'}), retrying ${attempt}/${maxRetriesForThisRequest} in-flight for ${fullUrl}`);
+          console.warn(`API transient error (${isTimeout ? 'timeout' : 'network/fetch'}), retrying ${attempt}/${maxRetriesForThisRequest} in-flight for ${fullUrl}`);
           // Add a small delay before retrying to allow network to recover
           await new Promise(resolve => setTimeout(resolve, attempt * 1000)); // 1s, 2s, 3s etc
           continue;

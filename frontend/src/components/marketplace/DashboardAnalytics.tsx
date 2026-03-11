@@ -11,7 +11,10 @@ import {
   LinearProgress,
   Tabs,
   Tab,
-  Paper
+  Paper,
+  useMediaQuery,
+  Button,
+  alpha
 } from '@mui/material';
 import { 
   BarChart, 
@@ -30,6 +33,16 @@ import {
   AreaChart,
   Area
 } from 'recharts';
+import { 
+  Users, 
+  ArrowRight,
+  TrendingUp,
+  Package,
+  Activity,
+  BarChart2,
+  ChevronRight,
+  ArrowLeft
+} from 'lucide-react';
 import { api } from '@/lib/api';
 
 // Define TypeScript interfaces for our data structures
@@ -146,6 +159,7 @@ interface AnalyticsData {
 
 const DashboardAnalytics: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [activeTab, setActiveTab] = useState(0);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -365,7 +379,7 @@ const DashboardAnalytics: React.FC = () => {
       {/* Tabs for different analytics sections */}
       <Paper elevation={0} sx={{ borderRadius: 2, mb: 3 }}>
         <Tabs 
-          value={activeTab} 
+          value={activeTab === 4 ? 1 : activeTab} 
           onChange={handleTabChange} 
           variant="scrollable"
           scrollButtons="auto"
@@ -379,11 +393,10 @@ const DashboardAnalytics: React.FC = () => {
             }
           }}
         >
-          <Tab label="Overview" />
-          <Tab label="Sales Trends" />
-          <Tab label="Customer Insights" />
-          <Tab label="Inventory" />
-          <Tab label="Performance" />
+          <Tab label="Overview" icon={<Activity size={16} />} iconPosition="start" />
+          <Tab label="Sales Trends" icon={<TrendingUp size={16} />} iconPosition="start" />
+          <Tab label="Inventory" icon={<Package size={16} />} iconPosition="start" />
+          <Tab label="Performance" icon={<BarChart2 size={16} />} iconPosition="start" />
         </Tabs>
       </Paper>
       
@@ -392,14 +405,14 @@ const DashboardAnalytics: React.FC = () => {
         <Box>
           {/* Summary Cards */}
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: { xs: 2, sm: 4 } }}>
-            <Grid item xs={6} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
               <Card elevation={3}>
                 <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
                   >
                     Total Revenue
                   </Typography>
@@ -408,7 +421,7 @@ const DashboardAnalytics: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.success.main,
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
+                      fontSize: { xs: '1.25rem', sm: '1.5rem' }
                     }}
                   >
                     ${analytics.overview.totalRevenue.toFixed(2)}
@@ -417,14 +430,14 @@ const DashboardAnalytics: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={6} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
               <Card elevation={3}>
                 <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
                   >
                     Total Sales
                   </Typography>
@@ -433,7 +446,7 @@ const DashboardAnalytics: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.info.main,
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
+                      fontSize: { xs: '1.25rem', sm: '1.5rem' }
                     }}
                   >
                     {analytics.overview.totalSales}
@@ -442,14 +455,14 @@ const DashboardAnalytics: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={6} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
               <Card elevation={3}>
                 <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
                   >
                     Total Orders
                   </Typography>
@@ -458,7 +471,7 @@ const DashboardAnalytics: React.FC = () => {
                     sx={{ 
                       fontWeight: 700, 
                       color: theme.palette.warning.main,
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
+                      fontSize: { xs: '1.25rem', sm: '1.5rem' }
                     }}
                   >
                     {analytics.overview.totalOrders}
@@ -467,40 +480,43 @@ const DashboardAnalytics: React.FC = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={6} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
               <Card elevation={3}>
                 <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
                   <Typography 
                     variant="h6" 
                     color="text.secondary" 
                     gutterBottom
-                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                    sx={{ 
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      fontWeight: 600
+                    }}
                   >
-                    Average Rating
+                    Avg Rating
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column', gap: 0.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                     <Typography 
                       variant="h4" 
                       sx={{ 
                         fontWeight: 700, 
                         color: theme.palette.secondary.main,
-                        fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' }
+                        fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                        mr: 0.5
                       }}
                     >
                       {analytics.overview.averageRating.toFixed(1)}
                     </Typography>
-                    <Box component="span" sx={{ display: 'inline-block' }}>
-                      <Chip 
-                        label={`${analytics.overview.totalReviews} reviews`} 
-                        size="small" 
-                        sx={{ 
-                          bgcolor: theme.palette.secondary.light, 
-                          color: 'white',
-                          fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' },
-                          height: { xs: 16, sm: 18, md: 24 }
-                        }} 
-                      />
-                    </Box>
+                    <Chip 
+                      label={`${analytics.overview.totalReviews}`} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: theme.palette.secondary.light, 
+                        color: 'white',
+                        fontSize: '0.65rem',
+                        height: 18,
+                        '& .MuiChip-label': { px: 0.5 }
+                      }} 
+                    />
                   </Box>
                 </CardContent>
               </Card>
@@ -523,23 +539,26 @@ const DashboardAnalytics: React.FC = () => {
                   >
                     Sales Trend
                   </Typography>
-                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
+                  <Box sx={{ height: { xs: 300, sm: 220, md: 300 } }}>
                     {salesTrendData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={salesTrendData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                          margin={{ top: 20, right: isMobile ? 10 : 30, left: isMobile ? 0 : 20, bottom: 5 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis 
                             dataKey="date" 
-                            tick={{ fontSize: 10 }} 
+                            tick={{ fontSize: isMobile ? 8 : 10 }} 
+                            interval={isMobile ? 'preserveEnd' : 'preserveStartEnd'}
                           />
                           <YAxis 
-                            tick={{ fontSize: 10 }} 
+                            tick={{ fontSize: isMobile ? 8 : 10 }} 
                           />
-                          <Tooltip />
-                          <Legend />
+                          <Tooltip 
+                            contentStyle={{ fontSize: isMobile ? '10px' : '12px', borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                          />
+                          <Legend wrapperStyle={{ fontSize: isMobile ? '10px' : '12px', paddingTop: '10px' }} />
                           <Bar dataKey="revenue" name="Revenue ($)" fill={COLORS[0]} />
                           <Bar dataKey="orders" name="Orders" fill={COLORS[1]} />
                         </BarChart>
@@ -579,25 +598,34 @@ const DashboardAnalytics: React.FC = () => {
                   >
                     Order Status Distribution
                   </Typography>
-                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
+                  <Box sx={{ height: { xs: 350, sm: 220, md: 300 } }}>
                     {statusData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={statusData}
                             cx="50%"
-                            cy="50%"
-                            labelLine={true}
-                            outerRadius={70}
+                            cy="45%"
+                            labelLine={!isMobile}
+                            outerRadius={isMobile ? 60 : 70}
                             fill="#8884d8"
                             dataKey="value"
-                            label={({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
+                            label={isMobile ? false : ({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
                           >
                             {statusData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip 
+                            contentStyle={{ fontSize: '12px', borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                          />
+                          <Legend 
+                            wrapperStyle={{ 
+                              fontSize: '11px', 
+                              paddingTop: isMobile ? '0px' : '10px',
+                              bottom: 0
+                            }} 
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
@@ -642,27 +670,34 @@ const DashboardAnalytics: React.FC = () => {
                   }}>
                     {analytics.topProducts.length > 0 ? (
                       analytics.topProducts.map((product, index) => (
-                        <Box key={product.id || index} sx={{ mb: 1.5 }}>
+                        <Box key={product.id || index} sx={{ mb: 2 }}>
                           <Box sx={{ 
                             display: 'flex', 
                             justifyContent: 'space-between', 
-                            mb: 0.5,
+                            mb: 1,
                             flexDirection: { xs: 'column', sm: 'row' },
                             alignItems: { xs: 'flex-start', sm: 'center' },
                             gap: 0.5
                           }}>
                             <Typography 
                               variant="subtitle1"
-                              sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}
+                              noWrap
+                              sx={{ 
+                                fontSize: { xs: '0.8125rem', sm: '1rem' },
+                                fontWeight: 700,
+                                maxWidth: '100%',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                              }}
                             >
                               {product.name || 'Unnamed Product'}
                             </Typography>
                             <Typography 
                               variant="body2" 
                               color="text.secondary"
-                              sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.875rem' } }}
+                              sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, fontWeight: 500 }}
                             >
-                              ${product.revenue.toFixed(2)} • {product.sales} sales • {product.quantity} units
+                              ${product.revenue.toLocaleString()} • {product.sales} sales
                             </Typography>
                           </Box>
                           <LinearProgress 
@@ -670,7 +705,7 @@ const DashboardAnalytics: React.FC = () => {
                             value={analytics.topProducts.length > 0 
                               ? (product.revenue / Math.max(...analytics.topProducts.map(p => p.revenue))) * 100 
                               : 0}
-                            sx={{ height: 6, borderRadius: 3 }}
+                            sx={{ height: 8, borderRadius: 4 }}
                           />
                         </Box>
                       ))
@@ -715,33 +750,35 @@ const DashboardAnalytics: React.FC = () => {
                   >
                     Revenue Trend (30 Days)
                   </Typography>
-                  <Box sx={{ height: { xs: 180, sm: 250, md: 400 } }}>
+                  <Box sx={{ height: { xs: 300, sm: 250, md: 400 } }}>
                     {salesTrendData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart
                           data={salesTrendData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                          margin={{ top: 20, right: isMobile ? 10 : 30, left: isMobile ? 0 : 20, bottom: 5 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis 
                             dataKey="date" 
-                            tick={{ fontSize: 10 }} 
+                            tick={{ fontSize: isMobile ? 8 : 10 }} 
+                            interval={isMobile ? 'preserveEnd' : 'preserveStartEnd'}
                           />
                           <YAxis 
-                            tick={{ fontSize: 10 }} 
+                            tick={{ fontSize: isMobile ? 8 : 10 }} 
                             tickFormatter={(value) => `$${value}`}
                           />
                           <Tooltip 
+                            contentStyle={{ fontSize: isMobile ? '10px' : '12px' }}
                             formatter={(value) => [`$${value}`, 'Revenue']}
                           />
-                          <Legend />
+                          <Legend wrapperStyle={{ fontSize: isMobile ? '10px' : '12px', paddingTop: '10px' }} />
                           <Line 
                             type="monotone" 
                             dataKey="revenue" 
                             name="Revenue" 
                             stroke={COLORS[0]} 
-                            strokeWidth={2}
-                            dot={{ r: 4 }}
+                            strokeWidth={isMobile ? 1.5 : 2}
+                            dot={!isMobile}
                             activeDot={{ r: 6 }}
                           />
                         </LineChart>
@@ -781,23 +818,26 @@ const DashboardAnalytics: React.FC = () => {
                   >
                     Sales Volume Trend (30 Days)
                   </Typography>
-                  <Box sx={{ height: { xs: 180, sm: 250, md: 400 } }}>
+                  <Box sx={{ height: { xs: 300, sm: 250, md: 400 } }}>
                     {salesTrendData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
                           data={salesTrendData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                          margin={{ top: 20, right: isMobile ? 10 : 30, left: isMobile ? 0 : 20, bottom: 5 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis 
                             dataKey="date" 
-                            tick={{ fontSize: 10 }} 
+                            tick={{ fontSize: isMobile ? 8 : 10 }} 
+                            interval={isMobile ? 'preserveEnd' : 'preserveStartEnd'}
                           />
                           <YAxis 
-                            tick={{ fontSize: 10 }} 
+                            tick={{ fontSize: isMobile ? 8 : 10 }} 
                           />
-                          <Tooltip />
-                          <Legend />
+                          <Tooltip 
+                            contentStyle={{ fontSize: isMobile ? '10px' : '12px', borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                          />
+                          <Legend wrapperStyle={{ fontSize: isMobile ? '10px' : '12px', paddingTop: '10px' }} />
                           <Area 
                             type="monotone" 
                             dataKey="sales" 
@@ -805,6 +845,7 @@ const DashboardAnalytics: React.FC = () => {
                             stroke={COLORS[1]} 
                             fill={COLORS[1]} 
                             fillOpacity={0.3}
+                            strokeWidth={isMobile ? 1.5 : 2}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -829,11 +870,43 @@ const DashboardAnalytics: React.FC = () => {
               </Card>
             </Grid>
           </Grid>
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              onClick={() => setActiveTab(4)}
+              endIcon={<ChevronRight size={18} />}
+              sx={{ 
+                borderRadius: 2, 
+                px: 3, 
+                fontWeight: 600,
+                bgcolor: alpha(theme.palette.primary.main, 0.05),
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.1)
+                }
+              }}
+            >
+              View Detailed Customer Insights
+            </Button>
+          </Box>
         </Box>
       )}
       
-      {activeTab === 2 && (
+      {activeTab === 4 && (
         <Box>
+          <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Button 
+              size="small" 
+              onClick={() => setActiveTab(1)}
+              startIcon={<ArrowLeft size={16} />}
+              sx={{ fontWeight: 600 }}
+            >
+              Back to Sales Trends
+            </Button>
+            <Typography variant="h6" sx={{ fontWeight: 700, ml: 1 }}>
+              Customer Insights
+            </Typography>
+          </Box>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {/* Customer Overview */}
             <Grid item xs={12} md={4}>
@@ -961,7 +1034,7 @@ const DashboardAnalytics: React.FC = () => {
                   >
                     Customer Locations
                   </Typography>
-                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
+                  <Box sx={{ height: { xs: 300, sm: 220, md: 300 } }}>
                     {locationData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -969,17 +1042,18 @@ const DashboardAnalytics: React.FC = () => {
                             data={locationData}
                             cx="50%"
                             cy="50%"
-                            labelLine={true}
-                            outerRadius={70}
+                            labelLine={!isMobile}
+                            outerRadius={isMobile ? 60 : 70}
                             fill="#8884d8"
                             dataKey="value"
-                            label={({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
+                            label={isMobile ? false : ({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
                           >
                             {locationData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip contentStyle={{ fontSize: isMobile ? '10px' : '12px' }} />
+                          <Legend wrapperStyle={{ fontSize: isMobile ? '10px' : '12px' }} />
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
@@ -1017,7 +1091,7 @@ const DashboardAnalytics: React.FC = () => {
                   >
                     Customer Spending Patterns
                   </Typography>
-                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
+                  <Box sx={{ height: { xs: 300, sm: 220, md: 300 } }}>
                     {spendingRangeData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -1025,17 +1099,18 @@ const DashboardAnalytics: React.FC = () => {
                             data={spendingRangeData}
                             cx="50%"
                             cy="50%"
-                            labelLine={true}
-                            outerRadius={70}
+                            labelLine={!isMobile}
+                            outerRadius={isMobile ? 60 : 70}
                             fill="#8884d8"
                             dataKey="value"
-                            label={({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
+                            label={isMobile ? false : ({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
                           >
                             {spendingRangeData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip contentStyle={{ fontSize: isMobile ? '10px' : '12px' }} />
+                          <Legend wrapperStyle={{ fontSize: isMobile ? '10px' : '12px' }} />
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
@@ -1062,7 +1137,7 @@ const DashboardAnalytics: React.FC = () => {
         </Box>
       )}
       
-      {activeTab === 3 && (
+      {activeTab === 2 && (
         <Box>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {/* Inventory Overview */}
@@ -1179,7 +1254,7 @@ const DashboardAnalytics: React.FC = () => {
                   >
                     Category Distribution
                   </Typography>
-                  <Box sx={{ height: { xs: 180, sm: 220, md: 300 } }}>
+                  <Box sx={{ height: { xs: 300, sm: 220, md: 300 } }}>
                     {categoryData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -1187,17 +1262,18 @@ const DashboardAnalytics: React.FC = () => {
                             data={categoryData}
                             cx="50%"
                             cy="50%"
-                            labelLine={true}
-                            outerRadius={70}
+                            labelLine={!isMobile}
+                            outerRadius={isMobile ? 60 : 70}
                             fill="#8884d8"
                             dataKey="value"
-                            label={({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
+                            label={isMobile ? false : ({ name, percent }) => `${name}: ${(percent !== undefined ? percent * 100 : 0).toFixed(0)}%`}
                           >
                             {categoryData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip contentStyle={{ fontSize: isMobile ? '10px' : '12px' }} />
+                          <Legend wrapperStyle={{ fontSize: isMobile ? '10px' : '12px' }} />
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
@@ -1252,7 +1328,7 @@ const DashboardAnalytics: React.FC = () => {
         </Box>
       )}
       
-      {activeTab === 4 && (
+      {activeTab === 3 && (
         <Box>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {/* Performance Benchmarks */}
@@ -1270,7 +1346,7 @@ const DashboardAnalytics: React.FC = () => {
                     Performance Benchmarks
                   </Typography>
                   <Grid container spacing={1}>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={4}>
                       <Typography 
                         variant="h6" 
                         color="text.secondary" 
@@ -1284,13 +1360,13 @@ const DashboardAnalytics: React.FC = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.info.main,
-                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
                         }}
                       >
                         {analytics.performanceBenchmarks.benchmarks.salesPerformance}
                       </Typography>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={4}>
                       <Typography 
                         variant="h6" 
                         color="text.secondary" 
@@ -1304,13 +1380,13 @@ const DashboardAnalytics: React.FC = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.info.main,
-                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
                         }}
                       >
                         {analytics.performanceBenchmarks.benchmarks.ordersPerformance}
                       </Typography>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={4}>
                       <Typography 
                         variant="h6" 
                         color="text.secondary" 
@@ -1324,7 +1400,7 @@ const DashboardAnalytics: React.FC = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.info.main,
-                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
                         }}
                       >
                         {analytics.performanceBenchmarks.benchmarks.aovPerformance}
@@ -1350,7 +1426,7 @@ const DashboardAnalytics: React.FC = () => {
                     Industry Comparison
                   </Typography>
                   <Grid container spacing={1}>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={4}>
                       <Typography 
                         variant="h6" 
                         color="text.secondary" 
@@ -1364,13 +1440,13 @@ const DashboardAnalytics: React.FC = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.success.main,
-                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
                         }}
                       >
                         ${analytics.performanceBenchmarks.vendor.totalSales.toFixed(2)}
                       </Typography>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={4}>
                       <Typography 
                         variant="h6" 
                         color="text.secondary" 
@@ -1384,13 +1460,13 @@ const DashboardAnalytics: React.FC = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.warning.main,
-                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
                         }}
                       >
                         ${analytics.performanceBenchmarks.industry.avgSales.toFixed(2)}
                       </Typography>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={4}>
                       <Typography 
                         variant="h6" 
                         color="text.secondary" 
@@ -1404,7 +1480,7 @@ const DashboardAnalytics: React.FC = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.info.main,
-                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
                         }}
                       >
                         #{analytics.performanceBenchmarks.rankings.sales}
@@ -1430,7 +1506,7 @@ const DashboardAnalytics: React.FC = () => {
                     Performance Indicators
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={4}>
                       <Typography 
                         variant="h6" 
                         color="text.secondary" 
@@ -1444,7 +1520,7 @@ const DashboardAnalytics: React.FC = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.info.main,
-                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
                         }}
                       >
                         {analytics.performanceBenchmarks.vendor.totalOrders} (#{analytics.performanceBenchmarks.rankings.orders})
@@ -1457,7 +1533,7 @@ const DashboardAnalytics: React.FC = () => {
                         Industry: {analytics.performanceBenchmarks.industry.avgOrders}
                       </Typography>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={4}>
                       <Typography 
                         variant="h6" 
                         color="text.secondary" 
@@ -1471,7 +1547,7 @@ const DashboardAnalytics: React.FC = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.success.main,
-                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
                         }}
                       >
                         ${analytics.performanceBenchmarks.vendor.avgOrderValue.toFixed(2)} (#{analytics.performanceBenchmarks.rankings.avgOrderValue})
@@ -1484,7 +1560,7 @@ const DashboardAnalytics: React.FC = () => {
                         Industry: ${analytics.performanceBenchmarks.industry.avgOrderValue.toFixed(2)}
                       </Typography>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} sm={4}>
                       <Typography 
                         variant="h6" 
                         color="text.secondary" 
@@ -1498,7 +1574,7 @@ const DashboardAnalytics: React.FC = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: theme.palette.warning.main,
-                          fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }
+                          fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
                         }}
                       >
                         {analytics.performanceBenchmarks.benchmarks.aovPerformance}
